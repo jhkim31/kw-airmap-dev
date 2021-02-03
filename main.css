@@ -1,0 +1,93 @@
+body,
+        html {
+            height: 100%;
+            margin: 0;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+        }
+
+        .overlay {
+            position: fixed;
+            z-index: 2;
+        }
+
+        #cw {
+            position: absolute;
+            z-index: 1;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        #playWind {
+            margin-left: 10px;
+        }
+        #windSpeed {
+            margin-left: 130px;
+        }
+
+        #range1 {
+            bottom: 20px;
+            left: 30px;
+        }
+
+        #windCount {
+            bottom: 20px;
+            left: 180px;
+        }
+
+        #category {
+            bottom: 10px;
+            margin: 30px;
+        }
+
+        #speed7 {
+            
+            color: white;
+        }
+
+        #speed5 {
+            
+            color: white;
+        }
+
+        #speed3 {
+            
+            color: white;
+        }
+
+        #speed1 {
+            
+            color: white;
+        }
+
+        #speed0 {
+            
+            color: white;
+        }
+
+        #range2 {
+            bottom: 20px;
+            left: 250px;
+        }
+
+        #showSpeed {
+            bottom: 20px;
+            left : 400px;
+        }
+        
+        #canvas {
+            position: absolute;
+            pointer-events: none;
+            z-index: 2;
+            opacity:0.3;
+        }
+        #tempMap10 {
+            left: 60px;
+        }
+        #tempMap25 {
+            left: 120px;
+        }

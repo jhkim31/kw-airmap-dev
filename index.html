@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Kakao 지도 시작하기</title>
+    <script type="text/javascript"
+        src="//dapi.kakao.com/v2/maps/sdk.js?appkey=020d0fbd973e383fdea8d9a865f0f211&libraries=services"></script>
+    <script type="text/javascript"
+        src="//dapi.kakao.com/v2/maps/sdk.js?appkey=020d0fbd973e383fdea8d9a865f0f211"></script>
+    <link rel="stylesheet" type="text/css" href="main.css">
+</head>
+
+<body>
+    <div id="map"></div>
+    <canvas id="cw"></canvas>
+    <canvas id = "canvas"></canvas>
+    <button id="playWind" class="overlay">wind</button>
+    <button id = "tempMap10" class = "overlay"> pm10</button> 
+    <button id = "tempMap25" class = "overlay"></button> 
+    <div id="windSpeed" class="overlay"></div>
+    <input type="range" min="1" max="1500" value="1000" id="range1" class="overlay">
+    <div id="windCount" class="overlay"></div>
+    <input type="range" min="0" max="2.0" value="1.0" id="range2" class="overlay" step="0.1">
+    <div id="showSpeed" class="overlay"></div>
+    <div id="category" class="overlay">
+        <div id="speed7">
+            <input type="color" id="picker7" name="head" value="#ff0000"> speed > 7m/s
+        </div>
+        <div id="speed5">
+            <input type="color" id="picker5" name="head" value="#ff4600"> speed > 5m/s
+        </div>
+        <div id="speed3">
+            <input type="color" id="picker3" name="head" value="#ff6400"> speed > 3m/s
+        </div>
+        <div id="speed1">
+            <input type="color" id="picker1" name="head" value="#ff8C00"> speed > 1m/s
+        </div>
+        <div id="speed0">
+            <input type="color" id="picker0" name="head" value="#000000"> speed &lt; 1m/s
+        </div>
+    </div>    
+    <script type = "module" src="windfromCoordinate3.js"></script>
+    <!-- <script type = "module" src="main.js"></script> -->
+</body>
+</html>
