@@ -1,8 +1,5 @@
 import { data as stationData } from './data.js';
 var stationGap = 0.1
-// container element에 맵 객체 생성
-
-
 var drawnStation = []
 
 var minlat = 31
@@ -17,7 +14,26 @@ var canvas = document.getElementById('canvas')
 var ctx = canvas.getContext('2d')
 //변수선언================================================================
 
-export var showTemp = false;
+var showTemp = false;
+
+function init() {
+    canvas.width = window.innerWidth
+    canvas.height = window.innerHeight
+    var countx = 0;
+    var county = 0;
+    for (var j = maxlat; j >= minlat - gap; j -= gap) {
+        grid[county] = [];
+        for (var i = minlng; i <= maxlng + gap; i += gap) {
+            grid[county][countx] = []
+            var stationInGrid = selectStations(j, i);
+            var v = IDWInterpolation(j, i, stationInGrid);
+            grid[county][countx] = [j.toFixed(2), i.toFixed(2), v]
+            countx++;
+        }
+        countx = 0;
+        county++;
+    }
+}
 
 document.getElementById('showtemp').addEventListener('click', e => {
     if (showTemp){
@@ -143,26 +159,9 @@ function IDWInterpolation(latitude, longitude, stations) {
     
 }
 
-export function init() {
-    canvas.width = window.innerWidth
-    canvas.height = window.innerHeight
-    var countx = 0;
-    var county = 0;
-    for (var j = maxlat; j >= minlat - gap; j -= gap) {
-        grid[county] = [];
-        for (var i = minlng; i <= maxlng + gap; i += gap) {
-            grid[county][countx] = []
-            var stationInGrid = selectStations(j, i);
-            var v = IDWInterpolation(j, i, stationInGrid);
-            grid[county][countx] = [j.toFixed(2), i.toFixed(2), v]
-            countx++;
-        }
-        countx = 0;
-        county++;
-    }
-}
 
-export function drawCanvas() {
+
+function drawCanvas() {
     var g = 0;
     var r = 0;
     var pixelGap = 10
@@ -188,7 +187,7 @@ export function drawCanvas() {
     }
 }
 
-export function getValue(x, y) {
+function getValue(x, y) {
     var point = new kakao.maps.Point(x, y)
     var latitude = coordinate.coordsFromContainerPoint(point).Ma
     var longitude = coordinate.coordsFromContainerPoint(point).La
@@ -238,3 +237,4 @@ var interpolate = function (latitude, longitude, g00, g10, g01, g11, gridn) {
     return result_vector_x                //보간값 리턴
 }
 
+export {showTemp, init, drawCanvas, getValue}

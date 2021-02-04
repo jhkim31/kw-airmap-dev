@@ -13,7 +13,10 @@ var maxlat = 44
 var minlng = 115
 var maxlng = 138
 var gap = 0.5
-export var showWind = false
+var latgap = (maxlat * 10 - minlat * 10) / 10
+var lnggap = (maxlng * 10 - minlng * 10) / 10
+var windCount = 500;
+var showSpeed = 1
 
 var speed7 = {
     "dom": document.getElementById('speed7'),
@@ -43,10 +46,34 @@ var speed0 = {
 
 
 
-var latgap = (maxlat * 10 - minlat * 10) / 10
-var lnggap = (maxlng * 10 - minlng * 10) / 10
-var windCount = 500;
-var showSpeed = 1
+var showWind = false
+
+function init() {
+    cn.width = window.innerWidth
+    cn.height = window.innerHeight
+    cnx = cn.width - 1
+    cny = cn.height - 1
+    c.linewidth = "1";
+    windCount = document.getElementById("range1").value
+    showSpeed = document.getElementById("range2").value
+
+    speed7.color = speed7.picker.value
+    speed7.dom.style.backgroundColor = speed7.color
+
+    speed5.color = speed5.picker.value
+    speed5.dom.style.backgroundColor = speed5.color
+
+    speed3.color = speed3.picker.value
+    speed3.dom.style.backgroundColor = speed3.color
+
+    speed1.color = speed1.picker.value
+    speed1.dom.style.backgroundColor = speed1.color
+
+    speed0.color = speed0.picker.value
+    speed0.dom.style.backgroundColor = speed0.color
+
+}
+
 
 
 
@@ -54,7 +81,7 @@ var showSpeed = 1
 
 
 //바람 객체 생성 
-export function build() {
+function build() {
     a = [];
     for (var i = 0; i < windCount; i++) {
         buildobj(i)
@@ -131,7 +158,7 @@ function wind(x, y, latitude, longitude, index, frame) {
 }
 
 //현재 위도와 경도의 벡터 리턴
-export function getVector(latitude, longitude) {
+function getVector(latitude, longitude) {
     if (latitude <= minlat || latitude >= maxlat) return [0, 0, 0]             // 만약 위도 33 이하, 38 이상이면 1, -1 벡터 리턴
     if (longitude <= minlng || longitude >= maxlng) return [0, 0, 0]         // 만약 경도 124 이하, 130 이상이면 1, -1 벡터 리턴
 
@@ -189,34 +216,10 @@ var interpolate = function (latitude, longitude, g00, g10, g01, g11, gridn) {
 }
 
 //캔버스 초기값 세팅
-export function init() {
-    cn.width = window.innerWidth
-    cn.height = window.innerHeight
-    cnx = cn.width - 1
-    cny = cn.height - 1
-    c.linewidth = "1";
-    windCount = document.getElementById("range1").value
-    showSpeed = document.getElementById("range2").value
 
-    speed7.color = speed7.picker.value
-    speed7.dom.style.backgroundColor = speed7.color
-
-    speed5.color = speed5.picker.value
-    speed5.dom.style.backgroundColor = speed5.color
-
-    speed3.color = speed3.picker.value
-    speed3.dom.style.backgroundColor = speed3.color
-
-    speed1.color = speed1.picker.value
-    speed1.dom.style.backgroundColor = speed1.color
-
-    speed0.color = speed0.picker.value
-    speed0.dom.style.backgroundColor = speed0.color
-
-}
 
 // 위.경도 그리드값 읽어오기
-export function readGrid() {
+function readGrid() {
     var count = 0;
     for (var i = 0; i < ((latgap * 10) / (gap * 10)) + 1; i++) {
         grid[i] = []
@@ -237,7 +240,7 @@ function getRandomArbitrary(min, max) {
 
 
 // 애니메이션 생성
-export function anim() {
+function anim() {
     currentFrame++
     animationId = requestAnimationFrame(anim)
     c.fillStyle = "rgba(255, 255, 255, 0.2)"
@@ -248,7 +251,7 @@ export function anim() {
 }
 
 //에니메이션 정지
-export function stopAnim() {
+function stopAnim() {
     cancelAnimationFrame(animationId)
 }
 
@@ -317,3 +320,4 @@ speed0.picker.addEventListener("input", e => {
 
 
 
+export {showWind, init, build, getVector, readGrid, anim, stopAnim}

@@ -1,15 +1,14 @@
 import * as wind from "./windmap.js"
 import * as temp from "./tempmap.js"
 
-window.container = document.getElementById('map');                 //지도를 그릴 element
+
 var options = {
     center: new kakao.maps.LatLng(37.151198243701934, 128.22723681773422),
     level: 12
 };                                                              //지도의 설정 정보
-
+window.container = document.getElementById('map');                 //지도를 그릴 element
 window.map = new kakao.maps.Map(container, options);               // container element에 맵 객체 생성
 window.coordinate = map.getProjection();
-
 
 
 
