@@ -16,9 +16,8 @@
     <canvas id="cw"></canvas>
     <canvas id = "canvas"></canvas>
     <button id="playWind" class="overlay">wind</button>
-    <button id = "tempMap10" class = "overlay"> pm10</button> 
-    <button id = "tempMap25" class = "overlay"></button> 
-    <div id="windSpeed" class="overlay"></div>
+    <button id = "showtemp" class = "overlay">temp</button>
+    <div id="status" class="overlay"></div>
     <input type="range" min="1" max="1500" value="1000" id="range1" class="overlay">
     <div id="windCount" class="overlay"></div>
     <input type="range" min="0" max="2.0" value="1.0" id="range2" class="overlay" step="0.1">
@@ -40,7 +39,15 @@
             <input type="color" id="picker0" name="head" value="#000000"> speed &lt; 1m/s
         </div>
     </div>    
-    <script type = "module" src="windfromCoordinate3.js"></script>
-    <!-- <script type = "module" src="main.js"></script> -->
+
+    <div id = "colorBar">
+        <span> 10</span>
+        <span style = "float:right;">50 </span>
+    </div>
+    <script type = "module" src = "./js/main.js"></script>
+    <script type = "module" src = "./js/data.js"></script>
+    <script type = "module" src = "./js/tempmap.js"></script>
+    <script type = "module" src="./js/windmap.js"></script>
+    
 </body>
 </html>

@@ -18,14 +18,25 @@ body,
         #cw {
             position: absolute;
             z-index: 1;
-            opacity: 0.3;
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        #canvas {
+            position: absolute;
+            z-index: 1;
+            opacity: 0.4;
             pointer-events: none;
         }
 
         #playWind {
             margin-left: 10px;
         }
-        #windSpeed {
+        
+        #showtemp {
+            margin-left: 60px;
+        }
+
+        #status {
             margin-left: 130px;
         }
 
@@ -78,16 +89,13 @@ body,
             bottom: 20px;
             left : 400px;
         }
-        
-        #canvas {
-            position: absolute;
-            pointer-events: none;
-            z-index: 2;
-            opacity:0.3;
-        }
-        #tempMap10 {
-            left: 60px;
-        }
-        #tempMap25 {
-            left: 120px;
+
+        #colorBar{
+            position: fixed;
+            z-index: 3;
+            bottom: 25px;
+            left: 500px  ;
+            background: linear-gradient( to right, green,yellow, red );
+            width: 300px;
+            height:20px;
         }
