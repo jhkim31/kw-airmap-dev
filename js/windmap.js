@@ -17,6 +17,7 @@ var latgap = (maxlat * 10 - minlat * 10) / 10
 var lnggap = (maxlng * 10 - minlng * 10) / 10
 var windCount = 500;
 var showSpeed = 1
+var showWind = false
 
 var speed7 = {
     "dom": document.getElementById('speed7'),
@@ -44,9 +45,6 @@ var speed0 = {
     "picker": document.getElementById('picker0')
 }
 
-
-
-var showWind = false
 
 function init() {
     cn.width = window.innerWidth

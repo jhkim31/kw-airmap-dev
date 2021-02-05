@@ -42,7 +42,7 @@ document.getElementById('showtemp').addEventListener('click', e => {
 
     } else {
         init();
-        // showOverlay()
+        showOverlay()
         // showGrid();        
         drawCanvas();
         showTemp = true;
@@ -164,7 +164,7 @@ function IDWInterpolation(latitude, longitude, stations) {
 function drawCanvas() {
     var g = 0;
     var r = 0;
-    var pixelGap = 10
+    var pixelGap = 8
     var maxValue = 50;
     var minValue = 10;
     var centerValue = (maxValue + minValue) / 2;
