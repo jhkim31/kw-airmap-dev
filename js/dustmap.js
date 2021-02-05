@@ -1,4 +1,4 @@
-import { data as stationData } from './data.js';
+import { dustData as stationData } from './data.js';
 var stationGap = 0.1
 var drawnStation = []
 
@@ -164,9 +164,9 @@ function IDWInterpolation(latitude, longitude, stations) {
 function drawCanvas() {
     var g = 0;
     var r = 0;
-    var pixelGap = 8
-    var maxValue = 50;
-    var minValue = 10;
+    var pixelGap = 10
+    var maxValue = 100;
+    var minValue = 0;
     var centerValue = (maxValue + minValue) / 2;
     var value = 0;
     for (var i = 0; i < canvas.height / pixelGap; i++) {
