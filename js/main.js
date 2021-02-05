@@ -1,5 +1,5 @@
 import * as wind from "./windmap.js"
-import * as temp from "./tempmap.js"
+import * as temp from "./dustmap.js"
 
 
 var options = {
