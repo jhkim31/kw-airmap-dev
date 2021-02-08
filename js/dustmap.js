@@ -64,9 +64,9 @@ function showOverlay() {
             position: position,
             content: content
         });
-
+        
         if (noStationAround(stationData[i].latitude, stationData[i].longitude)) {
-            customOverlay.setMap(map);
+            customOverlay.setMap(map);    
             drawnStation.push(stationData[i])
         }
     }
@@ -164,8 +164,8 @@ function IDWInterpolation(latitude, longitude, stations) {
 function drawCanvas() {
     var g = 0;
     var r = 0;
-    var pixelGap = 10
-    var maxValue = 100;
+    var pixelGap = 10;
+    var maxValue = 50;
     var minValue = 0;
     var centerValue = (maxValue + minValue) / 2;
     var value = 0;
