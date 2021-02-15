@@ -12,19 +12,18 @@ body,
 
         .overlay {
             position: fixed;
-            z-index: 2;
+            z-index: 5;
         }
-
-        #cw {
+        #dustmap {
             position: absolute;
             z-index: 1;
-            opacity: 0.4;
             pointer-events: none;
+            opacity: 0.6;
         }
-        #canvas {
+        #windmap {
             position: absolute;
             z-index: 1;
-            opacity: 0.5;
+            opacity: 0.2;
             pointer-events: none;
         }
 
@@ -36,48 +35,34 @@ body,
             margin-left: 60px;
         }
 
-        #status {
-            margin-left: 130px;
+        #speed7 {
+            width:150px;
+            color: white;
+        }
+
+        #speed5 {
+            width:150px;
+            color: white;
+        }
+
+        #speed3 {
+            width:150px;
+            color: white;
+        }
+
+        #speed1 {
+            width:150px;
+            color: white;
+        }
+
+        #speed0 {
+            width:150px;
+            color: white;
         }
 
         #range1 {
             bottom: 20px;
             left: 30px;
-        }
-
-        #windCount {
-            bottom: 20px;
-            left: 180px;
-        }
-
-        #category {
-            bottom: 10px;
-            margin: 30px;
-        }
-
-        #speed7 {
-            
-            color: white;
-        }
-
-        #speed5 {
-            
-            color: white;
-        }
-
-        #speed3 {
-            
-            color: white;
-        }
-
-        #speed1 {
-            
-            color: white;
-        }
-
-        #speed0 {
-            
-            color: white;
         }
 
         #range2 {
@@ -90,12 +75,8 @@ body,
             left : 400px;
         }
 
-        #colorBar{
-            position: fixed;
-            z-index: 3;
-            bottom: 25px;
-            left: 500px  ;
-            background: linear-gradient( to right, green,yellow, red );
-            width: 300px;
-            height:20px;
+
+        #category {
+            bottom: 10px;
+            margin: 30px;
         }

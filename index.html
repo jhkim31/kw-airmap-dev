@@ -13,41 +13,17 @@
 
 <body>
     <div id="map"></div>
-    <canvas id="cw"></canvas>
-    <canvas id = "canvas"></canvas>
+    <canvas id = "dustmap"></canvas>
+    <canvas id = "windmap"></canvas>
+
+    <div id = "category" class = "overlay"></div>
     <button id="playWind" class="overlay">wind</button>
     <button id = "showtemp" class = "overlay">pm10</button>
-    <div id="status" class="overlay"></div>
-    <input type="range" min="1" max="1500" value="1000" id="range1" class="overlay">
-    <div id="windCount" class="overlay"></div>
-    <input type="range" min="0" max="2.0" value="1.0" id="range2" class="overlay" step="0.1">
-    <div id="showSpeed" class="overlay"></div>
-    <div id="category" class="overlay">
-        <div id="speed7">
-            <input type="color" id="picker7" name="head" value="#ff0000"> speed > 7m/s
-        </div>
-        <div id="speed5">
-            <input type="color" id="picker5" name="head" value="#ff4600"> speed > 5m/s
-        </div>
-        <div id="speed3">
-            <input type="color" id="picker3" name="head" value="#ff6400"> speed > 3m/s
-        </div>
-        <div id="speed1">
-            <input type="color" id="picker1" name="head" value="#ff8C00"> speed > 1m/s
-        </div>
-        <div id="speed0">
-            <input type="color" id="picker0" name="head" value="#000000"> speed &lt; 1m/s
-        </div>
-    </div>    
 
-    <div id = "colorBar">
-        <span> 0</span>
-        <span style = "float:right;">100 </span>
-    </div>
+    <script type = "module" src = "./js/simpleheat.js"></script>
+    <script type = "module" src = "./js/windfromCoordinate3.js"></script>
     <script type = "module" src = "./js/main.js"></script>
-    <script type = "module" src = "./js/data.js"></script>
-    <script type = "module" src = "./js/dustmap.js"></script>
-    <script type = "module" src="./js/windmap.js"></script>
+    
     
 </body>
 </html>
