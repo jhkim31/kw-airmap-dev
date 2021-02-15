@@ -91,7 +91,7 @@ window.Windmap = function (map, minlat, maxlat, minlng, maxlng, gap) {
                 this.longitude = mapProjection.coordsFromContainerPoint(point).La              // 이동한 만큼 다시 현재 위치 계산
 
                 ctx.beginPath();
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 2.3;
                 if (Object.keys(colorPicker).length != 0) {
                     if (nextVec[2] > 7) {
                         ctx.strokeStyle = colorPicker.speed7.color;
@@ -235,16 +235,16 @@ window.Windmap = function (map, minlat, maxlat, minlng, maxlng, gap) {
         document.getElementById('category').innerHTML += 
         `         
             <div id="speed7">
-                <input type="color" id="picker7" name="head" value="#ff0000"> speed > 7m/s
+                <input type="color" id="picker7" name="head" value="#6E01B7"> speed > 7m/s
             </div>
             <div id="speed5">
-                <input type="color" id="picker5" name="head" value="#ff4600"> speed > 5m/s
+                <input type="color" id="picker5" name="head" value="#7300FF"> speed > 5m/s
             </div>
             <div id="speed3">
-                <input type="color" id="picker3" name="head" value="#ff6400"> speed > 3m/s
+                <input type="color" id="picker3" name="head" value="#0400FF"> speed > 3m/s
             </div>
             <div id="speed1">
-                <input type="color" id="picker1" name="head" value="#ff8C00"> speed > 1m/s
+                <input type="color" id="picker1" name="head" value="#006EFF"> speed > 1m/s
             </div>
             <div id="speed0">
                 <input type="color" id="picker0" name="head" value="#000000"> speed &lt; 1m/s
