@@ -8,7 +8,8 @@ var minlng = 115
 var maxlng = 138
 var lnggap = ((maxlng * 10) - (minlng * 10)) / 10
 var latgap = ((maxlat * 10) - (minlat * 10)) / 10
-var gap = 0.2
+var gap = 0.5
+
 var grid = []
 var canvas = document.getElementById('canvas')
 var ctx = canvas.getContext('2d')
@@ -116,8 +117,8 @@ function showGrid() {
 function selectStations(latitude, longitude) {
     var returnData = []
     for (var i = 0; i < stationData.length; i++) {
-        if (stationData[i].latitude < latitude && stationData[i].latitude >= latitude - 1) {
-            if (stationData[i].longitude > longitude && stationData[i].longitude < longitude + 1) {
+        if (stationData[i].latitude < latitude + 0.5 && stationData[i].latitude >= latitude - 0.5) {
+            if (stationData[i].longitude > longitude  && stationData[i].longitude < longitude) {
                 returnData.push(stationData[i])
             }
         }
@@ -164,7 +165,7 @@ function IDWInterpolation(latitude, longitude, stations) {
 function drawCanvas() {
     var g = 0;
     var r = 0;
-    var pixelGap = 10;
+    var pixelGap = 5;
     var maxValue = 50;
     var minValue = 0;
     var centerValue = (maxValue + minValue) / 2;
