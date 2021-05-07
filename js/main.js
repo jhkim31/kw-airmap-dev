@@ -1,24 +1,19 @@
-var container = document.getElementById('map');                 //지도를 그릴 element
-var options = {
-    center: new kakao.maps.LatLng(37.151198243701934, 128.22723681773422),
-    level: 12
-};      
+import { HeatMap as HeatMap } from './heatmap.js';
+import { WindMap as WindMap} from './windmap.js'
 
-var map = new kakao.maps.Map(container, options); 
+window.map = L.map('map').setView([36, 128], 8);
+L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png').addTo(map);
 
-var windmap = new Windmap(map, 31, 44, 115, 138, 0.5);
-var dustmap = new dustMap(map);
+var heatmap = new HeatMap()
+var windmap = new WindMap(31, 44, 115, 138, 0.5);
 
-window.onload = () => {
+window.onload = function () {
+    heatmap.init();
     windmap.init();
-    dustmap.init();
 }
 
-
-windmap.addControler();
-
-
+document.getElementById('showHeatMap').addEventListener('click', heatmap.toggleHeatMap)
 document.getElementById('playWind').addEventListener('click', windmap.toggleWindLayer)
-document.getElementById('showtemp').addEventListener('click', dustmap.toggleHeatmapLayer)
+
 
 

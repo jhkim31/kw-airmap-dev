@@ -1,82 +1,39 @@
 body,
-        html {
-            height: 100%;
-            margin: 0;
-        }
+html {
+    height: 100%;
+    margin: 0;
+}
 
-        #map {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-        }
+#map {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: 1;
+}
 
-        .overlay {
-            position: fixed;
-            z-index: 5;
-        }
-        #dustmap {
-            position: absolute;
-            z-index: 1;
-            pointer-events: none;
-            opacity: 0.6;
-        }
-        #windmap {
-            position: absolute;
-            z-index: 1;
-            opacity: 0.2;
-            pointer-events: none;
-        }
+#heatmap {
+    position: absolute;
+    pointer-events: none;
+    z-index: 3;
+    opacity: 0.5;
+}
+#showHeatMap{ 
+    position:absolute;
+    z-index: 998;
+}
+.overlay {
+    position: fixed;
+    z-index: 999;
+}
 
-        #playWind {
-            margin-left: 10px;
-        }
-        
-        #showtemp {
-            margin-left: 60px;
-        }
+#windmap {
+    position: absolute;
+    z-index: 2;
+    opacity: 0.4;
+    pointer-events: none;
+    
+}
 
-        #speed7 {
-            width:150px;
-            color: white;
-        }
-
-        #speed5 {
-            width:150px;
-            color: white;
-        }
-
-        #speed3 {
-            width:150px;
-            color: white;
-        }
-
-        #speed1 {
-            width:150px;
-            color: white;
-        }
-
-        #speed0 {
-            width:150px;
-            color: white;
-        }
-
-        #range1 {
-            bottom: 20px;
-            left: 30px;
-        }
-
-        #range2 {
-            bottom: 20px;
-            left: 250px;
-        }
-
-        #showSpeed {
-            bottom: 20px;
-            left : 400px;
-        }
-
-
-        #category {
-            bottom: 10px;
-            margin: 30px;
-        }
+#playWind {
+    margin-left: 100px;
+}
