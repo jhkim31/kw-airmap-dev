@@ -96,7 +96,7 @@ var WindMap = function (minlat, maxlat, minlng, maxlng, gap) {
                 //     c.strokeStyle = "#000000"
                 // }
 
-                c.strokeStyle = "#333333"
+                c.strokeStyle = "black"
 
                 c.moveTo(ls.x, ls.y);
                 c.lineTo(this.x, this.y);
@@ -194,7 +194,7 @@ var WindMap = function (minlat, maxlat, minlng, maxlng, gap) {
     function anim() {
         currentFrame++
         animationId = requestAnimationFrame(anim)
-        c.fillStyle = "rgba(255, 255, 255, 0.2)"
+        c.fillStyle = "rgba(255, 255, 255,0.3 )"
         c.fillRect(0, 0, cn.width, cn.height);
         a.forEach(function (e, i) {
             e.windMove();
