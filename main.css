@@ -15,7 +15,7 @@ html {
     position: absolute;
     pointer-events: none;
     z-index: 3;
-    opacity: 0.5;
+    opacity: 0.4;
 }
 #showHeatMap{ 
     position:absolute;
@@ -28,8 +28,8 @@ html {
 
 #windmap {
     position: absolute;
-    z-index: 2;
-    opacity: 0.4;
+    z-index: 2;    
+    opacity:0.3;
     pointer-events: none;
     
 }

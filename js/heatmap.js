@@ -5,13 +5,13 @@ var HeatMap = function () {
     var stationGap = 0.1
     var drawnStation = []
 
-    var minlat = 31
+    var minlat = 30
     var maxlat = 44
-    var minlng = 115
+    var minlng = 118
     var maxlng = 138
     var lnggap = ((maxlng * 10) - (minlng * 10)) / 10
     var latgap = ((maxlat * 10) - (minlat * 10)) / 10
-    var gap = 0.2
+    var gap = 0.1
     var grid = []
     var canvas = document.getElementById('heatmap')
     var ctx = canvas.getContext('2d')
@@ -68,46 +68,57 @@ var HeatMap = function () {
         canvas.height = window.innerHeight
         var countx = 0;
         var county = 0;
-        for (var j = maxlat; j >= minlat - gap; j -= gap) {
-            grid[county] = [];
-            for (var i = minlng; i <= maxlng + gap; i += gap) {
-                grid[county][countx] = []
-                var stationInGrid = selectStations(j, i);
-                var v = IDWInterpolation(j, i, stationInGrid);
-                grid[county][countx] = [j.toFixed(2), i.toFixed(2), v]
-                countx++;
-            }
-            countx = 0;
-            county++;
-        }
+        // for (var j = maxlat; j >= minlat - gap; j -= gap) {
+        //     grid[county] = [];
+        //     for (var i = minlng; i <= maxlng + gap; i += gap) {
+        //         grid[county][countx] = []
+        //         var stationInGrid = selectStations(j, i);
+        //         var v = IDWInterpolation(j, i, stationInGrid);
+        //         grid[county][countx] = [j.toFixed(2), i.toFixed(2), v]
+        //         countx++;
+        //     }
+        //     countx = 0;
+        //     county++;
+        // }
+        grid = stationData
         drawCanvas()
     }
 
     function drawCanvas(){
         if (showHeat) {
-            var g = 0;
-            var r = 0;
+
             var pixelGap = 10
-            var maxValue = 50;
-            var minValue = 10;
-            var centerValue = (maxValue + minValue) / 2;
             var value = 0;
             for (var i = 0; i < canvas.height / pixelGap; i++) {
                 for (var j = 0; j < canvas.width / pixelGap; j++) {
                     var x = pixelGap * j;
                     var y = pixelGap * i;
                     value = getValue(x, y);
-                    if (value > centerValue) {
-                        r = 255;
-                        g = 255 - ((value - centerValue) / (maxValue - centerValue)) * 255
+                    if (value < 10){
+                        ctx.fillStyle = "rgb(70, 86, 207)"
+                    } else if (value < 20) {
+                        ctx.fillStyle = "rgb(70, 132, 207)"
+                    } else if (value < 30){
+                        ctx.fillStyle = "rgb(70, 173, 207)"
+                    } else if (value < 40){
+                        ctx.fillStyle = "rgb(48, 166, 107)"
+                    } else if (value < 50){
+                        ctx.fillStyle = "rgb(69, 217, 99"
+                    } else if(value < 60){
+                        ctx.fillStyle = "rgb(113, 217, 69)"
+                    } else if (value < 70){
+                        ctx.fillStyle = "rgb(185, 217, 69)"
+                    } else if (value < 80){
+                        ctx.fillStyle = "rgb(210, 217, 69)"
+                    } else if (value < 90){
+                        ctx.fillStyle = "rgb(217, 178, 69)"
+                    } else if (value < 100){
+                        ctx.fillStyle = "rgb(217, 86, 69)"
                     } else {
-                        g = 255;
-                        r = 255 * ((value - minValue) / (centerValue - minValue))
+                        ctx.fillStyle = "rgb(70, 173, 207)"
                     }
-                    // r = 255;
-                    // g = 255 - ((value - minValue) / (maxValue - minValue)) * 255
-                    ctx.fillStyle = "rgb(" + r + "," + g + ",0)"
                     ctx.fillRect(x, y, pixelGap, pixelGap);
+
                 }
             }
         }
@@ -116,7 +127,6 @@ var HeatMap = function () {
     function getValue(x, y) {
         var point = L.point(x, y)
         var latitude = map.containerPointToLatLng(point).lat
-
         var longitude = map.containerPointToLatLng(point).lng
 
         if (latitude <= minlat || latitude >= maxlat) return 10
