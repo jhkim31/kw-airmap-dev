@@ -1,24 +1,21 @@
 import { windData } from "./data.js"
-var WindMap = function (minlat, maxlat, minlng, maxlng, gap) {
-    var minlat = minlat
-    var maxlat = maxlat
-    var minlng = minlng
-    var maxlng = maxlng
-    var gap = gap
-    var latgap = (maxlat * 10 - minlat * 10) / 10
-    var lnggap = (maxlng * 10 - minlng * 10) / 10
+var WindMap = function () {
+    var wind_config = {} 
+
     var cn = document.getElementById('windmap')         // 캔버스 객체
     var c = cn.getContext('2d');                        // 캔버스
     var a = []                                          // 바람 하나하나 객체의 배열
     var cnx;                                            // 캔버스 width
     var cny;                                            // 캔버스 height
-    var grid = []                                       // 위도 경도에 따른 그리드 배열
+    window.grid = []                                       // 위도 경도에 따른 그리드 배열
     var currentFrame = 0                                // 애니메이션의 현재 프레임
     var animationId                                     // 애니메이션 아이디 (정지시 필요)
     this.showWind = false
     var windCount = 1000;                   //default
     var showSpeed = 1;                       //default
-
+    var initLat
+    var initLng
+    
 
     //페이지 resize시 실행
     window.onresize = () => {
@@ -40,7 +37,7 @@ var WindMap = function (minlat, maxlat, minlng, maxlng, gap) {
         var x = getRandomArbitrary(0, cnx)
         var y = getRandomArbitrary(0, cny)
         var point = L.point(x, y)
-        a[i] = new wind(x, y, map.containerPointToLatLng(point).lat, map.containerPointToLatLng(point).lng, i, currentFrame)
+        a[i] = new wind(x, y, map.containerPointToLatLng(point).lat, map.containerPointToLatLng(point).lng, i, animationId)
     }
 
     //특정 인덱스 바람 객체 삭제
@@ -59,7 +56,6 @@ var WindMap = function (minlat, maxlat, minlng, maxlng, gap) {
         this.frame = frame                              // 생성될 당시 프레임
         //바람 객체 이동 함수 (현재 좌표의 벡터를 받아 그 벡터 방향으로 이동)    
         this.windMove = function () {
-
             if (this.x > cnx || this.y > cny || this.x < 0 || this.y < 0) {                 //만약 캔버스 범위를 벗어나면 삭제
                 return removeObj(this.index)
             } else {
@@ -82,20 +78,7 @@ var WindMap = function (minlat, maxlat, minlng, maxlng, gap) {
                 this.longitude = map.containerPointToLatLng(point).lng
 
                 c.beginPath();
-                c.lineWidth = 2;
-
-                // if (nextVec[2] > 7) {
-                //     c.strokeStyle = "#ff0000";
-                // } else if (nextVec[2] > 5) {
-                //     c.strokeStyle = "#ff4600";
-                // } else if (nextVec[2] > 3) {
-                //     c.strokeStyle = "#ff6400"
-                // } else if (nextVec[2] > 1) {
-                //     c.strokeStyle = "#ff8C00"
-                // } else {
-                //     c.strokeStyle = "#000000"
-                // }
-
+                c.lineWidth = 2.2;
                 c.strokeStyle = "black"
 
                 c.moveTo(ls.x, ls.y);
@@ -107,8 +90,8 @@ var WindMap = function (minlat, maxlat, minlng, maxlng, gap) {
     }
 
     function getVector(latitude, longitude) {
-        if (latitude <= minlat || latitude >= maxlat) return [0, 0, 0]             // 만약 위도 33 이하, 38 이상이면 1, -1 벡터 리턴
-        if (longitude <= minlng || longitude >= maxlng) return [0, 0, 0]         // 만약 경도 124 이하, 130 이상이면 1, -1 벡터 리턴
+        if (latitude <= wind_config.minlat || latitude >= wind_config.maxlat) return [0, 0, 0]             // 만약 위도 33 이하, 38 이상이면 1, -1 벡터 리턴
+        if (longitude <= wind_config.minlng || longitude >= wind_config.maxlng) return [0, 0, 0]         // 만약 경도 124 이하, 130 이상이면 1, -1 벡터 리턴
 
         var gridn = selectGrid(latitude, longitude);                            // 현재 벡터에서 그리드 계산
         var g00 = grid[gridn[0]][gridn[1]]
@@ -116,22 +99,20 @@ var WindMap = function (minlat, maxlat, minlng, maxlng, gap) {
         var g01 = grid[gridn[0] + 1][gridn[1]]
         var g11 = grid[gridn[0] + 1][gridn[1] + 1]
 
-        return interpolate(latitude, longitude, g00, g10, g01, g11, gridn)      // 4 그리드로 보간값 구해서 리턴
+        return interpolate(latitude, longitude, g00, g10, g01, g11)      // 4 그리드로 보간값 구해서 리턴
     }
-
 
     //위도와 경도를 가지고 적절한 그리드 리턴 (경도 0.25 단위 , 위도 0.25 단위로 쪼개어져 있음.)
     function selectGrid(latitude, longitude) {
 
-        var gridlng = Math.floor(((longitude * 10 - minlng * 10) / (gap * 10)))
-        var gridlat = Math.floor(((maxlat * 10 - latitude * 10) / (gap * 10)))
-
+        var gridlat = Math.floor((wind_config.maxlat - latitude) / wind_config.latGap)
+        var gridlng = Math.floor((longitude - wind_config.minlng) / wind_config.lngGap)
         return [gridlat, gridlng]
     }
 
     //위도 경도. 그리드로 보간값 계산
-    var interpolate = function (latitude, longitude, g00, g10, g01, g11, gridn) {
-        var x = (longitude % gap) * (1 / gap)
+    var interpolate = function (latitude, longitude, g00, g10, g01, g11) {
+        var x = (longitude % wind_config.lngGap) * (1 / wind_config.lngGap)
 
         var d1 = x
         var d2 = 1 - x
@@ -146,11 +127,12 @@ var WindMap = function (minlat, maxlat, minlng, maxlng, gap) {
             x2_vector_x = d1 * g11[0] + d2 * g01[0]
             x2_vector_y = d1 * g11[1] + d2 * g01[1]
         } catch (error) {
+            console.log("error", error)
             debugger;
         }
 
 
-        var y = (latitude % gap) * (1 / gap)
+        var y = (latitude % wind_config.latGap) * (1 / wind_config.latGap)
         var d4 = y
         var d3 = 1 - y
 
@@ -168,19 +150,34 @@ var WindMap = function (minlat, maxlat, minlng, maxlng, gap) {
         cn.height = window.innerHeight
         cnx = cn.width - 1
         cny = cn.height - 1
-        readGrid()                 //초기 한번만 실행되면 됨.
+        readGrid()                 
         build()
     }
 
     function readGrid() {
         var count = 0;
-        for (var i = 0; i < ((latgap * 10) / (gap * 10)) + 1; i++) {
+        var a = L.point(map.getSize().x + 70, -70)
+        initLat = map.containerPointToLatLng(a).lat;
+        initLng = map.containerPointToLatLng(a).lng;
+
+        wind_config.latGap = map.containerPointToLatLng(a).lat - map.getBounds()._northEast.lat;
+        wind_config.lngGap = map.containerPointToLatLng(a).lng - map.getBounds()._northEast.lng;
+        wind_config.maxlat= initLat;
+        wind_config.maxlng = initLng;
+        wind_config.gridX = Math.ceil(map.getSize().x / 70) + 2
+        wind_config.gridY = Math.ceil(map.getSize().y / 70) + 2
+        wind_config.minlng = initLng - wind_config.lngGap * wind_config.gridX
+        wind_config.minlat = initLat - wind_config.latGap * wind_config.gridY
+
+        console.log(wind_config)
+
+        for (var i = 0; i <= wind_config.gridY; i++) {
             grid[i] = []
-            for (var j = 0; j < ((lnggap * 10) / (gap * 10)) + 1; j++) {
+            for (var j = 0; j <= wind_config.gridX; j++) {
                 grid[i][j] = []
-                grid[i][j][0] = windData[count++]
-                grid[i][j][1] = windData[count++]
-                grid[i][j][2] = count / 2
+                grid[i][j][0] = getRandomArbitrary(-3, 5)
+                grid[i][j][1] = getRandomArbitrary(1,3)
+                grid[i][j][2] = count++
             }
         }
     }
@@ -192,7 +189,6 @@ var WindMap = function (minlat, maxlat, minlng, maxlng, gap) {
 
     // 애니메이션 생성
     function anim() {
-        currentFrame++
         animationId = requestAnimationFrame(anim)
         c.fillStyle = "rgba(255, 255, 255,0.3 )"
         c.fillRect(0, 0, cn.width, cn.height);
@@ -204,31 +200,37 @@ var WindMap = function (minlat, maxlat, minlng, maxlng, gap) {
     //에니메이션 정지
     function stopAnim() {
         cancelAnimationFrame(animationId)
-        c.clearRect(0, 0, cn.width, cn.height);        
+        c.clearRect(0, 0, cn.width, cn.height);
     }
 
     this.toggleWindLayer = () => {
         if (this.showWind) {
             a = []
-            stopAnim()        
-            this.showWind = false    
-        } else {  
-            build();          
+            stopAnim()
+            this.showWind = false
+        } else {
+            build();
             anim()
             this.showWind = true;
         }
     }
 
     map.on('move', () => {
-        if(this.showWind){
+        if (this.showWind) {
             stopAnim();
         }
     })
 
     map.on('moveend', () => {
-        if (this.showWind){
-            anim()            
+        readGrid()
+        console.log('moveend')
+        if (this.showWind) {
+            stopAnim();
+            anim()
         }
+    })
+    map.on('zoomend', () => {
+        readGrid()
     })
 }
 
