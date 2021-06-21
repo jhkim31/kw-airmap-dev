@@ -194,6 +194,11 @@ var HeatMap = function () {
     map.on('move', () => {
         drawCanvas();
     })
+
+    map.on('click', (e) => {
+        console.log(e)
+        console.log(getValue(e.layerPoint))
+    })
 }
 
 export { HeatMap }
