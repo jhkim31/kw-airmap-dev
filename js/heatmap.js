@@ -30,7 +30,7 @@ var HeatMap = function () {
         heat_config.minlng = initLng - heat_config.lngGap * heat_config.gridX
         heat_config.minlat = initLat - heat_config.latGap * heat_config.gridY
         console.log(heat_config)
-
+        
         for (var i = 0; i <= heat_config.gridY; i++) {
             grid[i] = []
             for (var j = 0; j <= heat_config.gridX; j++) {            

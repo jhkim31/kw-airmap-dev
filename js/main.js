@@ -1,5 +1,10 @@
 import { HeatMap as HeatMap } from './heatmap.js';
 import { WindMap as WindMap } from './windmap.js'
+import {windData as windData} from './data.js'
+import {heatData as heatData} from './data.js'
+
+console.log(windData)
+console.log(heatData)
 
 var southWest = L.latLng(30, 118),
     northEast = L.latLng(44, 134),
@@ -20,5 +25,6 @@ window.onload = function () {
 document.getElementById('showHeatMap').addEventListener('click', heatmap.toggleHeatMap)
 document.getElementById('playWind').addEventListener('click', windmap.toggleWindLayer)
 
-
-
+window.request_api = function(bounds){
+    
+}
