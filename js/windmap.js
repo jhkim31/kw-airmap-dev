@@ -147,6 +147,7 @@ var WindMap = function (minlat, maxlat, minlng, maxlng, gap) {
             x2_vector_y = d1 * g11[1] + d2 * g01[1]
         } catch (error) {
             debugger;
+            console.log(error)
         }
 
 
@@ -183,6 +184,8 @@ var WindMap = function (minlat, maxlat, minlng, maxlng, gap) {
                 grid[i][j][2] = count / 2
             }
         }
+        console.log('wind')
+        console.log(grid)
     }
 
     //min, max 랜덤값 리턴

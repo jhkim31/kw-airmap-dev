@@ -167,6 +167,7 @@ var HeatMap = function () {
             x2_vector_x = d1 * g11[2] + d2 * g01[2]
         } catch (error) {
             debugger;
+            console.log(error)
         }
         var y = (latitude % gap) * (1 / gap)
         var d4 = y
@@ -193,11 +194,6 @@ var HeatMap = function () {
     
     map.on('move', () => {
         drawCanvas();
-    })
-
-    map.on('click', (e) => {
-        console.log(e)
-        console.log(getValue(e.layerPoint))
     })
 }
 
