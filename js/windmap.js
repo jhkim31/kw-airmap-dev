@@ -83,19 +83,6 @@ var WindMap = function (minlat, maxlat, minlng, maxlng, gap) {
 
                 c.beginPath();
                 c.lineWidth = 2;
-
-                // if (nextVec[2] > 7) {
-                //     c.strokeStyle = "#ff0000";
-                // } else if (nextVec[2] > 5) {
-                //     c.strokeStyle = "#ff4600";
-                // } else if (nextVec[2] > 3) {
-                //     c.strokeStyle = "#ff6400"
-                // } else if (nextVec[2] > 1) {
-                //     c.strokeStyle = "#ff8C00"
-                // } else {
-                //     c.strokeStyle = "#000000"
-                // }
-
                 c.strokeStyle = "black"
 
                 c.moveTo(ls.x, ls.y);
