@@ -15,7 +15,7 @@ var WindMap = function (minlat, maxlat, minlng, maxlng, gap) {
     var grid = []                                       // 위도 경도에 따른 그리드 배열
     var currentFrame = 0                                // 애니메이션의 현재 프레임
     var animationId                                     // 애니메이션 아이디 (정지시 필요)
-    this.showWind = false
+    var showWind = false
     var windCount = 1000;                   //default
     var showSpeed = 1;                       //default
 
@@ -182,43 +182,43 @@ var WindMap = function (minlat, maxlat, minlng, maxlng, gap) {
 
     // 애니메이션 생성
     function anim() {
-        currentFrame++
-        animationId = requestAnimationFrame(anim)
-        c.fillStyle = "rgba(255, 255, 255,0.3 )"
-        c.fillRect(0, 0, cn.width, cn.height);
-        a.forEach(function (e, i) {
-            e.windMove();
-        });
+        if (showWind) {
+            currentFrame++
+            animationId = requestAnimationFrame(anim)
+            c.fillStyle = "rgba(255, 255, 255,0.3 )"
+            c.fillRect(0, 0, cn.width, cn.height);
+            a.forEach(function (e, i) {
+                e.windMove();
+            });
+        }
     }
 
     //에니메이션 정지
     function stopAnim() {
-        cancelAnimationFrame(animationId)
-        c.clearRect(0, 0, cn.width, cn.height);        
+        if (showWind) {
+            cancelAnimationFrame(animationId)
+            c.clearRect(0, 0, cn.width, cn.height);
+        }
     }
 
     this.toggleWindLayer = () => {
-        if (this.showWind) {
-            a = []
-            stopAnim()        
-            this.showWind = false    
-        } else {  
-            build();          
-            anim()
-            this.showWind = true;
+        if (showWind) {
+            a = []       
+            stopAnim()            
+            showWind = false
+        } else {
+            showWind = true;
+            build();
+            anim()            
         }
     }
 
     map.on('move', () => {
-        if(this.showWind){
-            stopAnim();
-        }
+        stopAnim();
     })
 
     map.on('moveend', () => {
-        if (this.showWind){
-            anim()            
-        }
+        anim()
     })
 }
 
