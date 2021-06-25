@@ -144,63 +144,6 @@ var WindMap = function () {
         var result_vector = [result_vector_x, result_vector_y, result_vector_scale]
         return result_vector                //보간값 리턴
     }
-
-    function getVectorFromOriginData(latitude, longitude) {
-        if (latitude <= 30 || latitude >= 44) return [0, 0, 0]             // 만약 위도 33 이하, 38 이상이면 1, -1 벡터 리턴
-        if (longitude <= 118 || longitude >= 134) return [0, 0, 0]         // 만약 경도 124 이하, 130 이상이면 1, -1 벡터 리턴
-
-        var gridn = selectGridFromOriginData(latitude, longitude);                            // 현재 벡터에서 그리드 계산
-        var g00 = windData[gridn[0]][gridn[1]]
-        var g10 = windData[gridn[0]][gridn[1] + 1]
-        var g01 = windData[gridn[0] + 1][gridn[1]]
-        var g11 = windData[gridn[0] + 1][gridn[1] + 1]
-
-        return interpolateFromOriginData(latitude, longitude, g00, g10, g01, g11)      // 4 그리드로 보간값 구해서 리턴
-    }
-
-    function selectGridFromOriginData(latitude, longitude) {
-        var minlng = 118;
-        var maxlat = 44;
-        var gap = 0.5;
-
-        var gridlng = Math.floor(((longitude * 10 - minlng * 10) / (gap * 10)))
-        var gridlat = Math.floor(((maxlat * 10 - latitude * 10) / (gap * 10)))
-        return [gridlat, gridlng]
-    }
-
-    var interpolateFromOriginData = function (latitude, longitude, g00, g10, g01, g11) {
-        var x = (longitude % 0.5) * (1 / 0.5)
-
-        var d1 = x
-        var d2 = 1 - x
-
-        var x1_vector_x
-        var x1_vector_y
-        var x2_vector_x
-        var x2_vector_y
-        try {
-            x1_vector_x = d1 * g10[0] + d2 * g00[0]
-            x1_vector_y = d1 * g10[1] + d2 * g00[1]
-            x2_vector_x = d1 * g11[0] + d2 * g01[0]
-            x2_vector_y = d1 * g11[1] + d2 * g01[1]
-        } catch (error) {
-            console.log("error", error)
-            debugger;
-        }
-
-
-        var y = (latitude % 0.5) * (1 / 0.5)
-        var d4 = y
-        var d3 = 1 - y
-
-        var result_vector_x = d3 * x2_vector_x + d4 * x1_vector_x
-        var result_vector_y = d3 * x2_vector_y + d4 * x1_vector_y
-        var result_vector_scale = Math.sqrt(result_vector_x * result_vector_x + result_vector_y * result_vector_y)
-
-        var result_vector = [result_vector_x, result_vector_y, result_vector_scale]
-        return result_vector                //보간값 리턴
-    }
-
     // 위.경도 그리드값 읽어오기
     this.init = () => {
         cn.width = window.innerWidth
@@ -227,27 +170,15 @@ var WindMap = function () {
         wind_config.minlat = initLat - wind_config.latGap * wind_config.gridY
 
         console.log(wind_config)
-        grid = request_grid(wind_config)
+        var url = `http://localhost:4500/wind?gridX=${wind_config.gridX}&gridY=${wind_config.gridY}&latGap=${wind_config.latGap}&lngGap=${wind_config.lngGap}&maxlat=${wind_config.maxlat}&maxlng=${wind_config.maxlng}&minlat=${wind_config.minlat}&minlng=${wind_config.minlng}`
+        console.log(url)
+        fetch(url)
+            .then(e => e.json())
+            .then(d => {
+                console.log(d)
+                grid = d
 
-    }
-
-    function request_grid(wind_config) {
-        var countx = 0;
-        var county = 0;
-        var tmp = []
-        for (var i = wind_config.maxlat; i >= wind_config.minlat; i -= wind_config.latGap) {
-            tmp[countx] = []
-            county = 0;
-            for (var j = wind_config.minlng; j <= wind_config.maxlng; j += wind_config.lngGap) {
-                tmp[countx][county] = []
-                var v = getVectorFromOriginData(i, j)
-                tmp[countx][county][0] = v[0]
-                tmp[countx][county][1] = v[1]
-                county++;
-            }
-            countx++;
-        }
-        return tmp;
+            })
     }
 
     //min, max 랜덤값 리턴
