@@ -177,7 +177,7 @@ var WindMap = function () {
             .then(d => {
                 console.log(d)
                 grid = d
-
+                
             })
     }
 

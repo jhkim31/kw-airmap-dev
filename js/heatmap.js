@@ -29,26 +29,18 @@ var HeatMap = function () {
         heat_config.gridY = Math.ceil(map.getSize().y / 70) + 2
         heat_config.minlng = initLng - heat_config.lngGap * heat_config.gridX
         heat_config.minlat = initLat - heat_config.latGap * heat_config.gridY
+
         console.log(heat_config)
 
-        grid = request_grid(heat_config)
-        console.log(grid)
-    }
-
-    function request_grid(heat_config){
-        var countx = 0;
-        var county = 0;
-        var tmp = []
-        for (var i = heat_config.maxlat; i >= heat_config.minlat; i -= heat_config.latGap) {
-            tmp[countx] = []
-            county = 0;
-            for (var j = heat_config.minlng; j <= heat_config.maxlng; j += heat_config.lngGap) {                
-                tmp[countx][county] = getValueFromOriginData(i, j)
-                county++;
-            }
-            countx++;
-        }
-        return tmp;
+        var url = `http://localhost:4500/heat?gridX=${heat_config.gridX}&gridY=${heat_config.gridY}&latGap=${heat_config.latGap}&lngGap=${heat_config.lngGap}&maxlat=${heat_config.maxlat}&maxlng=${heat_config.maxlng}&minlat=${heat_config.minlat}&minlng=${heat_config.minlng}`
+        console.log(url)
+        fetch(url)
+            .then(e => e.json())
+            .then(d => {
+                console.log(d)
+                grid = d
+                drawCanvas();
+            })  
     }
 
     function drawCanvas() {
@@ -136,50 +128,6 @@ var HeatMap = function () {
         return result_vector_x
     }
 
-    function getValueFromOriginData(latitude, longitude) {
-        if (latitude < heat_config.minlat || latitude > heat_config.maxlat) return 10
-        if (longitude < heat_config.minlng || longitude > heat_config.maxlng) return 10
-
-        var gridn = selectGridFromOriginData(latitude, longitude);
-        var g00 = heatData[gridn[0]][gridn[1]]
-        var g10 = heatData[gridn[0]][gridn[1] + 1]
-        var g01 = heatData[gridn[0] + 1][gridn[1]]
-        var g11 = heatData[gridn[0] + 1][gridn[1] + 1]
-
-        return interpolateFromOriginData(latitude, longitude, g00, g10, g01, g11)
-    }
-
-    function selectGridFromOriginData(latitude, longitude) {
-        var minlng = 118;
-        var maxlat = 44;
-        var gap = 0.1;
-
-        var gridlng = Math.floor(((longitude * 10 - minlng * 10) / (gap * 10)))
-        var gridlat = Math.floor(((maxlat * 10 - latitude * 10) / (gap * 10)))
-        return [gridlat, gridlng]
-    }
-
-    var interpolateFromOriginData = function (latitude, longitude, g00, g10, g01, g11) {
-        var x = (longitude % 0.1) * (1 / 0.1)
-
-        var d1 = x
-        var d2 = 1 - x
-
-        var x1_vector_x
-        var x2_vector_x
-        try {
-            x1_vector_x = d1 * g10[2] + d2 * g00[2]
-            x2_vector_x = d1 * g11[2] + d2 * g01[2]
-        } catch (error) {
-            debugger;
-        }
-        var y = (latitude % 0.1) * (1 / 0.1)
-        var d4 = y
-        var d3 = 1 - y
-        var result_vector_x = d3 * x2_vector_x + d4 * x1_vector_x
-        return result_vector_x
-    }
-
     this.toggleHeatMap = () => {
         if (showHeat) {
             showHeat = !showHeat
@@ -196,7 +144,6 @@ var HeatMap = function () {
 
     map.on('moveend', () => {
         readGrid()
-        drawCanvas();
     })
 
     map.on('click', (e) => {
