@@ -147,7 +147,6 @@ var HeatMap = function () {
     })
 
     map.on('click', (e) => {
-        console.log(e)
         console.log(getValue(e.layerPoint))
     })
 }

@@ -233,6 +233,10 @@ var WindMap = function () {
         readGrid()
         build()
     })
+
+    map.on('click', (e) => {
+        console.log(getVector(e.latlng.lat, e.latlng.lng))
+    })
 }
 
 export { WindMap }
