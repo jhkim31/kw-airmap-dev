@@ -1,49 +1,20 @@
-import { heatData as heatData } from './data.js'
-
 var HeatMap = function () {
     var heat_config = {}
-    var initLat;
-    var initLng
     var grid = []
     var canvas = document.getElementById('heatmap')
     var ctx = canvas.getContext('2d')
     var showHeat = false
 
-    this.init = () => {
+
+    this.set_data = function(config, heat_data){
+        heat_config = config
+        grid = heat_data
         canvas.width = window.innerWidth
         canvas.height = window.innerHeight
-        readGrid()
-        drawCanvas()
+        this.drawCanvas()
     }
 
-    function readGrid() {
-        var a = L.point(map.getSize().x + 70, -70)
-        initLat = map.containerPointToLatLng(a).lat;
-        initLng = map.containerPointToLatLng(a).lng;
-
-        heat_config.latGap = map.containerPointToLatLng(a).lat - map.getBounds()._northEast.lat;
-        heat_config.lngGap = map.containerPointToLatLng(a).lng - map.getBounds()._northEast.lng;
-        heat_config.maxlat = initLat;
-        heat_config.maxlng = initLng;
-        heat_config.gridX = Math.ceil(map.getSize().x / 70) + 2
-        heat_config.gridY = Math.ceil(map.getSize().y / 70) + 2
-        heat_config.minlng = initLng - heat_config.lngGap * heat_config.gridX
-        heat_config.minlat = initLat - heat_config.latGap * heat_config.gridY
-
-        console.log(heat_config)
-
-        var url = `http://localhost:4500/heat?gridX=${heat_config.gridX}&gridY=${heat_config.gridY}&latGap=${heat_config.latGap}&lngGap=${heat_config.lngGap}&maxlat=${heat_config.maxlat}&maxlng=${heat_config.maxlng}&minlat=${heat_config.minlat}&minlng=${heat_config.minlng}`
-        console.log(url)
-        fetch(url)
-            .then(e => e.json())
-            .then(d => {
-                console.log(d)
-                grid = d
-                drawCanvas();
-            })  
-    }
-
-    function drawCanvas() {
+    this.drawCanvas = function() {
         if (showHeat) {
             var pixelGap = 10
             var value = 0;
@@ -73,7 +44,7 @@ var HeatMap = function () {
                     } else if (value < 100) {
                         ctx.fillStyle = "rgb(217, 86, 69)"
                     } else {
-                        ctx.fillStyle = "rgb(70, 173, 207)"
+                        ctx.fillStyle = "rgb(217, 86, 69)"
                     }
                     ctx.fillRect(x, y, pixelGap, pixelGap);
 
@@ -134,21 +105,10 @@ var HeatMap = function () {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         } else {
             showHeat = !showHeat
-            drawCanvas();
+            this.drawCanvas();
         }
     }
-    map.on('move', () => {
-        // readGrid()
-        drawCanvas();
-    })
 
-    map.on('moveend', () => {
-        readGrid()
-    })
-
-    map.on('click', (e) => {
-        console.log(getValue(e.layerPoint))
-    })
 }
 
 export { HeatMap }

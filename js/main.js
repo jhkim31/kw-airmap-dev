@@ -17,64 +17,77 @@ var h_data = []
 var t_data = []
 
 function set_config() {
-    var a = L.point(map.getSize().x + 70, -70)
-    var initLat = map.containerPointToLatLng(a).lat;
-    var initLng = map.containerPointToLatLng(a).lng;
-    config.latGap = map.containerPointToLatLng(a).lat - map.getBounds()._northEast.lat;
-    config.lngGap = map.containerPointToLatLng(a).lng - map.getBounds()._northEast.lng;
-    config.maxlat = initLat;
-    config.maxlng = initLng;
-    config.gridX = Math.ceil(map.getSize().x / 70) + 2
-    config.gridY = Math.ceil(map.getSize().y / 70) + 2
-    config.minlng = initLng - config.lngGap * config.gridX
-    config.minlat = initLat - config.latGap * config.gridY
+    var grid_size = 70
+    var a = L.point(map.getSize().x + grid_size, -grid_size)
+    var b = L.point(-grid_size, map.getSize().y + grid_size)
+    config.maxlat = map.containerPointToLatLng(a).lat
+    config.maxlng = map.containerPointToLatLng(a).lng
+    config.minlat = map.containerPointToLatLng(b).lat
+    config.minlng = map.containerPointToLatLng(b).lng
+    config.gridX = Math.ceil(map.getSize().x / grid_size) + 2
+    config.gridY = Math.ceil(map.getSize().y / grid_size) + 2
+    config.latGap = (map.containerPointToLatLng(a).lat - map.containerPointToLatLng(b).lat) / config.gridY
+    config.lngGap = (map.containerPointToLatLng(a).lng - map.containerPointToLatLng(b).lng) / config.gridX    
+    
 }
 
 window.onload = function () {
     set_config()
-    var url = `http://localhost:4500/total?gridX=${config.gridX}&gridY=${config.gridY}&latGap=${config.latGap}&lngGap=${config.lngGap}&maxlat=${config.maxlat}&maxlng=${config.maxlng}&minlat=${config.minlat}&minlng=${config.minlng}`
+    // var url = `http://localhost:4500/total?gridX=${config.gridX}&gridY=${config.gridY}&latGap=${config.latGap}&lngGap=${config.lngGap}&maxlat=${config.maxlat}&maxlng=${config.maxlng}&minlat=${config.minlat}&minlng=${config.minlng}`
+    var url = `http://localhost:4500/total?gridX=${config.gridX}&gridY=${config.gridY}&maxlat=${config.maxlat}&maxlng=${config.maxlng}&minlat=${config.minlat}&minlng=${config.minlng}`
     fetch(url)
         .then(e => e.json())
         .then(d => {
-            var converting_data = convert_data_one_time(config, d)
+            console.log(d)
+            var converting_data = convert_data_one_time(d)
+            console.log(converting_data)
             wind_data = converting_data[0]
+            pm10_data = converting_data[1]
             windmap.set_data(config, wind_data);
+            heatmap.set_data(config, pm10_data)
         })
-    // heatmap.init();
 }
-
+var moveCount = 0
 map.on('move', () => {
-    windmap.stopAnim();
+    if (moveCount != 0){
+        windmap.stopAnim();
+        heatmap.drawCanvas()
+    }
+    moveCount++;    
 })
 
 map.on('moveend', () => {
+    moveCount = 0
+    console.log('moveend')
     set_config()
-    var url = `http://localhost:4500/total?gridX=${config.gridX}&gridY=${config.gridY}&latGap=${config.latGap}&lngGap=${config.lngGap}&maxlat=${config.maxlat}&maxlng=${config.maxlng}&minlat=${config.minlat}&minlng=${config.minlng}`
-    console.log(url)
+    var url = `http://localhost:4500/total?gridX=${config.gridX}&gridY=${config.gridY}&maxlat=${config.maxlat}&maxlng=${config.maxlng}&minlat=${config.minlat}&minlng=${config.minlng}`
     fetch(url)
         .then(e => e.json())
         .then(d => {
-            var converting_data = convert_data_one_time(config, d)
+            var converting_data = convert_data_one_time(d)            
             wind_data = converting_data[0]
+            pm10_data = converting_data[1]
+            
             windmap.set_data(config, wind_data);
+            heatmap.set_data(config, pm10_data);
             windmap.startAnim()
+            
         })
 })
-map.on('zoomend', () => {
-    set_config()
-    var url = `http://localhost:4500/total?gridX=${config.gridX}&gridY=${config.gridY}&latGap=${config.latGap}&lngGap=${config.lngGap}&maxlat=${config.maxlat}&maxlng=${config.maxlng}&minlat=${config.minlat}&minlng=${config.minlng}`
-    console.log(url)
-    fetch(url)
-        .then(e => e.json())
-        .then(d => {
-            var converting_data = convert_data_one_time(config, d)
-            wind_data = converting_data[0]
-            windmap.set_data(config, wind_data);
-            windmap.startAnim()
-        })
-})
+// map.on('zoomend', () => {
+//     set_config()
+//     var url = `http://localhost:4500/total?gridX=${config.gridX}&gridY=${config.gridY}&latGap=${config.latGap}&lngGap=${config.lngGap}&maxlat=${config.maxlat}&maxlng=${config.maxlng}&minlat=${config.minlat}&minlng=${config.minlng}`
+//     fetch(url)
+//         .then(e => e.json())
+//         .then(d => {
+//             var converting_data = convert_data_one_time(config, d)
+//             wind_data = converting_data[0]
+//             windmap.set_data(config, wind_data);
+//             windmap.startAnim()
+//         })
+// })
 
-function convert_data_one_time(config, json_data){
+function convert_data_one_time(json_data){
     var return_data = []
     var return_wind_data = []
     var return_pm10_data = []
