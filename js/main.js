@@ -6,6 +6,45 @@ window.map = L.map('map')
 
 L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png').addTo(map);
 
+var icon1 = L.icon({
+    iconUrl: '../image/marker1.png',
+    iconSize:[30,30]
+})
+
+var icon2 = L.icon({
+    iconUrl: '../image/marker2.png',
+    iconSize:[30,30]
+})
+
+var icon3 = L.icon({
+    iconUrl: '../image/marker3.png',
+    iconSize:[30,30]
+})
+
+var markerList = [] 
+for(var i = 36; i < 38; i += 0.5){
+    for (var j = 126; j <= 128; j += 0.5){
+        markerList.push(L.marker([i,j], {icon : icon2}).addTo(map));
+    }
+}
+
+map.on('zoomend', e => {    
+    if (e.sourceTarget._zoom > 9){
+        markerList.forEach(d => {
+            d.setIcon(icon3)
+        })
+    } else if (e.sourceTarget._zoom > 6) { 
+        markerList.forEach(d => {
+            d.setIcon(icon2)
+        })
+    } else {
+        markerList.forEach(d => {
+            d.setIcon(icon1)
+        })
+    }
+})
+
+
 var heatmap = new HeatMap()
 var windmap = new WindMap()
 var config = {}
@@ -33,17 +72,20 @@ function set_config() {
 
 window.onload = function () {
     set_config()
+    var startT = new Date().getTime()
     // var url = `http://localhost:4500/total?gridX=${config.gridX}&gridY=${config.gridY}&latGap=${config.latGap}&lngGap=${config.lngGap}&maxlat=${config.maxlat}&maxlng=${config.maxlng}&minlat=${config.minlat}&minlng=${config.minlng}`
     var url = `http://localhost:4500/total?gridX=${config.gridX}&gridY=${config.gridY}&maxlat=${config.maxlat}&maxlng=${config.maxlng}&minlat=${config.minlat}&minlng=${config.minlng}`
     fetch(url)
         .then(e => e.json())
         .then(d => {
             console.log(d)
-            var converting_data = convert_data_one_time(d)
+            
+            var converting_data = convert_data_one_time(d)            
+            console.log('처리시간 : ' + (new Date().getTime() - startT) + 'ms')
             console.log(converting_data)
             wind_data = converting_data[0]
             pm10_data = converting_data[1]
-            windmap.set_data(config, wind_data);
+            windmap.set_data(config, wind_data)
             heatmap.set_data(config, pm10_data)
         })
 }
@@ -74,18 +116,6 @@ map.on('moveend', () => {
             
         })
 })
-// map.on('zoomend', () => {
-//     set_config()
-//     var url = `http://localhost:4500/total?gridX=${config.gridX}&gridY=${config.gridY}&latGap=${config.latGap}&lngGap=${config.lngGap}&maxlat=${config.maxlat}&maxlng=${config.maxlng}&minlat=${config.minlat}&minlng=${config.minlng}`
-//     fetch(url)
-//         .then(e => e.json())
-//         .then(d => {
-//             var converting_data = convert_data_one_time(config, d)
-//             wind_data = converting_data[0]
-//             windmap.set_data(config, wind_data);
-//             windmap.startAnim()
-//         })
-// })
 
 function convert_data_one_time(json_data){
     var return_data = []
