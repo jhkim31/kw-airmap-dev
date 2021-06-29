@@ -110,7 +110,7 @@ var HeatMap = function () {
     }
     
     map.on('click', (e) => {
-        console.log(getValue(e.containerPoint))
+        console.log(getValue(e.containerPoint).toFixed(1))
     })
 }
 

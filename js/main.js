@@ -38,8 +38,8 @@ for(var i = 33.1; i < 38.1; i += 0.5){
     }
 }
 
-for(var i = 33; i < 39; i += 0.2){
-    for (var j = 126; j <= 130; j += 0.2){        
+for(var i = 33; i < 39; i += 0.5){
+    for (var j = 126; j <= 130; j += 0.5){        
         if (j % 2 == 0 && i % 2 == 0){ 
             level3MarkerList.push(L.marker([i,j], {icon : icon4}).addTo(map));
         }
@@ -118,7 +118,7 @@ var h_data = []
 var t_data = []
 
 function set_config() {
-    var grid_size = 70
+    var grid_size = 30
     var a = L.point(map.getSize().x + grid_size, -grid_size)
     var b = L.point(-grid_size, map.getSize().y + grid_size)
     config.maxlat = map.containerPointToLatLng(a).lat
@@ -134,8 +134,7 @@ function set_config() {
 
 window.onload = function () {
     set_config()
-    var startT = new Date().getTime()
-    // var url = `http://localhost:4500/total?gridX=${config.gridX}&gridY=${config.gridY}&latGap=${config.latGap}&lngGap=${config.lngGap}&maxlat=${config.maxlat}&maxlng=${config.maxlng}&minlat=${config.minlat}&minlng=${config.minlng}`
+    var startT = new Date().getTime()    
     var url = `http://localhost:4500/total?gridX=${config.gridX}&gridY=${config.gridY}&maxlat=${config.maxlat}&maxlng=${config.maxlng}&minlat=${config.minlat}&minlng=${config.minlng}`
     fetch(url)
         .then(e => e.json())
@@ -171,7 +170,7 @@ map.on('moveend', () => {
             var converting_data = convert_data_one_time(d)            
             wind_data = converting_data[0]
             pm10_data = converting_data[1]
-            
+
             windmap.set_data(config, wind_data);
             heatmap.set_data(config, pm10_data);
             windmap.startAnim()
@@ -190,56 +189,31 @@ function convert_data_one_time(json_data){
     //windData
     json_data.forEach(a => {
         var wind_tmp = []
-        a.forEach(b => {
-            wind_tmp.push([b.wx, b.wy])
-        })
-        return_wind_data.push(wind_tmp)
-    })
-    return_data.push(return_wind_data)
-
-    //pm10Data
-    json_data.forEach(a => {
         var pm10_tmp = []
-        a.forEach(b => {
-            pm10_tmp.push(b.pm10)
-        })
-        return_pm10_data.push(pm10_tmp)
-    })
-    return_data.push(return_pm10_data)
-
-    //pm2.5Data
-    json_data.forEach(a => {
         var pm25_tmp = []
-        a.forEach(b => {
-            pm25_tmp.push(b.pm25)
-        })
-        return_pm25_data.push(pm25_tmp)
-    })
-    return_data.push(return_pm25_data)
-
-    //humidityData
-    json_data.forEach(a => {
+        var t_tmp = []
         var h_tmp = []
         a.forEach(b => {
+            wind_tmp.push([b.wx, b.wy])
+            pm10_tmp.push(b.pm10)
+            pm25_tmp.push(b.pm25)
             h_tmp.push(b.h)
-        })
-        return_h_data.push(h_tmp)
-    })
-    return_data.push(return_h_data)
-
-    //temperatureData
-    json_data.forEach(a => {
-        var t_tmp = []
-        a.forEach(b => {
             t_tmp.push(b.t)
         })
+        return_wind_data.push(wind_tmp)
+        return_pm10_data.push(pm10_tmp)
+        return_pm25_data.push(pm25_tmp)
+        return_h_data.push(h_tmp)
         return_t_data.push(t_tmp)
     })
+    return_data.push(return_wind_data)
+    return_data.push(return_pm10_data)
+    return_data.push(return_pm25_data)
+    return_data.push(return_h_data)
     return_data.push(return_t_data)
 
     return return_data
 }
-
 
 document.getElementById('showHeatMap').addEventListener('click', heatmap.toggleHeatMap)
 document.getElementById('playWind').addEventListener('click', windmap.toggleWindLayer)

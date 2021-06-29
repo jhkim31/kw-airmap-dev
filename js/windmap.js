@@ -174,7 +174,7 @@ var WindMap = function () {
     }
 
     map.on('click', (e) => {
-        console.log(getVector(e.latlng.lat, e.latlng.lng))
+        console.log(getVector(e.latlng.lat, e.latlng.lng)[0].toFixed(1),getVector(e.latlng.lat, e.latlng.lng)[1].toFixed(1) )
     })
 }
 
