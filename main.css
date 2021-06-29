@@ -10,6 +10,7 @@ html {
     position: absolute;
     z-index:2;
     opacity: 0.7;
+    cursor: default;
 }
 
 #heatmap {
@@ -42,4 +43,18 @@ html {
 }
 #goToSeoul{
     margin-left:230px;
+}
+
+#mouseOverlay{
+    top:100px;
+    left:100px;
+    background:white;
+    pointer-events: none;
+}
+
+#mouseOverlay2{
+    top:100px;
+    left:100px;
+    background:white;
+    pointer-events: none;
 }

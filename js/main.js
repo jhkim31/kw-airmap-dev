@@ -8,102 +8,107 @@ L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.pn
 
 var icon1 = L.icon({
     iconUrl: '../image/marker1.png',
-    iconSize:[15,15]
+    iconSize: [15, 15]
 })
 
 var icon2 = L.icon({
     iconUrl: '../image/marker2.png',
-    iconSize:[15,15]
+    iconSize: [15, 15]
 })
 
 var icon3 = L.icon({
     iconUrl: '../image/marker3.png',
-    iconSize:[15,15]
+    iconSize: [15, 15]
 })
 
 var icon4 = L.icon({
     iconUrl: '../image/marker4.png',
-    iconSize:[15,15]
+    iconSize: [15, 15]
 })
 
-var markerList = [] 
+var icon5 = L.divIcon({
+    html: `<div> aa </div>`,
+    iconSize: [20, 20]
+})
+
+var markerList = []
 var level1MarkerList = []
 var level2MarkerList = []
 var level3MarkerList = []
 var count = 0
-for(var i = 33.1; i < 38.1; i += 0.5){
-    for (var j = 126.1; j <= 130.1; j += 0.5){
-        markerList.push(L.marker([i,j], {icon : icon2}).addTo(map));
-        count++
-    }
-}
+// for(var i = 33.1; i < 38.1; i += 0.5){
+//     for (var j = 126.1; j <= 130.1; j += 0.5){
+//         markerList.push(L.marker([i,j], {icon : icon2}).addTo(map));
+//         count++
+//     }
+// }
 
-for(var i = 33; i < 39; i += 0.5){
-    for (var j = 126; j <= 130; j += 0.5){        
-        if (j % 2 == 0 && i % 2 == 0){ 
-            level3MarkerList.push(L.marker([i,j], {icon : icon4}).addTo(map));
-        }
-        if (j % 1 == 0 && i % 1 == 0){
-            level2MarkerList.push(L.marker([i,j], {icon : icon4}).addTo(map));
-        }       
-        level1MarkerList.push(L.marker([i,j], {icon : icon4}));        
-        count++
-    }
-}
+// for(var i = 33; i < 39; i += 0.5){
+//     for (var j = 126; j <= 130; j += 0.5){        
+//         if (j % 2 == 0 && i % 2 == 0){ 
+//             level3MarkerList.push(L.marker([i,j], {icon : icon4}).addTo(map));
+//         }
+//         if (j % 1 == 0 && i % 1 == 0){
+//             level2MarkerList.push(L.marker([i,j], {icon : icon4}).addTo(map));
+//         }       
+//         level1MarkerList.push(L.marker([i,j], {icon : icon4}));        
+//         count++
+//     }
+// }
 
 console.log(count)
 
-map.on('zoomend', e => {    
-    if (e.sourceTarget._zoom > 9){
-        markerList.forEach(d => {
-            d.setIcon(icon3)
-        })
-        level3MarkerList.forEach(d => {
-            map.removeLayer(d)
-        })
-        level2MarkerList.forEach(d => {
-            map.removeLayer(d)
-        })        
-        level1MarkerList.forEach(d => {
-            map.removeLayer(d)
-        })        
-        level1MarkerList.forEach(d => {
-            d.addTo(map)
-        })
-    } else if (e.sourceTarget._zoom > 7) { 
-        markerList.forEach(d => {
-            d.setIcon(icon2)
-        })
-        level3MarkerList.forEach(d => {
-            map.removeLayer(d)
-        })
-        level2MarkerList.forEach(d => {
-            map.removeLayer(d)
-        })        
-        level1MarkerList.forEach(d => {
-            map.removeLayer(d)
-        })        
-        level2MarkerList.forEach(d => {
-            d.addTo(map)
-        })
-    } else {
-        markerList.forEach(d => {
-            d.setIcon(icon1)
-        })
-        level3MarkerList.forEach(d => {
-            map.removeLayer(d)
-        })
-        level2MarkerList.forEach(d => {
-            map.removeLayer(d)
-        })        
-        level1MarkerList.forEach(d => {
-            map.removeLayer(d)
-        })        
-        level3MarkerList.forEach(d => {
-            d.addTo(map)
-        })    
-    }
-})
+// map.on('zoomend', e => {    
+//     if (e.sourceTarget._zoom > 9){
+//         markerList.forEach(d => {
+//             d.setIcon(icon3)
+//         })
+//         level3MarkerList.forEach(d => {
+//             map.removeLayer(d)
+//         })
+//         level2MarkerList.forEach(d => {
+//             map.removeLayer(d)
+//         })        
+//         level1MarkerList.forEach(d => {
+//             map.removeLayer(d)
+//         })        
+//         level1MarkerList.forEach(d => {
+//             d.addTo(map)
+//         })
+//     } else if (e.sourceTarget._zoom > 7) { 
+//         markerList.forEach(d => {
+//             d.setIcon(icon2)
+//         })
+//         level3MarkerList.forEach(d => {
+//             map.removeLayer(d)
+//         })
+//         level2MarkerList.forEach(d => {
+//             map.removeLayer(d)
+//         })        
+//         level1MarkerList.forEach(d => {
+//             map.removeLayer(d)
+//         })        
+//         level2MarkerList.forEach(d => {
+//             d.addTo(map)
+//         })
+//     } else {
+//         markerList.forEach(d => {
+//             d.setIcon(icon1)
+//         })
+//         level3MarkerList.forEach(d => {
+//             map.removeLayer(d)
+//         })
+//         level2MarkerList.forEach(d => {
+//             map.removeLayer(d)
+//         })        
+//         level1MarkerList.forEach(d => {
+//             map.removeLayer(d)
+//         })        
+//         level3MarkerList.forEach(d => {
+//             d.addTo(map)
+//         })    
+//     }
+// })
 
 
 
@@ -118,7 +123,7 @@ var h_data = []
 var t_data = []
 
 function set_config() {
-    var grid_size = 30
+    var grid_size = 100
     var a = L.point(map.getSize().x + grid_size, -grid_size)
     var b = L.point(-grid_size, map.getSize().y + grid_size)
     config.maxlat = map.containerPointToLatLng(a).lat
@@ -128,19 +133,30 @@ function set_config() {
     config.gridX = Math.ceil(map.getSize().x / grid_size) + 2
     config.gridY = Math.ceil(map.getSize().y / grid_size) + 2
     config.latGap = (map.containerPointToLatLng(a).lat - map.containerPointToLatLng(b).lat) / config.gridY
-    config.lngGap = (map.containerPointToLatLng(a).lng - map.containerPointToLatLng(b).lng) / config.gridX    
-    
+    config.lngGap = (map.containerPointToLatLng(a).lng - map.containerPointToLatLng(b).lng) / config.gridX
+
 }
 
 window.onload = function () {
     set_config()
-    var startT = new Date().getTime()    
+    var startT = new Date().getTime()
     var url = `http://localhost:4500/total?gridX=${config.gridX}&gridY=${config.gridY}&maxlat=${config.maxlat}&maxlng=${config.maxlng}&minlat=${config.minlat}&minlng=${config.minlng}`
     fetch(url)
         .then(e => e.json())
         .then(d => {
             console.log(d)
-            
+            // d.forEach(a => {
+            //     a.forEach(b => {
+            //         var ll = L.latLng(b.latlng)
+            //         markerList.push(L.marker(ll, {
+            //             icon: L.divIcon({
+            //                 html: `<div> ${b.wx.toFixed(1)} <br> ${b.wy.toFixed(1)}<br> ${b.pm10.toFixed(1)} </div>`,
+            //                 iconSize: [30, 50]
+            //             })
+            //         }).addTo(map));
+            //     })
+            // })
+
             var converting_data = convert_data_one_time(d)            
             console.log('처리시간 : ' + (new Date().getTime() - startT) + 'ms')
             console.log(converting_data)
@@ -152,11 +168,11 @@ window.onload = function () {
 }
 var moveCount = 0
 map.on('move', () => {
-    if (moveCount != 0){
+    if (moveCount != 0) {
         windmap.stopAnim();
         heatmap.drawCanvas()
     }
-    moveCount++;    
+    moveCount++;
 })
 
 map.on('moveend', () => {
@@ -167,18 +183,18 @@ map.on('moveend', () => {
     fetch(url)
         .then(e => e.json())
         .then(d => {
-            var converting_data = convert_data_one_time(d)            
+            var converting_data = convert_data_one_time(d)
             wind_data = converting_data[0]
             pm10_data = converting_data[1]
 
             windmap.set_data(config, wind_data);
             heatmap.set_data(config, pm10_data);
             windmap.startAnim()
-            
+
         })
 })
 
-function convert_data_one_time(json_data){
+function convert_data_one_time(json_data) {
     var return_data = []
     var return_wind_data = []
     var return_pm10_data = []
@@ -217,5 +233,5 @@ function convert_data_one_time(json_data){
 
 document.getElementById('showHeatMap').addEventListener('click', heatmap.toggleHeatMap)
 document.getElementById('playWind').addEventListener('click', windmap.toggleWindLayer)
-document.getElementById('goToSeoul').addEventListener('click', () => {map.flyTo(L.latLng(37.552359, 126.987987))})
-document.getElementById('goToBusan').addEventListener('click', () => {map.flyTo(L.latLng(35.143470, 129.081928))})
+document.getElementById('goToSeoul').addEventListener('click', () => { map.flyTo(L.latLng(37.552359, 126.987987)) })
+document.getElementById('goToBusan').addEventListener('click', () => { map.flyTo(L.latLng(35.143470, 129.081928)) })

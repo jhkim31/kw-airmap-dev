@@ -111,6 +111,13 @@ var HeatMap = function () {
     map.on('click', (e) => {
         console.log(getValue(e.containerPoint).toFixed(1))
     })
+
+    map.on('mousemove', e => {
+        document.getElementById('mouseOverlay2').style.left = (e.containerPoint.x + 10)+"px"
+        document.getElementById('mouseOverlay2').style.top = (e.containerPoint.y - 10)+"px"
+        document.getElementById('mouseOverlay2').innerText = 
+        getValue(e.containerPoint.x, e.containerPoint.y).toFixed(1)
+    })
 }
 
 export { HeatMap }
