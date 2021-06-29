@@ -106,6 +106,7 @@ var WindMap = function () {
         } catch (error) {
             console.log("error", error)
             debugger;
+            console.log(error)
         }
         var y = (latitude % wind_config.latGap) * (1 / wind_config.latGap)
         var d4 = y
@@ -131,6 +132,8 @@ var WindMap = function () {
                 e.windMove();
             });
         }
+        console.log('wind')
+        console.log(grid)
     }
 
     this.startAnim = function () {

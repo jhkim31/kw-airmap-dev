@@ -5,7 +5,6 @@ var HeatMap = function () {
     var ctx = canvas.getContext('2d')
     var showHeat = false
 
-
     this.set_data = function(config, heat_data){
         heat_config = config
         grid = heat_data
@@ -91,6 +90,7 @@ var HeatMap = function () {
             x2_vector_x = d1 * g11 + d2 * g01
         } catch (error) {
             debugger;
+            console.log(error)
         }
         var y = (latitude % heat_config.lngGap) * (1 / heat_config.lngGap)
         var d4 = y
@@ -108,7 +108,6 @@ var HeatMap = function () {
             this.drawCanvas();
         }
     }
-    
     map.on('click', (e) => {
         console.log(getValue(e.containerPoint).toFixed(1))
     })
