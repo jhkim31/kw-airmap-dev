@@ -125,10 +125,16 @@ var HeatMap = function () {
     window.addEventListener('resize', e => {
         drawCanvas();
     })
+
+    map.on('click', (e) => {
+        console.log(getValue(e.containerPoint))
+    })
     
     map.on('move', () => {
         drawCanvas();
     })
+
+    
 }
 
 export { HeatMap }

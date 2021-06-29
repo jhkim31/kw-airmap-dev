@@ -8,36 +8,38 @@ L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.pn
 
 var icon1 = L.icon({
     iconUrl: '../image/marker1.png',
-    iconSize:[30,30]
+    iconSize:[15,15]
 })
 
 var icon2 = L.icon({
     iconUrl: '../image/marker2.png',
-    iconSize:[30,30]
+    iconSize:[15,15]
 })
 
 var icon3 = L.icon({
     iconUrl: '../image/marker3.png',
-    iconSize:[30,30]
+    iconSize:[15,15]
 })
 
 var icon4 = L.icon({
     iconUrl: '../image/marker4.png',
-    iconSize:[30,30]
+    iconSize:[15,15]
 })
 
 var markerList = [] 
 var level1MarkerList = []
 var level2MarkerList = []
 var level3MarkerList = []
-for(var i = 36.25; i < 38.25; i += 0.5){
-    for (var j = 126.25; j <= 128.25; j += 0.5){
+var count = 0
+for(var i = 33.1; i < 38.1; i += 0.5){
+    for (var j = 126.1; j <= 130.1; j += 0.5){
         markerList.push(L.marker([i,j], {icon : icon2}).addTo(map));
+        count++
     }
 }
 
-for(var i = 34; i < 38; i += 0.5){
-    for (var j = 126; j <= 130; j += 0.5){        
+for(var i = 33; i < 39; i += 0.2){
+    for (var j = 126; j <= 130; j += 0.2){        
         if (j % 2 == 0 && i % 2 == 0){ 
             level3MarkerList.push(L.marker([i,j], {icon : icon4}).addTo(map));
         }
@@ -45,8 +47,11 @@ for(var i = 34; i < 38; i += 0.5){
             level2MarkerList.push(L.marker([i,j], {icon : icon4}).addTo(map));
         }       
         level1MarkerList.push(L.marker([i,j], {icon : icon4}));        
+        count++
     }
 }
+
+console.log(count)
 
 map.on('zoomend', e => {    
     if (e.sourceTarget._zoom > 9){
@@ -238,3 +243,5 @@ function convert_data_one_time(json_data){
 
 document.getElementById('showHeatMap').addEventListener('click', heatmap.toggleHeatMap)
 document.getElementById('playWind').addEventListener('click', windmap.toggleWindLayer)
+document.getElementById('goToSeoul').addEventListener('click', () => {map.flyTo(L.latLng(37.552359, 126.987987))})
+document.getElementById('goToBusan').addEventListener('click', () => {map.flyTo(L.latLng(35.143470, 129.081928))})

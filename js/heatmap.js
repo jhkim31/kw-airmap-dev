@@ -108,7 +108,10 @@ var HeatMap = function () {
             this.drawCanvas();
         }
     }
-
+    
+    map.on('click', (e) => {
+        console.log(getValue(e.containerPoint))
+    })
 }
 
 export { HeatMap }

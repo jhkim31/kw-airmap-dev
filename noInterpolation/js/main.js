@@ -14,6 +14,8 @@ window.onload = function () {
 
 document.getElementById('showHeatMap').addEventListener('click', heatmap.toggleHeatMap)
 document.getElementById('playWind').addEventListener('click', windmap.toggleWindLayer)
+document.getElementById('goToSeoul').addEventListener('click', () => {map.flyTo(L.latLng(37.552359, 126.987987))})
+document.getElementById('goToBusan').addEventListener('click', () => {map.flyTo(L.latLng(35.143470, 129.081928))})
 
 
 

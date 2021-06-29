@@ -172,6 +172,10 @@ var WindMap = function () {
             buildobj(i)
         }
     }
+
+    map.on('click', (e) => {
+        console.log(getVector(e.latlng.lat, e.latlng.lng))
+    })
 }
 
 export { WindMap }

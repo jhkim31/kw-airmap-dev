@@ -19,8 +19,7 @@ html {
     opacity: 0.3;
 }
 #showHeatMap{ 
-    position:absolute;
-    z-index: 998;
+    margin-left:10px;
 }
 .overlay {
     position: fixed;
@@ -37,4 +36,10 @@ html {
 
 #playWind {
     margin-left: 100px;
+}
+#goToBusan{
+    margin-left:150px;
+}
+#goToSeoul{
+    margin-left:230px;
 }

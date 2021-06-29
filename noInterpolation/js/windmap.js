@@ -220,6 +220,10 @@ var WindMap = function (minlat, maxlat, minlng, maxlng, gap) {
     map.on('moveend', () => {
         anim()
     })
+
+    map.on('click', (e) => {
+        console.log(getVector(e.latlng.lat, e.latlng.lng))
+    })
 }
 
 
