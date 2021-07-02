@@ -46,15 +46,25 @@ html {
 }
 
 #mouseOverlay{
-    top:100px;
-    left:100px;
+    top:50px;
+    left:50px;
     background:white;
     pointer-events: none;
 }
 
 #mouseOverlay2{
-    top:100px;
-    left:100px;
+    top:50px;
+    left:50px;
     background:white;
     pointer-events: none;
+}
+
+#lat{
+    margin-left:300px;    
+}
+#lng{
+    margin-left:470px;
+}
+#go{
+    margin-left:600px;
 }

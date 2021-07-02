@@ -123,7 +123,7 @@ var h_data = []
 var t_data = []
 
 function set_config() {
-    var grid_size = 100
+    var grid_size = 70
     var a = L.point(map.getSize().x + grid_size, -grid_size)
     var b = L.point(-grid_size, map.getSize().y + grid_size)
     config.maxlat = map.containerPointToLatLng(a).lat
@@ -150,7 +150,7 @@ window.onload = function () {
             //         var ll = L.latLng(b.latlng)
             //         markerList.push(L.marker(ll, {
             //             icon: L.divIcon({
-            //                 html: `<div> ${b.wx.toFixed(1)} <br> ${b.wy.toFixed(1)}<br> ${b.pm10.toFixed(1)} </div>`,
+            //                 html: `<div> ${b.latlng.lat.toFixed(2)}, ${b.latlng.lng.toFixed(2)} <br>${b.wx.toFixed(1)} <br> ${b.wy.toFixed(1)}<br> ${b.pm10.toFixed(1)} </div>`,
             //                 iconSize: [30, 50]
             //             })
             //         }).addTo(map));
@@ -176,16 +176,51 @@ map.on('move', () => {
 })
 
 map.on('moveend', () => {
-    moveCount = 0
+    markerList.forEach(d => {
+        map.removeLayer(d)
+    })
+    document.getElementById('lat').value = map.getCenter().lat
+    document.getElementById('lng').value = map.getCenter().lng
     console.log('moveend')
     set_config()
     var url = `http://localhost:4500/total?gridX=${config.gridX}&gridY=${config.gridY}&maxlat=${config.maxlat}&maxlng=${config.maxlng}&minlat=${config.minlat}&minlng=${config.minlng}`
     fetch(url)
         .then(e => e.json())
         .then(d => {
+            var countx = 0;
+            var county = 0;
+            d.forEach(a => {
+                a.forEach(b => {
+                    var ll = L.latLng(b.latlng)
+                    markerList.push(L.marker(ll, {
+                        icon: L.divIcon({
+                            // html: `<div> ${b.latlng.lat.toFixed(2)}, ${b.latlng.lng.toFixed(2)} <br>${b.wx.toFixed(1)} <br> ${b.wy.toFixed(1)}<br> ${b.pm10.toFixed(1)} </div>`,
+                            html: `<div>${b.latlng.lat.toFixed(2)}<br>${b.latlng.lng.toFixed(2)}<br>${b.pm10.toFixed(1)}</div>`,
+                            iconSize: [5, 5]
+                        })
+                    }).addTo(map));
+                })            
+            })
+            for(var i = 44; i >= 30; i -= 0.5){
+                countx = 0
+                for (var j = 118; j <= 134; j += 0.5){
+                    var ll = L.latLng(i,j)
+                    markerList.push(L.marker(ll, {
+                        icon: L.divIcon({
+                            // html: `<div> ${b.latlng.lat.toFixed(2)}, ${b.latlng.lng.toFixed(2)} <br>${b.wx.toFixed(1)} <br> ${b.wy.toFixed(1)}<br> ${b.pm10.toFixed(1)} </div>`,
+                            html: `<div style = "color:red">[${county},${countx}]</div>`,
+                            iconSize: [5, 5]
+                        })
+                    }).addTo(map));     
+                    countx += 5
+                }
+                county += 5
+            }
             var converting_data = convert_data_one_time(d)
             wind_data = converting_data[0]
             pm10_data = converting_data[1]
+
+            console.log(converting_data)
 
             windmap.set_data(config, wind_data);
             heatmap.set_data(config, pm10_data);
@@ -235,3 +270,8 @@ document.getElementById('showHeatMap').addEventListener('click', heatmap.toggleH
 document.getElementById('playWind').addEventListener('click', windmap.toggleWindLayer)
 document.getElementById('goToSeoul').addEventListener('click', () => { map.flyTo(L.latLng(37.552359, 126.987987)) })
 document.getElementById('goToBusan').addEventListener('click', () => { map.flyTo(L.latLng(35.143470, 129.081928)) })
+document.getElementById('go').addEventListener('click', () => { 
+    map.flyTo(L.latLng(
+        document.getElementById('lat').value, document.getElementById('lng').value
+        )) 
+    })

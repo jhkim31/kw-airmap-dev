@@ -66,7 +66,7 @@ var HeatMap = function () {
         var g01 = grid[gridn[0] + 1][gridn[1]]
         var g11 = grid[gridn[0] + 1][gridn[1] + 1]
 
-        return interpolate(latitude, longitude, g00, g10, g01, g11)
+        return interpolate(latitude, longitude, g00, g10, g01, g11, gridn)
     }
 
     function selectGrid(latitude, longitude) {
@@ -77,8 +77,8 @@ var HeatMap = function () {
         return [gridlat, gridlng]
     }
 
-    var interpolate = function (latitude, longitude, g00, g10, g01, g11) {
-        var x = (longitude % heat_config.latGap) * (1 / heat_config.latGap)
+    var interpolate = function (latitude, longitude, g00, g10, g01, g11, gridn) {
+        var x = (longitude - (heat_config.minlng + gridn[1] * heat_config.lngGap)) * (1 / heat_config.lngGap)
 
         var d1 = x
         var d2 = 1 - x
@@ -92,9 +92,9 @@ var HeatMap = function () {
             debugger;
             console.log(error)
         }
-        var y = (latitude % heat_config.lngGap) * (1 / heat_config.lngGap)
-        var d4 = y
-        var d3 = 1 - y
+        var y = (heat_config.maxlat - gridn[0] * heat_config.latGap - latitude) * (1 / heat_config.latGap)
+        var d3 = y
+        var d4 = 1 - y
         var result_vector_x = d3 * x2_vector_x + d4 * x1_vector_x
         return result_vector_x
     }
@@ -114,9 +114,10 @@ var HeatMap = function () {
 
     map.on('mousemove', e => {
         document.getElementById('mouseOverlay2').style.left = (e.containerPoint.x + 10)+"px"
-        document.getElementById('mouseOverlay2').style.top = (e.containerPoint.y - 10)+"px"
+        document.getElementById('mouseOverlay2').style.top = (e.containerPoint.y - 35)+"px"
         document.getElementById('mouseOverlay2').innerText = 
-        getValue(e.containerPoint.x, e.containerPoint.y).toFixed(1)
+        `  ${e.latlng.lat.toFixed(2)} , ${e.latlng.lng.toFixed(2)}\n` + getValue(e.containerPoint.x, e.containerPoint.y).toFixed(1)
+        
     })
 }
 

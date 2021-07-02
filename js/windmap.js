@@ -12,7 +12,7 @@ var WindMap = function () {
     var grid = []
     var animationId
     var showWind = false
-    var windCount = 1000;
+    var windCount = 500;
     var showSpeed = 1;
 
     //initialize
@@ -80,7 +80,7 @@ var WindMap = function () {
         var g01 = grid[gridn[0] + 1][gridn[1]]
         var g11 = grid[gridn[0] + 1][gridn[1] + 1]
 
-        return interpolate(latitude, longitude, g00, g10, g01, g11)
+        return interpolate(latitude, longitude, g00, g10, g01, g11, gridn)
     }
 
     function selectGrid(latitude, longitude) {
@@ -90,8 +90,8 @@ var WindMap = function () {
         return [gridlat, gridlng]
     }
 
-    var interpolate = function (latitude, longitude, g00, g10, g01, g11) {
-        var x = (longitude % wind_config.lngGap) * (1 / wind_config.lngGap)
+    var interpolate = function (latitude, longitude, g00, g10, g01, g11, gridn) {
+        var x = (longitude - (wind_config.minlng + gridn[1] * wind_config.lngGap)) * (1 / wind_config.lngGap)
         var d1 = x
         var d2 = 1 - x
         var x1_vector_x
@@ -108,9 +108,10 @@ var WindMap = function () {
             debugger;
             console.log(error)
         }
-        var y = (latitude % wind_config.latGap) * (1 / wind_config.latGap)
-        var d4 = y
-        var d3 = 1 - y
+        // var y = (latitude % wind_config.latGap) * (1 / wind_config.latGap)
+        var y = (wind_config.maxlat - gridn[0] * wind_config.latGap - latitude) * (1 / wind_config.latGap)
+        var d3 = y
+        var d4 = 1 - y
         var result_vector_x = d3 * x2_vector_x + d4 * x1_vector_x
         var result_vector_y = d3 * x2_vector_y + d4 * x1_vector_y
         var result_vector_scale = Math.sqrt(result_vector_x * result_vector_x + result_vector_y * result_vector_y)
@@ -132,8 +133,6 @@ var WindMap = function () {
                 e.windMove();
             });
         }
-        console.log('wind')
-        console.log(grid)
     }
 
     this.startAnim = function () {
