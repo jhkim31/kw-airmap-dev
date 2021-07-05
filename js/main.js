@@ -49,17 +49,17 @@ var h_data = []
 var t_data = []
 
 function set_config() {
-    var grid_size = 70
-    var a = L.point(map.getSize().x + grid_size, -grid_size)
-    var b = L.point(-grid_size, map.getSize().y + grid_size)
-    config.maxlat = map.containerPointToLatLng(a).lat
-    config.maxlng = map.containerPointToLatLng(a).lng
-    config.minlat = map.containerPointToLatLng(b).lat
-    config.minlng = map.containerPointToLatLng(b).lng
-    config.gridX = Math.ceil(map.getSize().x / grid_size) + 2
-    config.gridY = Math.ceil(map.getSize().y / grid_size) + 2
-    config.latGap = (map.containerPointToLatLng(a).lat - map.containerPointToLatLng(b).lat) / config.gridY
-    config.lngGap = (map.containerPointToLatLng(a).lng - map.containerPointToLatLng(b).lng) / config.gridX
+    config.latGap = 0.2
+    config.lngGap = 0.2
+    config.maxlat = parseFloat((map.getBounds()._northEast.lat - map.getBounds()._northEast.lat % config.latGap + config.latGap).toFixed(3))
+    config.maxlng = parseFloat((map.getBounds()._northEast.lng - map.getBounds()._northEast.lng % config.lngGap + config.lngGap).toFixed(3))
+    config.minlat = parseFloat((map.getBounds()._southWest.lat - map.getBounds()._southWest.lat % config.latGap - config.latGap).toFixed(3))
+    config.minlng = parseFloat((map.getBounds()._southWest.lng - map.getBounds()._southWest.lng % config.lngGap - config.lngGap).toFixed(3))
+
+    config.gridX = Math.round((config.maxlng - config.minlng) / config.lngGap)
+    config.gridY = Math.round((config.maxlat - config.minlat) / config.latGap)
+
+    
 
 }
 
