@@ -36,82 +36,8 @@ var level1MarkerList = []
 var level2MarkerList = []
 var level3MarkerList = []
 var count = 0
-// for(var i = 33.1; i < 38.1; i += 0.5){
-//     for (var j = 126.1; j <= 130.1; j += 0.5){
-//         markerList.push(L.marker([i,j], {icon : icon2}).addTo(map));
-//         count++
-//     }
-// }
-
-// for(var i = 33; i < 39; i += 0.5){
-//     for (var j = 126; j <= 130; j += 0.5){        
-//         if (j % 2 == 0 && i % 2 == 0){ 
-//             level3MarkerList.push(L.marker([i,j], {icon : icon4}).addTo(map));
-//         }
-//         if (j % 1 == 0 && i % 1 == 0){
-//             level2MarkerList.push(L.marker([i,j], {icon : icon4}).addTo(map));
-//         }       
-//         level1MarkerList.push(L.marker([i,j], {icon : icon4}));        
-//         count++
-//     }
-// }
 
 console.log(count)
-
-// map.on('zoomend', e => {    
-//     if (e.sourceTarget._zoom > 9){
-//         markerList.forEach(d => {
-//             d.setIcon(icon3)
-//         })
-//         level3MarkerList.forEach(d => {
-//             map.removeLayer(d)
-//         })
-//         level2MarkerList.forEach(d => {
-//             map.removeLayer(d)
-//         })        
-//         level1MarkerList.forEach(d => {
-//             map.removeLayer(d)
-//         })        
-//         level1MarkerList.forEach(d => {
-//             d.addTo(map)
-//         })
-//     } else if (e.sourceTarget._zoom > 7) { 
-//         markerList.forEach(d => {
-//             d.setIcon(icon2)
-//         })
-//         level3MarkerList.forEach(d => {
-//             map.removeLayer(d)
-//         })
-//         level2MarkerList.forEach(d => {
-//             map.removeLayer(d)
-//         })        
-//         level1MarkerList.forEach(d => {
-//             map.removeLayer(d)
-//         })        
-//         level2MarkerList.forEach(d => {
-//             d.addTo(map)
-//         })
-//     } else {
-//         markerList.forEach(d => {
-//             d.setIcon(icon1)
-//         })
-//         level3MarkerList.forEach(d => {
-//             map.removeLayer(d)
-//         })
-//         level2MarkerList.forEach(d => {
-//             map.removeLayer(d)
-//         })        
-//         level1MarkerList.forEach(d => {
-//             map.removeLayer(d)
-//         })        
-//         level3MarkerList.forEach(d => {
-//             d.addTo(map)
-//         })    
-//     }
-// })
-
-
-
 var heatmap = new HeatMap()
 var windmap = new WindMap()
 var config = {}
@@ -151,7 +77,7 @@ window.onload = function () {
             //         markerList.push(L.marker(ll, {
             //             icon: L.divIcon({
             //                 html: `<div> ${b.latlng.lat.toFixed(2)}, ${b.latlng.lng.toFixed(2)} <br>${b.wx.toFixed(1)} <br> ${b.wy.toFixed(1)}<br> ${b.pm10.toFixed(1)} </div>`,
-            //                 iconSize: [30, 50]
+            //                   iconSize: [30, 50]
             //             })
             //         }).addTo(map));
             //     })
@@ -189,33 +115,33 @@ map.on('moveend', () => {
         .then(d => {
             var countx = 0;
             var county = 0;
-            d.forEach(a => {
-                a.forEach(b => {
-                    var ll = L.latLng(b.latlng)
-                    markerList.push(L.marker(ll, {
-                        icon: L.divIcon({
-                            // html: `<div> ${b.latlng.lat.toFixed(2)}, ${b.latlng.lng.toFixed(2)} <br>${b.wx.toFixed(1)} <br> ${b.wy.toFixed(1)}<br> ${b.pm10.toFixed(1)} </div>`,
-                            html: `<div>${b.latlng.lat.toFixed(2)}<br>${b.latlng.lng.toFixed(2)}<br>${b.pm10.toFixed(1)}</div>`,
-                            iconSize: [5, 5]
-                        })
-                    }).addTo(map));
-                })            
-            })
-            for(var i = 44; i >= 30; i -= 0.5){
-                countx = 0
-                for (var j = 118; j <= 134; j += 0.5){
-                    var ll = L.latLng(i,j)
-                    markerList.push(L.marker(ll, {
-                        icon: L.divIcon({
-                            // html: `<div> ${b.latlng.lat.toFixed(2)}, ${b.latlng.lng.toFixed(2)} <br>${b.wx.toFixed(1)} <br> ${b.wy.toFixed(1)}<br> ${b.pm10.toFixed(1)} </div>`,
-                            html: `<div style = "color:red">[${county},${countx}]</div>`,
-                            iconSize: [5, 5]
-                        })
-                    }).addTo(map));     
-                    countx += 5
-                }
-                county += 5
-            }
+            // d.forEach(a => {
+            //     a.forEach(b => {
+            //         var ll = L.latLng(b.latlng)
+            //         markerList.push(L.marker(ll, {
+            //             icon: L.divIcon({
+            //                 // html: `<div> ${b.latlng.lat.toFixed(2)}, ${b.latlng.lng.toFixed(2)} <br>${b.wx.toFixed(1)} <br> ${b.wy.toFixed(1)}<br> ${b.pm10.toFixed(1)} </div>`,
+            //                 html: `<div>${b.latlng.lat.toFixed(2)}<br>${b.latlng.lng.toFixed(2)}</div>`,
+            //                 iconSize: [5, 5]
+            //             })
+            //         }).addTo(map));
+            //     })            
+            // })
+            // for(var i = 44; i >= 30; i -= 0.5){
+            //     countx = 0
+            //     for (var j = 118; j <= 134; j += 0.5){
+            //         var ll = L.latLng(i,j)
+            //         markerList.push(L.marker(ll, {
+            //             icon: L.divIcon({
+            //                 // html: `<div> ${b.latlng.lat.toFixed(2)}, ${b.latlng.lng.toFixed(2)} <br>${b.wx.toFixed(1)} <br> ${b.wy.toFixed(1)}<br> ${b.pm10.toFixed(1)} </div>`,
+            //                 html: `<div style = "color:red">[${county},${countx}]</div>`,
+            //                 iconSize: [5, 5]
+            //             })
+            //         }).addTo(map));     
+            //         countx += 5
+            //     }
+            //     county += 5
+            // }
             var converting_data = convert_data_one_time(d)
             wind_data = converting_data[0]
             pm10_data = converting_data[1]
@@ -225,7 +151,6 @@ map.on('moveend', () => {
             windmap.set_data(config, wind_data);
             heatmap.set_data(config, pm10_data);
             windmap.startAnim()
-
         })
 })
 
@@ -275,3 +200,22 @@ document.getElementById('go').addEventListener('click', () => {
         document.getElementById('lat').value, document.getElementById('lng').value
         )) 
     })
+document.getElementById('date_progress').addEventListener('click', (e) => {
+    var x = document.getElementById('date_progress').offsetWidth
+    var y = e.x - document.getElementById('date_progress').offsetLeft
+    console.log(document.getElementById('date_progress_bar').style.width = (y / x).toFixed(1) * 100 + "%")
+
+    set_config()
+    var url = `http://localhost:4500/total?gridX=${config.gridX}&gridY=${config.gridY}&maxlat=${config.maxlat}&maxlng=${config.maxlng}&minlat=${config.minlat}&minlng=${config.minlng}`
+    fetch(url)
+        .then(e => e.json())
+        .then(d => {
+            var converting_data = convert_data_one_time(d)
+            wind_data = converting_data[0]
+            pm10_data = converting_data[1]            
+            
+            windmap.set_data(config, wind_data);
+            heatmap.set_data(config, pm10_data);
+            windmap.startAnim()        
+        })
+})

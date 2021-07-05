@@ -22,28 +22,56 @@ var HeatMap = function () {
                     var x = pixelGap * j;
                     var y = pixelGap * i;
                     value = getValue(x, y).toFixed(3);
-                    if (value < 10) {
-                        ctx.fillStyle = "rgb(70, 86, 207)"
-                    } else if (value < 20) {
-                        ctx.fillStyle = "rgb(70, 132, 207)"
-                    } else if (value < 30) {
-                        ctx.fillStyle = "rgb(70, 173, 207)"
-                    } else if (value < 40) {
-                        ctx.fillStyle = "rgb(48, 166, 107)"
-                    } else if (value < 50) {
-                        ctx.fillStyle = "rgb(69, 217, 99"
-                    } else if (value < 60) {
-                        ctx.fillStyle = "rgb(113, 217, 69)"
-                    } else if (value < 70) {
-                        ctx.fillStyle = "rgb(185, 217, 69)"
-                    } else if (value < 80) {
-                        ctx.fillStyle = "rgb(210, 217, 69)"
-                    } else if (value < 90) {
-                        ctx.fillStyle = "rgb(217, 178, 69)"
+                    // if (value < 10) {
+                    //     ctx.fillStyle = "rgb(70, 86, 207)"
+                    // } else if (value < 20) {
+                    //     ctx.fillStyle = "rgb(70, 132, 207)"
+                    // } else if (value < 30) {
+                    //     ctx.fillStyle = "rgb(70, 173, 207)"
+                    // } else if (value < 40) {
+                    //     ctx.fillStyle = "rgb(48, 166, 107)"
+                    // } else if (value < 50) {
+                    //     ctx.fillStyle = "rgb(69, 217, 99"
+                    // } else if (value < 60) {
+                    //     ctx.fillStyle = "rgb(113, 217, 69)"
+                    // } else if (value < 70) {
+                    //     ctx.fillStyle = "rgb(185, 217, 69)"
+                    // } else if (value < 80) {
+                    //     ctx.fillStyle = "rgb(210, 217, 69)"
+                    // } else if (value < 90) {
+                    //     ctx.fillStyle = "rgb(217, 178, 69)"
+                    // } else if (value < 100) {
+                    //     ctx.fillStyle = "rgb(217, 86, 69)"
+                    // } else {
+                    //     ctx.fillStyle = "rgb(217, 86, 69)"
+                    // }  
+                    
+                    var r,g,b;
+                    if (value < 25){
+                        r = 0;
+                        g = value * 10;
+                        b = 250;
+                        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`
+                    } else if (value < 50){
+                        r = 0;
+                        g = 250;
+                        b = 250 - (value - 25) * 10
+                        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`
+                    } else if (value < 75){
+                        r = (value - 50) * 10
+                        g = 250;
+                        b = 0
+                        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`
                     } else if (value < 100) {
-                        ctx.fillStyle = "rgb(217, 86, 69)"
+                        r = 250;
+                        g = 250 - (value - 75) * 10;
+                        b = 0;
+                        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`
                     } else {
-                        ctx.fillStyle = "rgb(217, 86, 69)"
+                        ctx.fillStyle = `rgb(250,250,250)`
+                    }
+                    if (value == 0){
+                        ctx.fillStyle = `rgb(250,250,250)`
                     }
                     ctx.fillRect(x, y, pixelGap, pixelGap);
 
@@ -57,8 +85,8 @@ var HeatMap = function () {
         var latitude = map.containerPointToLatLng(point).lat
         var longitude = map.containerPointToLatLng(point).lng
 
-        if (latitude <= heat_config.minlat || latitude >= heat_config.maxlat) return 10
-        if (longitude <= heat_config.minlng || longitude >= heat_config.maxlng) return 10
+        if (latitude <= heat_config.minlat || latitude >= heat_config.maxlat) return 0
+        if (longitude <= heat_config.minlng || longitude >= heat_config.maxlng) return 0
 
         var gridn = selectGrid(latitude, longitude);
         var g00 = grid[gridn[0]][gridn[1]]

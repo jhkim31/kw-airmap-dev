@@ -19,12 +19,10 @@ html {
     z-index: 3;
     opacity: 0.3;
 }
-#showHeatMap{ 
-    margin-left:10px;
-}
 .overlay {
-    position: fixed;
+    position:absolute;
     z-index: 999;
+    width:100%;
 }
 
 #windmap {
@@ -34,22 +32,12 @@ html {
     pointer-events: none;
     
 }
-
-#playWind {
-    margin-left: 100px;
-}
-#goToBusan{
-    margin-left:150px;
-}
-#goToSeoul{
-    margin-left:230px;
-}
-
 #mouseOverlay{
     top:50px;
     left:50px;
     background:white;
     pointer-events: none;
+    width:100px;
 }
 
 #mouseOverlay2{
@@ -57,14 +45,9 @@ html {
     left:50px;
     background:white;
     pointer-events: none;
+    width:100px;
 }
 
-#lat{
-    margin-left:300px;    
-}
-#lng{
-    margin-left:470px;
-}
-#go{
-    margin-left:600px;
+.bottom{
+    bottom:30px;
 }
