@@ -21,31 +21,7 @@ var HeatMap = function () {
                 for (var j = 0; j < canvas.width / pixelGap; j++) {
                     var x = pixelGap * j;
                     var y = pixelGap * i;
-                    value = getValue(x, y).toFixed(3);
-                    // if (value < 10) {
-                    //     ctx.fillStyle = "rgb(70, 86, 207)"
-                    // } else if (value < 20) {
-                    //     ctx.fillStyle = "rgb(70, 132, 207)"
-                    // } else if (value < 30) {
-                    //     ctx.fillStyle = "rgb(70, 173, 207)"
-                    // } else if (value < 40) {
-                    //     ctx.fillStyle = "rgb(48, 166, 107)"
-                    // } else if (value < 50) {
-                    //     ctx.fillStyle = "rgb(69, 217, 99"
-                    // } else if (value < 60) {
-                    //     ctx.fillStyle = "rgb(113, 217, 69)"
-                    // } else if (value < 70) {
-                    //     ctx.fillStyle = "rgb(185, 217, 69)"
-                    // } else if (value < 80) {
-                    //     ctx.fillStyle = "rgb(210, 217, 69)"
-                    // } else if (value < 90) {
-                    //     ctx.fillStyle = "rgb(217, 178, 69)"
-                    // } else if (value < 100) {
-                    //     ctx.fillStyle = "rgb(217, 86, 69)"
-                    // } else {
-                    //     ctx.fillStyle = "rgb(217, 86, 69)"
-                    // }  
-                    
+                    value = getValue(x + 5, y + 5).toFixed(3);            
                     var r,g,b;
                     if (value < 25){
                         r = 0;
@@ -140,13 +116,12 @@ var HeatMap = function () {
         console.log(getValue(e.containerPoint).toFixed(1))
     })
 
-    map.on('mousemove', e => {
-        document.getElementById('mouseOverlay2').style.left = (e.containerPoint.x + 10)+"px"
-        document.getElementById('mouseOverlay2').style.top = (e.containerPoint.y - 35)+"px"
-        document.getElementById('mouseOverlay2').innerText = 
-        `  ${e.latlng.lat.toFixed(2)} , ${e.latlng.lng.toFixed(2)}\n` + getValue(e.containerPoint.x, e.containerPoint.y).toFixed(1)
-        
-    })
+    // map.on('mousemove', e => {
+    //     document.getElementById('mouseOverlay2').style.left = (e.containerPoint.x + 10)+"px"
+    //     document.getElementById('mouseOverlay2').style.top = (e.containerPoint.y - 35)+"px"
+    //     document.getElementById('mouseOverlay2').innerText = 
+    //     ` ${e.latlng.lat.toFixed(2)} , ${e.latlng.lng.toFixed(2)}\n` + getValue(e.containerPoint.x, e.containerPoint.y).toFixed(1)        
+    // })
 }
 
 export { HeatMap }

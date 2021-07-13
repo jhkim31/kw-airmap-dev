@@ -179,12 +179,12 @@ var WindMap = function () {
         console.log(getVector(e.latlng.lat, e.latlng.lng)[0].toFixed(1),getVector(e.latlng.lat, e.latlng.lng)[1].toFixed(1) )
     })
 
-    map.on('mousemove', e => {
-        document.getElementById('mouseOverlay').style.left = (e.containerPoint.x + 10)+"px"
-        document.getElementById('mouseOverlay').style.top = (e.containerPoint.y + 10)+"px"
-        document.getElementById('mouseOverlay').innerText = 
-        getVector(e.latlng.lat, e.latlng.lng)[0].toFixed(1) + "," +  getVector(e.latlng.lat, e.latlng.lng)[1].toFixed(1) 
-    })
+    // map.on('mousemove', e => {
+    //     document.getElementById('mouseOverlay').style.left = (e.containerPoint.x + 10)+"px"
+    //     document.getElementById('mouseOverlay').style.top = (e.containerPoint.y + 10)+"px"
+    //     document.getElementById('mouseOverlay').innerText = 
+    //     getVector(e.latlng.lat, e.latlng.lng)[0].toFixed(1) + "," +  getVector(e.latlng.lat, e.latlng.lng)[1].toFixed(1) 
+    // })
 }
 
 export { WindMap }
