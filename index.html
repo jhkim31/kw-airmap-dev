@@ -33,13 +33,32 @@
         <button id="go" class=" btn btn-primary col-md-1">go!</button>
     </div>
 
-    <div class="bottom overlay justify-content-center">
-        <div style="width:80%; margin:0 auto;">
-            <button class = "btn btn-primary col-md-1" id = "play">play</button>
-            <div class="progress" id = "date_progress">
+    <div class="bottom overlay">
+        <div class = "col-md-11 row" style = "margin:0 auto;">
+            <button class= "col-md-1" id = "play">play</button>
+            <div class="progress col-md-9" id = "date_progress" style = "padding:0;">
                 <div class="progress-bar" id = "date_progress_bar" role="progressbar" aria-valuemin="0"
-                    aria-valuemax="100" style = "width:10%;"></div>
-            </div>
+                    aria-valuemax="100" style = "transition: width .1s ease; width:10%;"></div>
+            </div>            
+        </div>
+        <div class = "col-md-11 row" style = "margin:0 auto;">
+            <div class = "col-md-1"></div>
+            <table class ="col-md-9" style = "text-align:left;">
+                <tr id = "date_bar">
+                    <td style = "border-left: 1px solid black; width: 8.33%;">1</td>
+                    <td style = "border-left: 1px solid black; width: 8.33%;">1</td>
+                    <td style = "border-left: 1px solid black; width: 8.33%;">1</td>
+                    <td style = "border-left: 1px solid black; width: 8.33%;">1</td>
+                    <td style = "border-left: 1px solid black; width: 8.33%;">1</td>
+                    <td style = "border-left: 1px solid black; width: 8.33%;">1</td>
+                    <td style = "border-left: 1px solid black; width: 8.33%;">1</td>
+                    <td style = "border-left: 1px solid black; width: 8.33%;">1</td>
+                    <td style = "border-left: 1px solid black; width: 8.33%;">1</td>
+                    <td style = "border-left: 1px solid black; width: 8.33%;">1</td>
+                    <td style = "border-left: 1px solid black; width: 8.33%;">1</td>
+                    <td style = "border-left: 1px solid black; width: 8.33%;">1</td>
+                </tr>
+            </table>
         </div>
     </div>
 <!-- 

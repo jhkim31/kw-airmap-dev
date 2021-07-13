@@ -50,17 +50,6 @@ function set_config() {
 
     config.gridX = Math.round((config.maxlng - config.minlng) / config.lngGap)
     config.gridY = Math.round((config.maxlat - config.minlat) / config.latGap)
-    // var ll = L.latLng(36, 127)
-    // L.marker(ll).addTo(map);
-
-    // var ll = L.latLng(36 + config.latGap, 127)
-    // L.marker(ll).addTo(map);
-
-    // var ll = L.latLng(36, 127 + config.lngGap)
-    // L.marker(ll).addTo(map);
-
-    // var ll = L.latLng(36 + config.latGap, 127 + config.lngGap)
-    // L.marker(ll).addTo(map);
 }
 
 
@@ -101,17 +90,6 @@ window.onload = function () {
         .then(e => e.json())
         .then(d => {
             console.log(d)
-            // d.forEach(a => {
-            //     a.forEach(b => {
-            //         var ll = L.latLng(b.latlng)
-            //         markerList.push(L.marker(ll, {
-            //             icon: L.divIcon({
-            //                 html: `<div> ${b.latlng.lat.toFixed(2)}, ${b.latlng.lng.toFixed(2)} <br>${b.wx.toFixed(1)} <br> ${b.wy.toFixed(1)}<br> ${b.pm10.toFixed(1)} </div>`,
-            //                   iconSize: [30, 50]
-            //             })
-            //         }).addTo(map));
-            //     })
-            // })
 
             var converting_data = convert_data_one_time(d)
             console.log(converting_data)
@@ -127,6 +105,13 @@ window.onload = function () {
 
             windmap.set_data(config, wind_data[currentTimeIndex])
             heatmap.set_data(config, pm10_data[currentTimeIndex])
+
+            for( var i = 0; i < document.getElementById('date_bar').children.length; i++){
+                console.log(d[i].timestamp)
+                document.getElementById('date_bar').children[i].innerText = 
+                new Date(d[i].timestamp).getMonth() + 1 + '/' + new Date(d[i].timestamp).getDate() + ' ' + new Date(d[i].timestamp).getHours() + ':00'
+            }
+
         })
 }
 
@@ -141,23 +126,24 @@ map.on('move', () => {
     moveCount++;
 })
 
-var countx = 0;
-var county = 0;
-for(var i = 44; i >= 30; i -= 0.5){
-    var countx = 0
-    for (var j = 118; j <= 134; j += 0.5){
-        var ll = L.latLng(i,j)
-        markerList.push(L.marker(ll, {
-            icon: L.divIcon({
-                // html: `<div> ${b.latlng.lat.toFixed(2)}, ${b.latlng.lng.toFixed(2)} <br>${b.wx.toFixed(1)} <br> ${b.wy.toFixed(1)}<br> ${b.pm10.toFixed(1)} </div>`,
-                html: `<div style = "color:red">[${county},${countx}]</div>`,
-                iconSize: [5, 5]
-            })
-        }).addTo(map));     
-        countx += 5
-    }
-    county += 5
-}
+// var countx = 0;
+// var county = 0;
+// for(var i = 44; i >= 30; i -= 0.5){
+//     var countx = 0
+//     for (var j = 118; j <= 134; j += 0.5){
+//         var ll = L.latLng(i,j)
+//         markerList.push(L.marker(ll, {
+//             icon: L.divIcon({
+//                 // html: `<div> ${b.latlng.lat.toFixed(2)}, ${b.latlng.lng.toFixed(2)} <br>${b.wx.toFixed(1)} <br> ${b.wy.toFixed(1)}<br> ${b.pm10.toFixed(1)} </div>`,
+//                 html: `<div style = "color:red">[${county},${countx}]</div>`,
+//                 iconSize: [5, 5]
+//             })
+//         }).addTo(map));     
+//         countx += 5
+//     }
+//     county += 5
+// }
+// console.log(markerList)
 
 map.on('moveend', () => {
     var t = new Date()
@@ -271,37 +257,68 @@ document.getElementById('date_progress').addEventListener('click', (e) => {
     // console.log(document.getElementById('date_progress_bar').style.width = Math.floor((y / x) / z) * z * 100 + "%")
     document.getElementById('date_progress_bar').style.width = (y / x) * 100 + '%'
 
-    if (parseFloat(document.getElementById('date_progress_bar').style.width) < 16.666666666666668) {
+    if (parseFloat(document.getElementById('date_progress_bar').style.width) < 8.333) {
         currentTimeIndex = 0
         windmap.set_data(config, wind_data[currentTimeIndex])
         heatmap.set_data(config, pm10_data[currentTimeIndex])
         heatmap.drawCanvas()
-    } else if (parseFloat(document.getElementById('date_progress_bar').style.width) < 16.666666666666668 * 2){
+    } else if (parseFloat(document.getElementById('date_progress_bar').style.width) < 8.333 * 2){
         currentTimeIndex = 1
         windmap.set_data(config, wind_data[currentTimeIndex])
         heatmap.set_data(config, pm10_data[currentTimeIndex])
         heatmap.drawCanvas()
-    } else if (parseFloat(document.getElementById('date_progress_bar').style.width) < 16.666666666666668 * 3){
+    } else if (parseFloat(document.getElementById('date_progress_bar').style.width) < 8.333 * 3){
         currentTimeIndex = 2
         windmap.set_data(config, wind_data[currentTimeIndex])
         heatmap.set_data(config, pm10_data[currentTimeIndex])
         heatmap.drawCanvas()
-    } else if (parseFloat(document.getElementById('date_progress_bar').style.width) < 16.666666666666668 * 4){
+    } else if (parseFloat(document.getElementById('date_progress_bar').style.width) < 8.333 * 4){
         currentTimeIndex = 3
         windmap.set_data(config, wind_data[currentTimeIndex])
         heatmap.set_data(config, pm10_data[currentTimeIndex])
         heatmap.drawCanvas()
-    } else if (parseFloat(document.getElementById('date_progress_bar').style.width) < 16.666666666666668 * 5){
+    } else if (parseFloat(document.getElementById('date_progress_bar').style.width) < 8.333 * 5){
         currentTimeIndex = 4
         windmap.set_data(config, wind_data[currentTimeIndex])
         heatmap.set_data(config, pm10_data[currentTimeIndex])
         heatmap.drawCanvas()
-    } else if (parseFloat(document.getElementById('date_progress_bar').style.width) < 16.666666666666668 * 6){
+    } else if (parseFloat(document.getElementById('date_progress_bar').style.width) < 8.333 * 6){
         currentTimeIndex = 5
         windmap.set_data(config, wind_data[currentTimeIndex])
         heatmap.set_data(config, pm10_data[currentTimeIndex])
         heatmap.drawCanvas()
+    } else if (parseFloat(document.getElementById('date_progress_bar').style.width) < 8.333 * 7){
+        currentTimeIndex = 6
+        windmap.set_data(config, wind_data[currentTimeIndex])
+        heatmap.set_data(config, pm10_data[currentTimeIndex])
+        heatmap.drawCanvas()
+    } else if (parseFloat(document.getElementById('date_progress_bar').style.width) < 8.333 * 8){
+        currentTimeIndex = 7
+        windmap.set_data(config, wind_data[currentTimeIndex])
+        heatmap.set_data(config, pm10_data[currentTimeIndex])
+        heatmap.drawCanvas()
+    } else if (parseFloat(document.getElementById('date_progress_bar').style.width) < 8.333 * 9){
+        currentTimeIndex = 8
+        windmap.set_data(config, wind_data[currentTimeIndex])
+        heatmap.set_data(config, pm10_data[currentTimeIndex])
+        heatmap.drawCanvas()
+    } else if (parseFloat(document.getElementById('date_progress_bar').style.width) < 8.333 * 10){
+        currentTimeIndex = 9
+        windmap.set_data(config, wind_data[currentTimeIndex])
+        heatmap.set_data(config, pm10_data[currentTimeIndex])
+        heatmap.drawCanvas()
+    } else if (parseFloat(document.getElementById('date_progress_bar').style.width) < 8.333 * 11){
+        currentTimeIndex = 10
+        windmap.set_data(config, wind_data[currentTimeIndex])
+        heatmap.set_data(config, pm10_data[currentTimeIndex])
+        heatmap.drawCanvas()
+    } else if (parseFloat(document.getElementById('date_progress_bar').style.width) < 8.333 * 12){
+        currentTimeIndex = 11
+        windmap.set_data(config, wind_data[currentTimeIndex])
+        heatmap.set_data(config, pm10_data[currentTimeIndex])
+        heatmap.drawCanvas()
     }
+
 })
 var Interval;
 document.getElementById('play').addEventListener('click', () => {
@@ -310,49 +327,91 @@ document.getElementById('play').addEventListener('click', () => {
         document.getElementById('play').innerText = "stop"
         Interval = setInterval(() => {
             progress_bar.style.width = (parseFloat(progress_bar.style.width) + 0.5) + "%"
-            if (parseFloat(progress_bar.style.width) < 16.666666666666668) {
+            if (parseFloat(progress_bar.style.width) < 8.333) {
                 if (currentTimeIndex != 0){
                     currentTimeIndex = 0
                     windmap.set_data(config, wind_data[currentTimeIndex])
                     heatmap.set_data(config, pm10_data[currentTimeIndex])
                 }                
                 return;
-            } else if (parseFloat(progress_bar.style.width) <= 16.666666666666668 * 2) {
+            } else if (parseFloat(progress_bar.style.width) <= 8.333 * 2) {
                 if (currentTimeIndex != 1){
                     currentTimeIndex = 1
                     windmap.set_data(config, wind_data[currentTimeIndex])
                     heatmap.set_data(config, pm10_data[currentTimeIndex])
                 }
                 return;
-            } else if (parseFloat(progress_bar.style.width) <= 16.666666666666668 * 3) {
+            } else if (parseFloat(progress_bar.style.width) <= 8.333 * 3) {
                 if (currentTimeIndex != 2){
                     currentTimeIndex = 2
                     windmap.set_data(config, wind_data[currentTimeIndex])
                     heatmap.set_data(config, pm10_data[currentTimeIndex])
                 }
                 return;
-            } else if (parseFloat(progress_bar.style.width) <= 16.666666666666668 * 4) {
+            } else if (parseFloat(progress_bar.style.width) <= 8.333 * 4) {
                 if (currentTimeIndex != 3){
                     currentTimeIndex = 3
                     windmap.set_data(config, wind_data[currentTimeIndex])
                     heatmap.set_data(config, pm10_data[currentTimeIndex])
                 }
                 return;
-            } else if (parseFloat(progress_bar.style.width) <= 16.666666666666668 * 5) {
+            } else if (parseFloat(progress_bar.style.width) <= 8.333 * 5) {
                 if (currentTimeIndex != 4){
                     currentTimeIndex = 4
                     windmap.set_data(config, wind_data[currentTimeIndex])
                     heatmap.set_data(config, pm10_data[currentTimeIndex])
                 }
                 return;
-            } else if (parseFloat(progress_bar.style.width) <= 16.666666666666668 * 6) {
+            } else if (parseFloat(progress_bar.style.width) <= 8.333 * 6) {
                 if (currentTimeIndex != 5){
                     currentTimeIndex = 5
                     windmap.set_data(config, wind_data[currentTimeIndex])
                     heatmap.set_data(config, pm10_data[currentTimeIndex])
                 }
                 return;
-            } 
+            } else if (parseFloat(progress_bar.style.width) <= 8.333 * 7) {
+                if (currentTimeIndex != 6){
+                    currentTimeIndex = 6
+                    windmap.set_data(config, wind_data[currentTimeIndex])
+                    heatmap.set_data(config, pm10_data[currentTimeIndex])
+                }
+                return;
+            }  else if (parseFloat(progress_bar.style.width) <= 8.333 * 8) {
+                if (currentTimeIndex != 7){
+                    currentTimeIndex = 7
+                    windmap.set_data(config, wind_data[currentTimeIndex])
+                    heatmap.set_data(config, pm10_data[currentTimeIndex])
+                }
+                return;
+            }  else if (parseFloat(progress_bar.style.width) <= 8.333 * 9) {
+                if (currentTimeIndex != 8){
+                    currentTimeIndex = 8
+                    windmap.set_data(config, wind_data[currentTimeIndex])
+                    heatmap.set_data(config, pm10_data[currentTimeIndex])
+                }
+                return;
+            }  else if (parseFloat(progress_bar.style.width) <= 8.333 * 10) {
+                if (currentTimeIndex != 9){
+                    currentTimeIndex = 9
+                    windmap.set_data(config, wind_data[currentTimeIndex])
+                    heatmap.set_data(config, pm10_data[currentTimeIndex])
+                }
+                return;
+            }  else if (parseFloat(progress_bar.style.width) <= 8.333 * 11) {
+                if (currentTimeIndex != 10){
+                    currentTimeIndex = 10
+                    windmap.set_data(config, wind_data[currentTimeIndex])
+                    heatmap.set_data(config, pm10_data[currentTimeIndex])
+                }
+                return;
+            }  else if (parseFloat(progress_bar.style.width) <= 8.333 * 12) {
+                if (currentTimeIndex != 11){
+                    currentTimeIndex = 11
+                    windmap.set_data(config, wind_data[currentTimeIndex])
+                    heatmap.set_data(config, pm10_data[currentTimeIndex])
+                }
+                return;
+            }  
             if (parseFloat(progress_bar.style.width) > 100){
                 document.getElementById('play').innerText = "play"
                 clearInterval(Interval)        
