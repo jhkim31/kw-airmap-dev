@@ -2,7 +2,7 @@ import { HeatMap as HeatMap } from './heatmap.js';
 import { WindMap as WindMap } from './windmap.js'
 
 window.map = L.map('map')
-    .setView([36, 128], 8)
+    .setView([37, 128], 9)
 
 map.setMinZoom(6)
 
@@ -23,23 +23,18 @@ var pm25_data = []
 var h_data = []
 var t_data = []
 var currentTimeIndex = 0
+var config_div = document.getElementById('config')
 
 function set_config() {
-    if (map.getZoom() <= 5){
-        config.latGap = 2
-        config.lngGap = 2
-    } else if (map.getZoom() <= 7){
-        config.latGap = 1
-        config.lngGap = 1
-    } else if (map.getZoom() <= 9){
-        config.latGap = 0.5
-        config.lngGap = 0.5
-    } else if (map.getZoom() <= 11){
+    if (map.getZoom() >= 7){
+        config.latGap = 0.1
+        config.lngGap = 0.1
+    } else if (map.getZoom() > 6){
         config.latGap = 0.2
         config.lngGap = 0.2
     } else {
-        config.latGap = 0.1
-        config.lngGap = 0.1
+        config.latGap = 0.5
+        config.lngGap = 0.5
     }
     // config.latGap = 0.1
     // config.lngGap = 0.1
@@ -55,6 +50,7 @@ function set_config() {
 
 
 window.onload = function () {
+    config_div.innerText = `${map.getZoom()}level `
     var t = new Date()
     var year = t.getYear() + 1900
     var month = t.getMonth() + 1
@@ -79,7 +75,7 @@ window.onload = function () {
             "y" : config.gridY
         }
     }
-    var url = `http://localhost:4500/total_post`
+    var url = `http://192.168.101.23:4500/total_post`
     fetch(url, {
         "method" : "POST",
         "headers" : {
@@ -109,7 +105,7 @@ window.onload = function () {
             for( var i = 0; i < document.getElementById('date_bar').children.length; i++){
                 console.log(d[i].timestamp)
                 document.getElementById('date_bar').children[i].innerText = 
-                new Date(d[i].timestamp).getMonth() + 1 + '/' + new Date(d[i].timestamp).getDate() + ' ' + new Date(d[i].timestamp).getHours() + ':00'
+                new Date(d[i].timestamp).getMonth() + 1 + '/' + new Date(d[i].timestamp).getDate() + '\n ' + new Date(d[i].timestamp).getHours() + ':00'
             }
 
         })
@@ -117,8 +113,8 @@ window.onload = function () {
 
 var moveCount = 0
 map.on('move', () => {
-    document.getElementById('lat').value = map.getCenter().lat
-    document.getElementById('lng').value = map.getCenter().lng
+    // document.getElementById('lat').value = map.getCenter().lat
+    // document.getElementById('lng').value = map.getCenter().lng
     if (moveCount != 0) {
         windmap.stopAnim();
         heatmap.drawCanvas()
@@ -170,7 +166,8 @@ map.on('moveend', () => {
             "y" : config.gridY
         }
     }
-    var url = `http://localhost:4500/total_post`
+    var url = `http://192.168.101.23:4500/total_post`
+    var startT = new Date().getTime()
     fetch(url, {
         "method" : "POST",
         "headers" : {
@@ -180,6 +177,7 @@ map.on('moveend', () => {
     })
         .then(e => e.json())
         .then(d => {    
+            config_div.innerText = `${map.getZoom()}level ${new Date().getTime() - startT}ms`
             console.log(d)
             var converting_data = convert_data_one_time(d)
             console.log(converting_data)
@@ -194,7 +192,7 @@ map.on('moveend', () => {
             })
             windmap.set_data(config, wind_data[currentTimeIndex])
             heatmap.set_data(config, pm10_data[currentTimeIndex])
-            windmap.startAnim()
+            windmap.startAnim()            
         })
 })
 
@@ -243,13 +241,13 @@ function convert_data_one_time(json_data) {
 
 document.getElementById('showHeatMap').addEventListener('click', heatmap.toggleHeatMap)
 document.getElementById('playWind').addEventListener('click', windmap.toggleWindLayer)
-document.getElementById('goToSeoul').addEventListener('click', () => { map.flyTo(L.latLng(37.552359, 126.987987)) })
-document.getElementById('goToBusan').addEventListener('click', () => { map.flyTo(L.latLng(35.143470, 129.081928)) })
-document.getElementById('go').addEventListener('click', () => {
-    map.flyTo(L.latLng(
-        document.getElementById('lat').value, document.getElementById('lng').value
-    ))
-})
+// document.getElementById('goToSeoul').addEventListener('click', () => { map.flyTo(L.latLng(37.552359, 126.987987)) })
+// document.getElementById('goToBusan').addEventListener('click', () => { map.flyTo(L.latLng(35.143470, 129.081928)) })
+// document.getElementById('go').addEventListener('click', () => {
+//     map.flyTo(L.latLng(
+//         document.getElementById('lat').value, document.getElementById('lng').value
+//     ))
+// })
 document.getElementById('date_progress').addEventListener('click', (e) => {
     var x = document.getElementById('date_progress').offsetWidth
     var y = e.x - document.getElementById('date_progress').offsetLeft

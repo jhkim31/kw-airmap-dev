@@ -60,8 +60,8 @@ var WindMap = function () {
                 this.longitude = map.containerPointToLatLng(point).lng
 
                 c.beginPath();
-                c.lineWidth = 2.2;
-                c.strokeStyle = "black"
+                c.lineWidth = 2;
+                c.strokeStyle = "white"
                 c.moveTo(ls.x, ls.y);
                 c.lineTo(this.x, this.y);
                 c.stroke();
@@ -127,8 +127,11 @@ var WindMap = function () {
     var anim = function () {
         if (showWind) {
             animationId = requestAnimationFrame(anim)
-            c.fillStyle = "rgba(255, 255, 255,0.3 )"
+            c.save()
+            c.globalAlpha = .2
+            c.globalCompositeOperation = 'destination-out';
             c.fillRect(0, 0, cn.width, cn.height);
+            c.restore()
             a.forEach(function (e, i) {
                 e.windMove();
             });
@@ -176,7 +179,7 @@ var WindMap = function () {
     }
 
     map.on('click', (e) => {
-        console.log(getVector(e.latlng.lat, e.latlng.lng)[0].toFixed(1),getVector(e.latlng.lat, e.latlng.lng)[1].toFixed(1) )
+        console.log(getVector(e.latlng.lat, e.latlng.lng)[0].toFixed(1), getVector(e.latlng.lat, e.latlng.lng)[1].toFixed(1))
     })
 
     // map.on('mousemove', e => {
