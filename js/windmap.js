@@ -12,29 +12,36 @@ var WindMap = function () {
     var grid = []
     var animationId
     var showWind = false
-    var windCount = 500;
-    var showSpeed = 1;
+    var windCount = 1000;
+    var showSpeed = 0.5;
 
     //initialize
 
     function buildobj(i) {
         var x = getRandomArbitrary(0, cnx)
-        var y = getRandomArbitrary(0, cny)
-        var point = L.point(x, y)
-        a[i] = new wind(x, y, map.containerPointToLatLng(point).lat, map.containerPointToLatLng(point).lng, i, animationId + getRandomArbitrary(60, 250))
+        var y = getRandomArbitrary(0, cny)                
+        a[i] = new wind(x, y, map.containerPointToLatLng(L.point(x, y)), i, animationId + getRandomArbitrary(60, 250))
     }
 
     function removeObj(index) {
-        buildobj(index)
+        var x = getRandomArbitrary(0, cnx)
+        var y = getRandomArbitrary(0, cny)  
+        a[index].x = x
+        a[index].y = y
+        var point = L.point(x, y)
+        var latLng = map.containerPointToLatLng(point)
+        a[index].latitude = latLng.lat
+        a[index].longitude = latLng.lng
+        a[index].endFrame = animationId + getRandomArbitrary(60, 250)
         return 0;
     }
 
-    function wind(x, y, latitude, longitude, index, endFrame) {
+    function wind(x, y, latlng, index, endFrame) {
         this.index = index
         this.x = x;
         this.y = y;
-        this.latitude = latitude;
-        this.longitude = longitude;
+        this.latitude = latlng.lat;
+        this.longitude = latlng.lng;
         this.endFrame = endFrame
 
         this.windMove = function () {
@@ -54,10 +61,10 @@ var WindMap = function () {
                 this.y = ls.y + nextVec[1] * showSpeed
 
                 var point = L.point(this.x, this.y)
+                var latLng = map.containerPointToLatLng(point)
+                this.latitude = latLng.lat
 
-                this.latitude = map.containerPointToLatLng(point).lat
-
-                this.longitude = map.containerPointToLatLng(point).lng
+                this.longitude = latLng.lng
 
                 c.beginPath();
                 c.lineWidth = 2;
@@ -104,8 +111,8 @@ var WindMap = function () {
             x2_vector_x = d1 * g11[0] + d2 * g01[0]
             x2_vector_y = d1 * g11[1] + d2 * g01[1]
         } catch (error) {
-            console.log("error", error)
-            debugger;
+            // console.log("error", error)
+            // debugger;
             console.log(error)
         }
         // var y = (latitude % wind_config.latGap) * (1 / wind_config.latGap)
@@ -128,7 +135,7 @@ var WindMap = function () {
         if (showWind) {
             animationId = requestAnimationFrame(anim)
             c.save()
-            c.globalAlpha = .2
+            c.fillStyle = 'rgba(255,255,255,0.3)'
             c.globalCompositeOperation = 'destination-out';
             c.fillRect(0, 0, cn.width, cn.height);
             c.restore()
@@ -179,7 +186,12 @@ var WindMap = function () {
     }
 
     map.on('click', (e) => {
-        console.log(getVector(e.latlng.lat, e.latlng.lng)[0].toFixed(1), getVector(e.latlng.lat, e.latlng.lng)[1].toFixed(1))
+        if (document.getElementById('playWind').checked){
+            if (!document.getElementById('showHeatMap').checked){
+                console.log(getVector(e.latlng.lat, e.latlng.lng)[0].toFixed(1), getVector(e.latlng.lat, e.latlng.lng)[1].toFixed(1))
+            }
+        }
+        
     })
 
     // map.on('mousemove', e => {

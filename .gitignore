@@ -2,3 +2,7 @@
 noInterpolation/
 marker
 .idea
+dynamicGap_allData
+dynamicGap_oneData
+staticGap_allData
+staticGap_oneData

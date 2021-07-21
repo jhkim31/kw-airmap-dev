@@ -116,7 +116,7 @@ var HeatMap = function () {
             x1_vector_x = d1 * g10 + d2 * g00
             x2_vector_x = d1 * g11 + d2 * g01
         } catch (error) {
-            debugger;
+            // debugger;
             console.log(error)
         }
         var y = (heat_config.maxlat - gridn[0] * heat_config.latGap - latitude) * (1 / heat_config.latGap)
@@ -136,7 +136,10 @@ var HeatMap = function () {
         }
     }
     map.on('click', (e) => {
-        console.log(getValue(e.containerPoint).toFixed(1))
+        if(document.getElementById('showHeatMap').checked){
+            console.log(e.latlng)
+            console.log(getValue(e.containerPoint).toFixed(1))
+        }        
     })
 
     // map.on('mousemove', e => {
