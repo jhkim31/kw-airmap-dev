@@ -10,8 +10,8 @@
             margin: 0;
         }
         #map {
-            width: 100%;
-            height: 100%;
+            width: 360px;
+            height: 600px;
             position: absolute;
             z-index: 1;
         }
@@ -29,8 +29,8 @@
     <script>
 var mapContainer = document.getElementById('map'), // 지도를 표시할 div 
     mapOption = { 
-        center: new kakao.maps.LatLng(33.450701, 126.570667), // 지도의 중심좌표
-        level: 3 // 지도의 확대 레벨
+        center: new kakao.maps.LatLng(37.56120, 126.95635), // 지도의 중심좌표
+        level: 10 // 지도의 확대 레벨
     };
 
 var map = new kakao.maps.Map(mapContainer, mapOption); // 지도를 생성합니다
@@ -43,12 +43,50 @@ var marker = new kakao.maps.Marker({
 }); 
 marker.setMap(map);
 
-var latlng = new kakao.maps.LatLng(37.52790, 126.94768);
+var latlng = new kakao.maps.LatLng(37.54120, 127.0195635);
 var marker = new kakao.maps.Marker({ 
     // 지도 중심좌표에 마커를 생성합니다 
     position: latlng 
 }); 
 marker.setMap(map);
+
+var latlng = new kakao.maps.LatLng(37.55120, 126.975635);
+var marker = new kakao.maps.Marker({ 
+    // 지도 중심좌표에 마커를 생성합니다 
+    position: latlng 
+}); 
+marker.setMap(map);
+
+
+
+var latlng = new kakao.maps.LatLng(37.54520, 126.96635);
+var marker = new kakao.maps.Marker({ 
+    // 지도 중심좌표에 마커를 생성합니다 
+    position: latlng 
+}); 
+marker.setMap(map);
+
+var latlng = new kakao.maps.LatLng(37.54520, 126.96135);
+var marker = new kakao.maps.Marker({ 
+    // 지도 중심좌표에 마커를 생성합니다 
+    position: latlng 
+}); 
+marker.setMap(map);
+var latlng = new kakao.maps.LatLng(37.54420, 126.96335);
+var marker = new kakao.maps.Marker({ 
+    // 지도 중심좌표에 마커를 생성합니다 
+    position: latlng 
+}); 
+marker.setMap(map);
+
+
+var latlng = new kakao.maps.LatLng(37.54990, 126.99635);
+var marker = new kakao.maps.Marker({ 
+    // 지도 중심좌표에 마커를 생성합니다 
+    position: latlng 
+}); 
+marker.setMap(map);
+
 
 var latlng = new kakao.maps.LatLng(37.53353, 127.00497);
 var marker = new kakao.maps.Marker({ 

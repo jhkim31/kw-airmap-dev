@@ -1,8 +1,8 @@
-var WindMap = function () {
-    //initialize
+var WindMap = function (_canvas) {
+
     var wind_config = {}
 
-    var cn = document.getElementById('windmap')
+    var cn = _canvas
     cn.width = window.innerWidth
     cn.height = window.innerHeight
     var c = cn.getContext('2d');
@@ -14,8 +14,6 @@ var WindMap = function () {
     var showWind = false
     var windCount = 1000;
     var showSpeed = 0.5;
-
-    //initialize
 
     function buildobj(i) {
         var x = getRandomArbitrary(0, cnx)
@@ -111,11 +109,9 @@ var WindMap = function () {
             x2_vector_x = d1 * g11[0] + d2 * g01[0]
             x2_vector_y = d1 * g11[1] + d2 * g01[1]
         } catch (error) {
-            // console.log("error", error)
-            // debugger;
+            
             console.log(error)
         }
-        // var y = (latitude % wind_config.latGap) * (1 / wind_config.latGap)
         var y = (wind_config.maxlat - gridn[0] * wind_config.latGap - latitude) * (1 / wind_config.latGap)
         var d3 = y
         var d4 = 1 - y
@@ -193,13 +189,6 @@ var WindMap = function () {
         }
         
     })
-
-    // map.on('mousemove', e => {
-    //     document.getElementById('mouseOverlay').style.left = (e.containerPoint.x + 10)+"px"
-    //     document.getElementById('mouseOverlay').style.top = (e.containerPoint.y + 10)+"px"
-    //     document.getElementById('mouseOverlay').innerText = 
-    //     getVector(e.latlng.lat, e.latlng.lng)[0].toFixed(1) + "," +  getVector(e.latlng.lat, e.latlng.lng)[1].toFixed(1) 
-    // })
 }
 
 export { WindMap }
