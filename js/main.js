@@ -5,12 +5,12 @@ window.map = L.map('map')
     .setView([37, 128], 7)
 map.setMinZoom(5)
 
-window.myRenderer = L.canvas().addTo(map);
+
 
 
 L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png').addTo(map);
 
-var heatmap = new HeatMap(myRenderer)
+var heatmap = new HeatMap(document.getElementById("heatmap"))
 var windmap = new WindMap(document.getElementById('windmap'))
 window.config = {}
 
