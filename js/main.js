@@ -2,14 +2,17 @@ import { HeatMap as HeatMap } from './heatmap.js';
 import { WindMap as WindMap } from './windmap.js'
 
 window.map = L.map('map')
-    .setView([37, 128], 9)
+    .setView([37, 128], 7)
 map.setMinZoom(5)
+
+window.myRenderer = L.canvas({ padding: 0.5 }).addTo(map);
+
 
 L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png').addTo(map);
 
 var heatmap = new HeatMap(document.getElementById('heatmap'))
 var windmap = new WindMap(document.getElementById('windmap'))
-var config = {}
+window.config = {}
 
 window.wind_data = []
 window.pm10_data = []
@@ -32,10 +35,36 @@ function set_config() {
         config.latGap = 0.5
         config.lngGap = 0.5
     }
+    // config.latGap = 0.1
+    // config.lngGap = 0.1
     config.maxlat = parseFloat((map.getBounds()._northEast.lat - map.getBounds()._northEast.lat % config.latGap + config.latGap).toFixed(3))
+    if (config.maxlat > 44){
+        config.maxlat = 44
+    }
+    if (config.maxlat < 32){
+        config.maxlat = 32
+    }
     config.maxlng = parseFloat((map.getBounds()._northEast.lng - map.getBounds()._northEast.lng % config.lngGap + config.lngGap).toFixed(3))
+    if (config.maxlng > 132) {
+        config.maxlng = 132
+    }
+    if (config.maxlng < 122){
+        config.maxlng = 122
+    }
     config.minlat = parseFloat((map.getBounds()._southWest.lat - map.getBounds()._southWest.lat % config.latGap - config.latGap).toFixed(3))
+    if (config.minlat > 44){
+        config.minlat = 44
+    }
+    if (config.minlat < 32){
+        config.minlat = 32
+    }    
     config.minlng = parseFloat((map.getBounds()._southWest.lng - map.getBounds()._southWest.lng % config.lngGap - config.lngGap).toFixed(3))
+    if (config.minlng > 132){
+        config.minlng = 132
+    }
+    if (config.minlng < 122){
+        config.minlng = 122
+    }
 
     config.gridX = Math.round((config.maxlng - config.minlng) / config.lngGap)
     config.gridY = Math.round((config.maxlat - config.minlat) / config.latGap)
@@ -71,7 +100,7 @@ window.onload = function () {
     config_div.innerText = `${map.getZoom()}level `
     set_config()
 
-    var url = `http://211.214.35.45:15000/total_post`
+    var url = `http://192.168.101.163:4500/test2`
     fetch(url, {
         "method": "POST",
         "headers": {
@@ -82,21 +111,15 @@ window.onload = function () {
         .then(e => e.json())
         .then(d => {
             console.log(d)
+            wind_data = d[0]
+            pm10_data = d[1]
+            pm25_data = d[2]
+            t_data = d[3]
+            h_data = d[4]
+            
 
-            var converting_data = convert_data_one_time(d)
-            console.log(converting_data)
-            wind_data = []
-            pm10_data = []
-            pm25_data = []
-            h_data = []
-            t_data = []
-            converting_data.forEach(d => {
-                wind_data.push(d[0])
-                pm10_data.push(d[1])
-            })
-
-            windmap.set_data(config, wind_data[currentTimeIndex])
-            heatmap.set_data(config, pm10_data[currentTimeIndex])
+            windmap.set_data(config, wind_data)
+            heatmap.set_data(config, h_data)
 
             for (var i = 0; i < document.getElementById('date_bar').children.length; i++) {
                 console.log(d[0].timestamp)
@@ -119,7 +142,7 @@ map.on('move', () => {
 map.on('moveend', () => {
     moveCount = 0
     set_config()
-    var url = `http://211.214.35.45:15000/total_post`
+    var url = `http://192.168.101.163:4500/test2`
     var startT = new Date().getTime()
     fetch(url, {
         "method": "POST",
@@ -132,19 +155,14 @@ map.on('moveend', () => {
         .then(d => {
             config_div.innerText = `${map.getZoom()}level ${config.latGap} / ${new Date().getTime() - startT}ms`
             console.log(d)
-            var converting_data = convert_data_one_time(d)
-            console.log(converting_data)
-            wind_data = []
-            pm10_data = []
-            pm25_data = []
-            h_data = []
-            t_data = []
-            converting_data.forEach(d => {
-                wind_data.push(d[0])
-                pm10_data.push(d[1])
-            })
-            windmap.set_data(config, wind_data[currentTimeIndex])
-            heatmap.set_data(config, pm10_data[currentTimeIndex])
+            wind_data = d[0]
+            pm10_data = d[1]
+            pm25_data = d[2]
+            t_data = d[3]
+            h_data = d[4]
+            
+            windmap.set_data(config, wind_data)
+            heatmap.set_data(config, h_data)
             windmap.startAnim()
         })
 })

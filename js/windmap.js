@@ -2,7 +2,7 @@ var WindMap = function (_canvas) {
 
     var wind_config = {}
 
-    var cn = _canvas
+    window.cn = _canvas
     cn.width = window.innerWidth
     cn.height = window.innerHeight
     var c = cn.getContext('2d');
@@ -66,7 +66,7 @@ var WindMap = function (_canvas) {
 
                 c.beginPath();
                 c.lineWidth = 2;
-                c.strokeStyle = "white"
+                c.strokeStyle = "#6f6f6f"
                 c.moveTo(ls.x, ls.y);
                 c.lineTo(this.x, this.y);
                 c.stroke();
@@ -79,11 +79,15 @@ var WindMap = function (_canvas) {
         if (latitude <= wind_config.minlat || latitude >= wind_config.maxlat) return [0, 0, 0]
         if (longitude <= wind_config.minlng || longitude >= wind_config.maxlng) return [0, 0, 0]
 
+        try{
         var gridn = selectGrid(latitude, longitude);
         var g00 = grid[gridn[0]][gridn[1]]
         var g10 = grid[gridn[0]][gridn[1] + 1]
         var g01 = grid[gridn[0] + 1][gridn[1]]
         var g11 = grid[gridn[0] + 1][gridn[1] + 1]
+        } catch {
+            // debugger;
+        }
 
         return interpolate(latitude, longitude, g00, g10, g01, g11, gridn)
     }
