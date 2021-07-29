@@ -1,9 +1,11 @@
 var HeatMap = function (_canvas) {
     var heat_config = {}
     var grid = []
-    var canvas = _canvas
+    var canvas = _canvas._container
     var ctx = canvas.getContext('2d')
+    // var ctx = myRenderer._ctx
     var showHeat = false
+    var opacity = 0.7
 
     this.set_data = function(config, heat_data){
         heat_config = config
@@ -27,27 +29,27 @@ var HeatMap = function (_canvas) {
                         r = 0;
                         g = value * 10;
                         b = 250;
-                        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`
+                        ctx.fillStyle = `rgba(${r}, ${g}, ${b},${opacity})`
                     } else if (value < 50){
                         r = 0;
                         g = 250;
                         b = 250 - (value - 25) * 10
-                        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`
+                        ctx.fillStyle = `rgba(${r}, ${g}, ${b},${opacity})`
                     } else if (value < 75){
                         r = (value - 50) * 10
                         g = 250;
                         b = 0
-                        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`
+                        ctx.fillStyle = `rgba(${r}, ${g}, ${b},${opacity})`
                     } else if (value < 100) {
                         r = 250;
                         g = 250 - (value - 75) * 10;
                         b = 0;
-                        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`
+                        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${opacity})`
                     } else {
-                        ctx.fillStyle = `rgb(250,0,0)`
+                        ctx.fillStyle = `rgba(250,0,0, ${opacity})`
                     }
                     if (value == 0){
-                        ctx.fillStyle = `rgb(250,250,250)`
+                        ctx.fillStyle = `rgba(250,250,250,${opacity})`
                     }
                     ctx.fillRect(x, y, pixelGap, pixelGap);
 
