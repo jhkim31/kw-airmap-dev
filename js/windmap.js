@@ -15,22 +15,21 @@ var WindMap = function (_canvas) {
     var windCount = 1000;
     var showSpeed = 0.5;
 
-    function buildobj(i) {
-        var x = getRandomArbitrary(0, cnx)
-        var y = getRandomArbitrary(0, cny)                
-        a[i] = new wind(x, y, map.containerPointToLatLng(L.point(x, y)), i, animationId + getRandomArbitrary(60, 250))
+    function buildobj(i) {            
+        var latLng = L.latLng(getRandomArbitrary(wind_config.minlat, wind_config.maxlat), getRandomArbitrary(wind_config.minlng, wind_config.maxlng))        
+        var point = map.latLngToContainerPoint(latLng)
+        a[i] = new wind(point.x, point.y, latLng, i, animationId + getRandomArbitrary(50, 250))      
     }
 
     function removeObj(index) {
-        var x = getRandomArbitrary(0, cnx)
-        var y = getRandomArbitrary(0, cny)  
-        a[index].x = x
-        a[index].y = y
-        var point = L.point(x, y)
-        var latLng = map.containerPointToLatLng(point)
+        var latLng = L.latLng(getRandomArbitrary(wind_config.minlat, wind_config.maxlat), getRandomArbitrary(wind_config.minlng, wind_config.maxlng))        
+        var point = map.latLngToContainerPoint(latLng)
+
+        a[index].x = point.x
+        a[index].y = point.y
         a[index].latitude = latLng.lat
         a[index].longitude = latLng.lng
-        a[index].endFrame = animationId + getRandomArbitrary(60, 250)
+        a[index].endFrame = animationId + getRandomArbitrary(50, 250)
         return 0;
     }
 
@@ -43,7 +42,7 @@ var WindMap = function (_canvas) {
         this.endFrame = endFrame
 
         this.windMove = function () {
-            if (this.x > cnx || this.y > cny || this.x < 0 || this.y < 0) {
+            if (this.latitude > wind_config.maxlat || this.latitude < wind_config.minlat || this.longitude > wind_config.maxlng || this.longitude < wind_config.minlng) {
                 return removeObj(this.index)
             } else {
                 if (animationId > this.endFrame) {
@@ -53,7 +52,6 @@ var WindMap = function (_canvas) {
                     x: this.x,
                     y: this.y
                 };
-
                 var nextVec = getVector(this.latitude, this.longitude)
                 this.x = ls.x + nextVec[0] * showSpeed
                 this.y = ls.y + nextVec[1] * showSpeed
@@ -66,7 +64,7 @@ var WindMap = function (_canvas) {
 
                 c.beginPath();
                 c.lineWidth = 2;
-                c.strokeStyle = "#6f6f6f"
+                c.strokeStyle = "white"
                 c.moveTo(ls.x, ls.y);
                 c.lineTo(this.x, this.y);
                 c.stroke();
@@ -132,10 +130,10 @@ var WindMap = function (_canvas) {
     }
 
     var anim = function () {
-        if (showWind) {
+        if (showWind) {            
             animationId = requestAnimationFrame(anim)
             c.save()
-            c.fillStyle = 'rgba(255,255,255,0.3)'
+            c.fillStyle = 'rgba(255,255,255,0.1)'
             c.globalCompositeOperation = 'destination-out';
             c.fillRect(0, 0, cn.width, cn.height);
             c.restore()

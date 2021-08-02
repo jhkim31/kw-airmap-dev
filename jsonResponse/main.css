@@ -1,0 +1,53 @@
+body,
+html {
+    height: 100%;
+    margin: 0;
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index:1;
+    opacity: 1;
+    cursor: default;
+}
+
+#heatmap {
+    position: absolute;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 1;
+}
+.overlay {
+    position:absolute;
+    z-index: 999;
+    width:100%;
+}
+
+#windmap {
+    position: absolute;
+    z-index: 3;   
+    opacity:1;
+    pointer-events: none;
+    
+}
+#mouseOverlay{
+    top:50px;
+    left:50px;
+    background:white;
+    pointer-events: none;
+    width:100px;
+}
+
+#mouseOverlay2{
+    top:50px;
+    left:50px;
+    background:white;
+    pointer-events: none;
+    width:100px;
+}
+
+.bottom{
+    bottom:30px;
+}

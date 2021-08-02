@@ -22,64 +22,114 @@
     <div id="map"></div>
     <canvas id="heatmap"></canvas>
     <canvas id="windmap"></canvas>
-
-    <div style="position:absolute; z-index:999; width: 200px; right:30px; top: 10px;background:white; opacity: 0.8">
-        <div class="h4">동별 미세먼지</div>
-        <div class="row">
-            <div class="h6 col-md-10" style="padding-left:30px;">
-                PM10
-            </div>
-            <input type="checkbox" class="col-md-1" id="showHeatMap">
-        </div>
-
-        <div class="row">
-            <div class="h6 col-md-10" style="padding-left:30px;">
-                PM2.5
-            </div>
-            <input type="checkbox" class="col-md-1">
-        </div>
-        <div class="row">
-            <div class="h4 col-md-10">온도</div>
-            <input type="checkbox" class="col-md-1">
-        </div>
-        <div class="row">
-            <div class="h4 col-md-10">습도</div>
-            <input type="checkbox" class="col-md-1">
-        </div>
-        <div class="row">
-            <div class="h4 col-md-10">바람</div>
-            <input type="checkbox" class="col-md-1" id="playWind">
-        </div>
-        <div class="h4" id="config"></div>
-        <img src='./image/heat_bar.png' width="200px">
-    </div>
-
-    <div class="bottom overlay">
-        <div class="col-md-11 row" style="margin:0 auto;">
-            <button class="col-md-1" id="play">play</button>
-            <div class="progress col-md-9" id="date_progress" style="padding:0;">
-                <div class="progress-bar" id="date_progress_bar" role="progressbar" aria-valuemin="0"
-                    aria-valuemax="100" style="transition: width .1s ease; width:1%;"></div>
+    <div class="overlay">
+        <div class="row search_box">
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <button class="btn btn-secondary" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="16"
+                            height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                            <path
+                                d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+                        </svg></button>
+                </div>
+                <input type="text" class="form-control" placeholder="위치검색" aria-label=""
+                    aria-describedby="basic-addon1">
+                <div class="input-group-append">
+                    <button class="btn btn-secondary" type="button"> <svg xmlns="http://www.w3.org/2000/svg" width="16"
+                            height="16" fill="currentColor" class="bi bi-compass" viewBox="0 0 16 16">
+                            <path
+                                d="M8 16.016a7.5 7.5 0 0 0 1.962-14.74A1 1 0 0 0 9 0H7a1 1 0 0 0-.962 1.276A7.5 7.5 0 0 0 8 16.016zm6.5-7.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z" />
+                            <path d="m6.94 7.44 4.95-2.83-2.83 4.95-4.949 2.83 2.828-4.95z" />
+                        </svg></button>
+                </div>
             </div>
         </div>
-        <div class="col-md-11 row" style="margin:0 auto;">
-            <div class="col-md-1"></div>
-            <table class="col-md-9" style="text-align:left;">
-                <tr id="date_bar">
-                    <td style="border-left: 1px solid black; width: 8.33%;"></td>
-                    <td style="border-left: 1px solid black; width: 8.33%;"></td>
-                    <td style="border-left: 1px solid black; width: 8.33%;"></td>
-                    <td style="border-left: 1px solid black; width: 8.33%;"></td>
-                    <td style="border-left: 1px solid black; width: 8.33%;"></td>
-                    <td style="border-left: 1px solid black; width: 8.33%;"></td>
-                    <td style="border-left: 1px solid black; width: 8.33%;"></td>
-                    <td style="border-left: 1px solid black; width: 8.33%;"></td>
-                    <td style="border-left: 1px solid black; width: 8.33%;"></td>
-                    <td style="border-left: 1px solid black; width: 8.33%;"></td>
-                    <td style="border-left: 1px solid black; width: 8.33%;"></td>
-                    <td style="border-left: 1px solid black; width: 8.33%;"></td>
-                </tr>
-            </table>
+
+        <div class="control_box">
+            <div class="h4">동별 미세먼지</div>
+            <div class="row">
+                <div class="h6 col-md-9" style="padding-left:30px;">
+                    PM10
+                </div>
+                <div class="col-md-3">
+                    <label class="switch">
+                        <input type="checkbox" id="show_pm10">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+            </div>
+
+            <div class="row">
+                <div class="h6 col-md-9" style="padding-left:30px;">
+                    PM2.5
+                </div>
+                <div class="col-md-3">
+                    <label class="switch">
+                        <input type="checkbox" id="show_pm25">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                
+            </div>
+            <div class="row">
+                <div class="h4 col-md-9">온도</div>
+                <div class="col-md-3">
+                    <label class="switch">
+                        <input type="checkbox" id="show_t">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="h4 col-md-9">습도</div>
+                <div class="col-md-3">
+                    <label class="switch">
+                        <input type="checkbox" id="show_h">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="h4 col-md-9">바람</div>
+                <div class="col-md-3">
+                    <label class="switch">
+                        <input type="checkbox" id="play_wind">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="h4" id="current_state"></div>
+            <img src='./image/heat_bar.png' width="200px">
+        </div>
+
+        <div class="bottom">
+            <div class="col-md-11 row" style="margin:0 auto;">
+                <button class="col-md-1" id="play">play</button>
+                <div class="progress col-md-9" id="date_progress" style="padding:0;">
+                    <div class="progress-bar" id="date_progress_bar" role="progressbar" aria-valuemin="0"
+                        aria-valuemax="100" style="transition: width .1s ease; width:1%;"></div>
+                </div>
+            </div>
+            <div class="col-md-11 row" style="margin:0 auto;">
+                <div class="col-md-1"></div>
+                <table class="col-md-9" style="text-align:left;">
+                    <tr id="date_bar">
+                        <td style="border-left: 1px solid black; width: 8.33%;"></td>
+                        <td style="border-left: 1px solid black; width: 8.33%;"></td>
+                        <td style="border-left: 1px solid black; width: 8.33%;"></td>
+                        <td style="border-left: 1px solid black; width: 8.33%;"></td>
+                        <td style="border-left: 1px solid black; width: 8.33%;"></td>
+                        <td style="border-left: 1px solid black; width: 8.33%;"></td>
+                        <td style="border-left: 1px solid black; width: 8.33%;"></td>
+                        <td style="border-left: 1px solid black; width: 8.33%;"></td>
+                        <td style="border-left: 1px solid black; width: 8.33%;"></td>
+                        <td style="border-left: 1px solid black; width: 8.33%;"></td>
+                        <td style="border-left: 1px solid black; width: 8.33%;"></td>
+                        <td style="border-left: 1px solid black; width: 8.33%;"></td>
+                    </tr>
+                </table>
+            </div>
         </div>
     </div>
     <script type="module" src="./js/main.js"></script>

@@ -20,13 +20,13 @@ var HeatMap = function (_canvas) {
             if (overlayImage != null){
                 overlayImage.remove()
             }
-            var pixelGap = 10
+            var pixelGap = 8
             var value = 0;
             for (var i = 0; i < canvas.height / pixelGap; i++) {
                 for (var j = 0; j < canvas.width / pixelGap; j++) {
                     var x = pixelGap * j;
                     var y = pixelGap * i;
-                    value = getValue(x + 5, y + 5).toFixed(3);            
+                    value = getValue(x + 4, y + 4).toFixed(3);            
                     var r,g,b;
                     if (value < 25){
                         r = 0;
@@ -51,10 +51,9 @@ var HeatMap = function (_canvas) {
                     } else {                        
                         ctx.fillStyle = `rgb(250,0,0)`
                     }
-                    if (value == 0){
-                        ctx.fillStyle = `rgb(250,250,250)`
-                    }
-                    ctx.fillRect(x, y, pixelGap, pixelGap);
+                    if (value != 0){
+                        ctx.fillRect(x, y, pixelGap, pixelGap);
+                    }                    
                 }
             }
             overlayImage = L.imageOverlay(canvas.toDataURL(), map.getBounds(), {opacity: 0.5}).addTo(map)
@@ -111,6 +110,9 @@ var HeatMap = function (_canvas) {
         if (showHeat) {
             showHeat = !showHeat
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (overlayImage != null){
+                overlayImage.remove()
+            }
         } else {
             showHeat = !showHeat
             this.drawCanvas();
@@ -119,7 +121,7 @@ var HeatMap = function (_canvas) {
     map.on('click', (e) => {
         if(document.getElementById('showHeatMap').checked){
             console.log(e.latlng)
-            console.log(getValue(e.containerPoint).toFixed(1))
+            console.log(getValue(e.containerPoint).toFixed(3))
         }        
     })
 }

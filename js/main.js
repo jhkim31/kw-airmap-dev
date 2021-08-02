@@ -1,18 +1,35 @@
 import { HeatMap as HeatMap } from './heatmap.js';
 import { WindMap as WindMap } from './windmap.js'
+import {config as config} from '../config.js'
+import {data as data} from './20210723_0000.js'
+
+
 
 window.map = L.map('map')
-    .setView([37, 128], 7)
+    .setView([37, 128], 8)
 map.setMinZoom(5)
 
 
-
-
+L.rectangle([[32,120], [44,132]], {color: "#ff7800", weight: 1, fillOpacity:0}).addTo(map);
 L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png').addTo(map);
+
+
+
+function getRandomArbitrary(min, max) {
+    return Math.random() * (max - min) + min;
+}
+for(var i = 0; i < 10; i++){
+    var d = data[parseInt(getRandomArbitrary(0, 66504))]    
+    console.log(d)
+    L.marker(L.latLng(d.latlng.lat, d.latlng.lng))
+        .addTo(map)
+        .bindTooltip(`${d.h.toFixed(3)}`)
+        .openTooltip()    
+}
 
 var heatmap = new HeatMap(document.getElementById("heatmap"))
 var windmap = new WindMap(document.getElementById('windmap'))
-window.config = {}
+window.current_state = {}
 
 window.wind_data = []
 window.pm10_data = []
@@ -21,53 +38,53 @@ window.h_data = []
 window.t_data = []
 
 var currentTimeIndex = 0
-var config_div = document.getElementById('config')
+var current_state_div = document.getElementById('current_state')
 var post_data = {}
 
-function set_config() {
+function set_state() {
     if (map.getZoom() >= 8) {
-        config.latGap = 0.1
-        config.lngGap = 0.1
+        current_state.latGap = 0.1
+        current_state.lngGap = 0.1
     } else if (map.getZoom() >= 7) {
-        config.latGap = 0.2
-        config.lngGap = 0.2
+        current_state.latGap = 0.2
+        current_state.lngGap = 0.2
     } else if (map.getZoom() >= 5) {
-        config.latGap = 0.5
-        config.lngGap = 0.5
+        current_state.latGap = 0.5
+        current_state.lngGap = 0.5
     }
-    // config.latGap = 0.1
-    // config.lngGap = 0.1
-    config.maxlat = parseFloat((map.getBounds()._northEast.lat - map.getBounds()._northEast.lat % config.latGap + config.latGap).toFixed(3))
-    if (config.maxlat > 44){
-        config.maxlat = 44
+    // current_state.latGap = 0.1
+    // current_state.lngGap = 0.1
+    current_state.maxlat = parseFloat((map.getBounds()._northEast.lat - map.getBounds()._northEast.lat % current_state.latGap + current_state.latGap).toFixed(3))
+    if (current_state.maxlat > 44){
+        current_state.maxlat = 44
     }
-    if (config.maxlat < 32){
-        config.maxlat = 32
+    if (current_state.maxlat < 32){
+        current_state.maxlat = 32
     }
-    config.maxlng = parseFloat((map.getBounds()._northEast.lng - map.getBounds()._northEast.lng % config.lngGap + config.lngGap).toFixed(3))
-    if (config.maxlng > 132) {
-        config.maxlng = 132
+    current_state.maxlng = parseFloat((map.getBounds()._northEast.lng - map.getBounds()._northEast.lng % current_state.lngGap + current_state.lngGap).toFixed(3))
+    if (current_state.maxlng > 132) {
+        current_state.maxlng = 132
     }
-    if (config.maxlng < 122){
-        config.maxlng = 122
+    if (current_state.maxlng < 120){
+        current_state.maxlng = 120
     }
-    config.minlat = parseFloat((map.getBounds()._southWest.lat - map.getBounds()._southWest.lat % config.latGap - config.latGap).toFixed(3))
-    if (config.minlat > 44){
-        config.minlat = 44
+    current_state.minlat = parseFloat((map.getBounds()._southWest.lat - map.getBounds()._southWest.lat % current_state.latGap - current_state.latGap).toFixed(3))
+    if (current_state.minlat > 44){
+        current_state.minlat = 44
     }
-    if (config.minlat < 32){
-        config.minlat = 32
+    if (current_state.minlat < 32){
+        current_state.minlat = 32
     }    
-    config.minlng = parseFloat((map.getBounds()._southWest.lng - map.getBounds()._southWest.lng % config.lngGap - config.lngGap).toFixed(3))
-    if (config.minlng > 132){
-        config.minlng = 132
+    current_state.minlng = parseFloat((map.getBounds()._southWest.lng - map.getBounds()._southWest.lng % current_state.lngGap - current_state.lngGap).toFixed(3))
+    if (current_state.minlng > 132){
+        current_state.minlng = 132
     }
-    if (config.minlng < 122){
-        config.minlng = 122
+    if (current_state.minlng < 120){
+        current_state.minlng = 120
     }
 
-    config.gridX = Math.round((config.maxlng - config.minlng) / config.lngGap)
-    config.gridY = Math.round((config.maxlat - config.minlat) / config.latGap)
+    current_state.gridX = Math.round((current_state.maxlng - current_state.minlng) / current_state.lngGap)
+    current_state.gridY = Math.round((current_state.maxlat - current_state.minlat) / current_state.latGap)
 
     var t = new Date()
     var year = t.getYear() + 1900
@@ -79,17 +96,17 @@ function set_config() {
         "requestTime": new Date(currentTime).getTime(),
         "boundary": {
             "northEast": {
-                "lat": config.maxlat,
-                "lng": config.maxlng
+                "lat": current_state.maxlat,
+                "lng": current_state.maxlng
             },
             "southWest": {
-                "lat": config.minlat,
-                "lng": config.minlng
+                "lat": current_state.minlat,
+                "lng": current_state.minlng
             }
         },
         "gridSize": {
-            "x": config.gridX,
-            "y": config.gridY
+            "x": current_state.gridX,
+            "y": current_state.gridY
         }
     }
 }
@@ -97,10 +114,11 @@ function set_config() {
 
 
 window.onload = function () {
-    config_div.innerText = `${map.getZoom()}level `
-    set_config()
+    current_state_div.innerText = `${map.getZoom()}level `
+    set_state()
 
-    var url = `http://192.168.101.163:4500/test2`
+    var url = `http://${config.host}/test2`
+    var startT = new Date().getTime()
     fetch(url, {
         "method": "POST",
         "headers": {
@@ -110,6 +128,7 @@ window.onload = function () {
     })
         .then(e => e.json())
         .then(d => {
+            current_state_div.innerText = `${map.getZoom()}level ${current_state.latGap} / ${new Date().getTime() - startT}ms`
             console.log(d)
             wind_data = d[0]
             pm10_data = d[1]
@@ -118,8 +137,8 @@ window.onload = function () {
             h_data = d[4]
             
 
-            windmap.set_data(config, wind_data)
-            heatmap.set_data(config, h_data)
+            windmap.set_data(current_state, wind_data)
+            heatmap.set_data(current_state, h_data)
 
             for (var i = 0; i < document.getElementById('date_bar').children.length; i++) {
                 console.log(d[0].timestamp)
@@ -132,17 +151,17 @@ window.onload = function () {
 var moveCount = 0
 map.on('move', () => {
     if (moveCount != 0) {
-        windmap.stopAnim();
-        // heatmap.drawCanvas()
+        // windmap.stopAnim();
     }
     moveCount++;
 })
 
 
 map.on('moveend', () => {
+    windmap.stopAnim();
     moveCount = 0
-    set_config()
-    var url = `http://192.168.101.163:4500/test2`
+    set_state()
+    var url = `http://${config.host}/test2`
     var startT = new Date().getTime()
     fetch(url, {
         "method": "POST",
@@ -153,7 +172,7 @@ map.on('moveend', () => {
     })
         .then(e => e.json())
         .then(d => {
-            config_div.innerText = `${map.getZoom()}level ${config.latGap} / ${new Date().getTime() - startT}ms`
+            current_state_div.innerText = `${map.getZoom()}level ${current_state.latGap} / ${new Date().getTime() - startT}ms`
             console.log(d)
             wind_data = d[0]
             pm10_data = d[1]
@@ -161,8 +180,8 @@ map.on('moveend', () => {
             t_data = d[3]
             h_data = d[4]
             
-            windmap.set_data(config, wind_data)
-            heatmap.set_data(config, h_data)
+            windmap.set_data(current_state, wind_data)
+            heatmap.set_data(current_state, h_data)
             windmap.startAnim()
         })
 })
@@ -210,8 +229,8 @@ function convert_data_one_time(json_data) {
     return return_data
 }
 
-document.getElementById('showHeatMap').addEventListener('click', heatmap.toggleHeatMap)
-document.getElementById('playWind').addEventListener('click', windmap.toggleWindLayer)
+document.getElementById('show_pm10').addEventListener('click', heatmap.toggleHeatMap)
+document.getElementById('play_wind').addEventListener('click', windmap.toggleWindLayer)
 
 document.getElementById('date_progress').addEventListener('click', (e) => {
     var x = document.getElementById('date_progress').offsetWidth
@@ -220,8 +239,8 @@ document.getElementById('date_progress').addEventListener('click', (e) => {
     document.getElementById('date_progress_bar').style.width = (y / x) * 100 + '%'
 
     currentTimeIndex = Math.floor(parseFloat(document.getElementById('date_progress_bar').style.width) / 8.3333)
-    windmap.set_data(config, wind_data[currentTimeIndex])
-    heatmap.set_data(config, pm10_data[currentTimeIndex])
+    windmap.set_data(current_state, wind_data[currentTimeIndex])
+    heatmap.set_data(current_state, pm10_data[currentTimeIndex])
     heatmap.drawCanvas()
 })
 var Interval;
@@ -237,15 +256,15 @@ document.getElementById('play').addEventListener('click', () => {
                 clearInterval(Interval)
                 progress_bar.style.width = '1%'
                 currentTimeIndex = 0
-                windmap.set_data(config, wind_data[currentTimeIndex])
-                heatmap.set_data(config, pm10_data[currentTimeIndex])
+                windmap.set_data(current_state, wind_data[currentTimeIndex])
+                heatmap.set_data(current_state, pm10_data[currentTimeIndex])
             }
 
             var tmp = Math.floor(parseFloat(document.getElementById('date_progress_bar').style.width) / 8.3333)            
             if(currentTimeIndex != tmp){
                 currentTimeIndex = tmp
-                windmap.set_data(config, wind_data[currentTimeIndex])
-                heatmap.set_data(config, pm10_data[currentTimeIndex])
+                windmap.set_data(current_state, wind_data[currentTimeIndex])
+                heatmap.set_data(current_state, pm10_data[currentTimeIndex])
             }            
             
         }, 100)
