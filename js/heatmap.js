@@ -118,12 +118,12 @@ var HeatMap = function (_canvas) {
             this.drawCanvas();
         }
     }
-    map.on('click', (e) => {
-        if(document.getElementById('showHeatMap').checked){
-            console.log(e.latlng)
-            console.log(getValue(e.containerPoint).toFixed(3))
-        }        
-    })
+    // map.on('click', (e) => {
+    //     if(document.getElementById('showHeatMap').checked){
+    //         console.log(e.latlng)
+    //         console.log(getValue(e.containerPoint).toFixed(3))
+    //     }        
+    // })
 }
 
 export { HeatMap }

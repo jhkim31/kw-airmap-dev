@@ -229,8 +229,12 @@ function convert_data_one_time(json_data) {
     return return_data
 }
 
-document.getElementById('show_pm10').addEventListener('click', heatmap.toggleHeatMap)
-document.getElementById('play_wind').addEventListener('click', windmap.toggleWindLayer)
+document.getElementById('show_pm10').addEventListener('click', () => {
+    heatmap.toggleHeatMap()
+})
+document.getElementById('play_wind').addEventListener('click', () => {
+    windmap.toggleWindLayer()
+})
 
 document.getElementById('date_progress').addEventListener('click', (e) => {
     var x = document.getElementById('date_progress').offsetWidth

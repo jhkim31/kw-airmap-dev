@@ -40,19 +40,35 @@ html {
     pointer-events: none;    
 }
 
-.bottom{
+.bottom_box{
     position:absolute;
     bottom:30px;
+    pointer-events: auto;
+    width:500px;    
 }
 
 .control_box{
     position:absolute;
     right:30px;
     top:30px;
-    opacity: 0.8; 
-    background:white;
+    opacity: 0.8;     
     pointer-events: auto;
     border-radius:5px;
+    width:250px;
+}
+
+.weather_box{
+    background:white;
+}
+
+.network_box{
+    background:white;
+    margin-top:30px;
+}
+
+.wind_box{
+    background:white;
+    margin-top:30px;
 }
 
 .leaflet-control{

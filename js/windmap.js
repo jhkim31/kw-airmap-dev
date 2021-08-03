@@ -183,14 +183,14 @@ var WindMap = function (_canvas) {
         }
     }
 
-    map.on('click', (e) => {
-        if (document.getElementById('playWind').checked){
-            if (!document.getElementById('showHeatMap').checked){
-                console.log(getVector(e.latlng.lat, e.latlng.lng)[0].toFixed(1), getVector(e.latlng.lat, e.latlng.lng)[1].toFixed(1))
-            }
-        }
+    // map.on('click', (e) => {
+    //     if (document.getElementById('playWind').checked){
+    //         if (!document.getElementById('showHeatMap').checked){
+    //             console.log(getVector(e.latlng.lat, e.latlng.lng)[0].toFixed(1), getVector(e.latlng.lat, e.latlng.lng)[1].toFixed(1))
+    //         }
+    //     }
         
-    })
+    // })
 }
 
 export { WindMap }
