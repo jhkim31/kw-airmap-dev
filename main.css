@@ -44,7 +44,7 @@ html {
     position:absolute;
     bottom:30px;
     pointer-events: auto;
-    width:500px;    
+    width:90%;    
 }
 
 .control_box{
@@ -71,6 +71,24 @@ html {
     margin-top:30px;
 }
 
+#detail_box{
+  width:100%;
+  height:0px;
+  pointer-events: auto;  
+  background:white;
+  visibility: hidden;
+}
+
+#info_box{
+  width:100%;
+  height:40px;
+}
+
+#detail_data{
+  overflow-x:scroll;  
+  overflow-y:hidden;
+  height:100%;
+}
 .leaflet-control{
     top:50px;
 }
@@ -132,4 +150,9 @@ html {
   
   .slider.round:before {
     border-radius: 50%;
+  }
+
+  table{
+    border:1px solid black;
+    width:100%;
   }

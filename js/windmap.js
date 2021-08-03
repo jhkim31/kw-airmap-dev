@@ -11,7 +11,7 @@ var WindMap = function (_canvas) {
     var cny = cn.height - 1
     var grid = []
     var animationId
-    var showWind = false
+    var showWind = true
     var windCount = 1000;
     var showSpeed = 0.5;
 

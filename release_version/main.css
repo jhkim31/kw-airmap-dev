@@ -1,0 +1,158 @@
+body,
+html {
+    height: 100%;
+    margin: 0;
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index:1;
+    opacity: 1;
+    cursor: default;
+}
+
+#heatmap {
+    position: absolute;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 1;
+}
+.overlay {
+    position:absolute;
+    z-index: 999;
+    width:100%;
+    height: 100%;
+    pointer-events: none;    
+}
+.search_box{
+    position:absolute;
+    top:10px;
+    left:10px;
+    pointer-events: auto;
+}
+
+#windmap {
+    position: absolute;
+    z-index: 3;   
+    opacity:1;
+    pointer-events: none;    
+}
+
+.bottom_box{
+    position:absolute;
+    bottom:30px;
+    pointer-events: auto;
+    width:90%;    
+}
+
+.control_box{
+    position:absolute;
+    right:30px;
+    top:30px;
+    opacity: 0.8;     
+    pointer-events: auto;
+    border-radius:5px;
+    width:250px;
+}
+
+.weather_box{
+    background:white;
+}
+
+.network_box{
+    background:white;
+    margin-top:30px;
+}
+
+.wind_box{
+    background:white;
+    margin-top:30px;
+}
+
+#detail_box{
+  width:100%;
+  height:0px;
+  pointer-events: auto;  
+  background:white;
+  visibility: hidden;
+}
+
+#info_box{
+  width:100%;
+  height:40px;
+}
+
+#detail_data{
+  overflow-x:scroll;  
+  overflow-y:hidden;
+  height:100%;
+}
+.leaflet-control{
+    top:50px;
+}
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 30px;
+    height: 17px;
+  }
+  
+  .switch input { 
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+  
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 13px;
+    width: 13px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+  
+  input:checked + .slider {
+    background-color: #2196F3;
+  }
+  
+  input:focus + .slider {
+    box-shadow: 0 0 1px #2196F3;
+  }
+  
+  input:checked + .slider:before {
+    -webkit-transform: translateX(13px);
+    -ms-transform: translateX(13px);
+    transform: translateX(13px);
+  }
+  
+  /* Rounded sliders */
+  .slider.round {
+    border-radius: 17px;
+  }
+  
+  .slider.round:before {
+    border-radius: 50%;
+  }
+
+  table{
+    border:1px solid black;
+    width:100%;
+  }

@@ -1,54 +1,36 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-    <title>HTML5 Canvas </title>
-    <meta charset="utf-8">
-
-    <script type="text/javascript">
-
-        function Page_load() {
-            var ctx = document.getElementById("myCanvas").getContext("2d");
-            var frame = 0;
-            var old_x = 0;
-            var old_y = 0;
-            // 컨텍스트 개체 생성
-            function anim() {
-                frame = requestAnimationFrame(anim)
-
-                ctx.beginPath()
-                //원본 도형 ; 처음에 그려진 도형   
-                ctx.strokeStyle = "red";
-                // ctx.fillRect( 10, 60, 150, 50);
-                ctx.lineWidth = 5;
-                ctx.moveTo(old_x, old_y);
-                ctx.lineTo(frame * 10, frame * 10);
-                old_x = frame * 10
-                old_y = frame * 10
-                ctx.stroke();
-                ctx.closePath()
-
-                
-                //
-
-                //대상 도형 ; 나중에 그려진 도형
-                
-                
-                if (frame >= 90) {
-                    cancelAnimationFrame(frame)
-                }
-
-            }
-            anim()
-        }
-    </script>
+<style> 
+#myDIV {
+  width: 500px;
+  height: 500px;
+  background-color: lightblue;
+}
+</style>
 </head>
+<body>
 
-<body onload="Page_load();">
+<p>Click the "Try it" button to toggle between hiding and showing the DIV element:</p>
 
-    <canvas id="myCanvas" name="myCanvas" width="1000" height="1000" style="border:1px solid red">
+<button onclick="myFunction()">Try it</button>
 
-    </canvas>
+<div id="myDIV">
+This is my DIV element.
+</div>
+
+<p>Note that even though the element is hidden, it stays in its original position and size.</p>
+
+<script>
+function myFunction() {
+  var x = document.getElementById('myDIV');
+  if (x.style.visibility === 'hidden') {
+    x.style.visibility = 'visible';
+  } else {
+    x.style.visibility = 'hidden';
+  }
+}
+</script>
+
 </body>
-
 </html>

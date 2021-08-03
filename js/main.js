@@ -1,7 +1,7 @@
 import { HeatMap as HeatMap } from './heatmap.js';
 import { WindMap as WindMap } from './windmap.js'
-import {config as config} from '../config.js'
-import {data as data} from './20210723_0000.js'
+import { config as config } from '../config.js'
+import { data as data } from './20210723_0000.js'
 
 
 
@@ -10,7 +10,7 @@ window.map = L.map('map')
 map.setMinZoom(5)
 
 
-L.rectangle([[32,120], [44,132]], {color: "#ff7800", weight: 1, fillOpacity:0}).addTo(map);
+L.rectangle([[32, 120], [44, 132]], { color: "#ff7800", weight: 1, fillOpacity: 0 }).addTo(map);
 L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png').addTo(map);
 
 
@@ -18,13 +18,13 @@ L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.pn
 function getRandomArbitrary(min, max) {
     return Math.random() * (max - min) + min;
 }
-for(var i = 0; i < 10; i++){
-    var d = data[parseInt(getRandomArbitrary(0, 66504))]    
+for (var i = 0; i < 10; i++) {
+    var d = data[parseInt(getRandomArbitrary(0, 66504))]
     console.log(d)
     L.marker(L.latLng(d.latlng.lat, d.latlng.lng))
         .addTo(map)
         .bindTooltip(`${d.h.toFixed(3)}`)
-        .openTooltip()    
+        .openTooltip()
 }
 
 var heatmap = new HeatMap(document.getElementById("heatmap"))
@@ -32,14 +32,15 @@ var windmap = new WindMap(document.getElementById('windmap'))
 window.current_state = {}
 
 window.wind_data = []
-window.pm10_data = []
-window.pm25_data = []
-window.h_data = []
-window.t_data = []
+window.heat_data = []       //0 : pm10, 1 : pm25, 2 : t, 3 : h
 
 var currentTimeIndex = 0
 var current_state_div = document.getElementById('current_state')
 var post_data = {}
+var heatmap_layer = [document.getElementById('show_pm10'), document.getElementById('show_pm25'),
+document.getElementById('show_t'), document.getElementById('show_h')]
+var current_heatmap_index = 3
+
 
 function set_state() {
     if (map.getZoom() >= 8) {
@@ -55,31 +56,31 @@ function set_state() {
     // current_state.latGap = 0.1
     // current_state.lngGap = 0.1
     current_state.maxlat = parseFloat((map.getBounds()._northEast.lat - map.getBounds()._northEast.lat % current_state.latGap + current_state.latGap).toFixed(3))
-    if (current_state.maxlat > 44){
+    if (current_state.maxlat > 44) {
         current_state.maxlat = 44
     }
-    if (current_state.maxlat < 32){
+    if (current_state.maxlat < 32) {
         current_state.maxlat = 32
     }
     current_state.maxlng = parseFloat((map.getBounds()._northEast.lng - map.getBounds()._northEast.lng % current_state.lngGap + current_state.lngGap).toFixed(3))
     if (current_state.maxlng > 132) {
         current_state.maxlng = 132
     }
-    if (current_state.maxlng < 120){
+    if (current_state.maxlng < 120) {
         current_state.maxlng = 120
     }
     current_state.minlat = parseFloat((map.getBounds()._southWest.lat - map.getBounds()._southWest.lat % current_state.latGap - current_state.latGap).toFixed(3))
-    if (current_state.minlat > 44){
+    if (current_state.minlat > 44) {
         current_state.minlat = 44
     }
-    if (current_state.minlat < 32){
+    if (current_state.minlat < 32) {
         current_state.minlat = 32
-    }    
+    }
     current_state.minlng = parseFloat((map.getBounds()._southWest.lng - map.getBounds()._southWest.lng % current_state.lngGap - current_state.lngGap).toFixed(3))
-    if (current_state.minlng > 132){
+    if (current_state.minlng > 132) {
         current_state.minlng = 132
     }
-    if (current_state.minlng < 120){
+    if (current_state.minlng < 120) {
         current_state.minlng = 120
     }
 
@@ -117,7 +118,7 @@ window.onload = function () {
     current_state_div.innerText = `${map.getZoom()}level `
     set_state()
 
-    var url = `http://${config.host}/test2`
+    var url = `http://${config.host}/test3`
     var startT = new Date().getTime()
     fetch(url, {
         "method": "POST",
@@ -129,39 +130,27 @@ window.onload = function () {
         .then(e => e.json())
         .then(d => {
             current_state_div.innerText = `${map.getZoom()}level ${current_state.latGap} / ${new Date().getTime() - startT}ms`
-            console.log(d)
-            wind_data = d[0]
-            pm10_data = d[1]
-            pm25_data = d[2]
-            t_data = d[3]
-            h_data = d[4]
-            
+            var converting_data = convert_data_one_time(d)
+            console.log(converting_data)
+            converting_data.forEach(d => {
+                wind_data.push(d[0])
+                heat_data.push(d[1])        //pm10
+                heat_data.push(d[2])        //pm25
+                heat_data.push(d[3])        //t
+                heat_data.push(d[4])        //h
 
-            windmap.set_data(current_state, wind_data)
-            heatmap.set_data(current_state, h_data)
+            })
 
-            for (var i = 0; i < document.getElementById('date_bar').children.length; i++) {
-                console.log(d[0].timestamp)
-                document.getElementById('date_bar').children[i].innerText =
-                    new Date(d[0].timestamp + 3600000 * i).getMonth() + 1 + '/' + new Date(d[0].timestamp + 3600000 * i).getDate() + '\n ' + new Date(d[0].timestamp + 3600000 * i).getHours() + ':00'
-            }
+            windmap.set_data(current_state, wind_data[0])
+            heatmap.set_data(current_state, heat_data[current_heatmap_index])
+            windmap.startAnim()
         })
 }
 
-var moveCount = 0
-map.on('move', () => {
-    if (moveCount != 0) {
-        // windmap.stopAnim();
-    }
-    moveCount++;
-})
-
-
 map.on('moveend', () => {
-    windmap.stopAnim();
-    moveCount = 0
+
     set_state()
-    var url = `http://${config.host}/test2`
+    var url = `http://${config.host}/test3`
     var startT = new Date().getTime()
     fetch(url, {
         "method": "POST",
@@ -172,24 +161,28 @@ map.on('moveend', () => {
     })
         .then(e => e.json())
         .then(d => {
+            wind_data = []
+            heat_data = []
             current_state_div.innerText = `${map.getZoom()}level ${current_state.latGap} / ${new Date().getTime() - startT}ms`
-            console.log(d)
-            wind_data = d[0]
-            pm10_data = d[1]
-            pm25_data = d[2]
-            t_data = d[3]
-            h_data = d[4]
-            
-            windmap.set_data(current_state, wind_data)
-            heatmap.set_data(current_state, h_data)
+            var converting_data = convert_data_one_time(d)
+            console.log(converting_data)
+            converting_data.forEach(d => {
+                wind_data.push(d[0])
+                heat_data.push(d[1])        //pm10
+                heat_data.push(d[2])        //pm25
+                heat_data.push(d[3])        //t
+                heat_data.push(d[4])        //h
+
+            })
+
+            windmap.set_data(current_state, wind_data[0])
+            heatmap.set_data(current_state, heat_data[current_heatmap_index])
             windmap.startAnim()
         })
 })
 
 function convert_data_one_time(json_data) {
-
     var return_data = []
-
     json_data.forEach(d => {
 
         var return_wind_data = []
@@ -220,8 +213,8 @@ function convert_data_one_time(json_data) {
         one_timestamp.push(return_wind_data)
         one_timestamp.push(return_pm10_data)
         one_timestamp.push(return_pm25_data)
-        one_timestamp.push(return_h_data)
         one_timestamp.push(return_t_data)
+        one_timestamp.push(return_h_data)
 
         return_data.push(one_timestamp)
     })
@@ -229,9 +222,58 @@ function convert_data_one_time(json_data) {
     return return_data
 }
 
-document.getElementById('show_pm10').addEventListener('click', () => {
-    heatmap.toggleHeatMap()
+heatmap_layer[0].addEventListener('click', () => {
+    if (current_heatmap_index != 0) {
+        heatmap_layer[1].checked = false
+        heatmap_layer[2].checked = false
+        heatmap_layer[3].checked = false
+        current_heatmap_index = 0
+        heatmap.set_showheat(true)
+        heatmap.set_data(current_state, heat_data[current_heatmap_index])
+    } else {
+        heatmap.toggleHeatMap()
+    }
 })
+
+heatmap_layer[1].addEventListener('click', () => {
+    if (current_heatmap_index != 1) {     
+        heatmap_layer[0].checked = false
+        heatmap_layer[2].checked = false
+        heatmap_layer[3].checked = false   
+        current_heatmap_index = 1
+        heatmap.set_showheat(true)
+        heatmap.set_data(current_state, heat_data[current_heatmap_index])
+    } else {
+        heatmap.toggleHeatMap()
+    }
+})
+
+heatmap_layer[2].addEventListener('click', () => {
+    if (current_heatmap_index != 2) {
+        heatmap_layer[0].checked = false
+        heatmap_layer[1].checked = false
+        heatmap_layer[3].checked = false
+        current_heatmap_index = 2
+        heatmap.set_showheat(true)
+        heatmap.set_data(current_state, heat_data[current_heatmap_index])
+    } else {
+        heatmap.toggleHeatMap()
+    }
+})
+
+heatmap_layer[3].addEventListener('click', () => {
+    if (current_heatmap_index != 3) {
+        heatmap_layer[0].checked = false
+        heatmap_layer[1].checked = false
+        heatmap_layer[2].checked = false
+        current_heatmap_index = 3
+        heatmap.set_showheat(true)
+        heatmap.set_data(current_state, heat_data[current_heatmap_index])
+    } else {
+        heatmap.toggleHeatMap()
+    }
+})
+
 document.getElementById('play_wind').addEventListener('click', () => {
     windmap.toggleWindLayer()
 })
@@ -254,7 +296,7 @@ document.getElementById('play').addEventListener('click', () => {
         document.getElementById('play').innerText = "stop"
         Interval = setInterval(() => {
             progress_bar.style.width = (parseFloat(progress_bar.style.width) + 0.5) + "%"
-            
+
             if (parseFloat(progress_bar.style.width) > 100) {
                 document.getElementById('play').innerText = "play"
                 clearInterval(Interval)
@@ -264,16 +306,33 @@ document.getElementById('play').addEventListener('click', () => {
                 heatmap.set_data(current_state, pm10_data[currentTimeIndex])
             }
 
-            var tmp = Math.floor(parseFloat(document.getElementById('date_progress_bar').style.width) / 8.3333)            
-            if(currentTimeIndex != tmp){
+            var tmp = Math.floor(parseFloat(document.getElementById('date_progress_bar').style.width) / 8.3333)
+            if (currentTimeIndex != tmp) {
                 currentTimeIndex = tmp
                 windmap.set_data(current_state, wind_data[currentTimeIndex])
                 heatmap.set_data(current_state, pm10_data[currentTimeIndex])
-            }            
-            
+            }
+
         }, 100)
     } else {
         document.getElementById('play').innerText = "play"
         clearInterval(Interval)
     }
+})
+
+map.on('click', (e) => {
+    var dbox = document.getElementById('detail_box')
+    if (dbox.style.visibility != 'visible') {
+        console.log(e)
+        document.getElementById('current_location').innerText = e.latlng
+        dbox.style.visibility = 'visible'
+        dbox.style.height = "300px"
+    } else {
+        document.getElementById('current_location').innerText = e.latlng
+    }
+})
+
+document.getElementById('close_detail_box').addEventListener('click', () => {
+    document.getElementById('detail_box').style.visibility = 'hidden'
+    document.getElementById('detail_box').style.height = "0px"
 })

@@ -3,7 +3,7 @@ var HeatMap = function (_canvas) {
     var grid = []
     window.canvas = _canvas
     var ctx = canvas.getContext('2d')
-    var showHeat = false
+    var showHeat = true
     var overlayImage = null
     
 
@@ -104,6 +104,13 @@ var HeatMap = function (_canvas) {
         var d4 = 1 - y
         var result_vector_x = d3 * x2_vector_x + d4 * x1_vector_x
         return result_vector_x
+    }
+
+    this.set_showheat = function(bool){
+        showHeat = bool
+    }
+    this.get_showheat = function(){
+        return showHeat
     }
 
     this.toggleHeatMap = () => {

@@ -1,6 +1,6 @@
 import { HeatMap as HeatMap } from './heatmap.js';
 import { WindMap as WindMap } from './windmap.js'
-import {config as config} from '../../config.js'
+import {config as config} from '../config.js'
 import {data as data} from './20210723_0000.js'
 
 

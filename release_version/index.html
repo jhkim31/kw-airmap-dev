@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>simpleheat demo</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+        integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+        crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+        crossorigin=""></script>
+    <link rel="stylesheet" type="text/css" href="main.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div id="map"></div>
+    <canvas id="heatmap"></canvas>
+    <canvas id="windmap"></canvas>
+    <div class="overlay">
+        <div class="row search_box">
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <button class="btn btn-secondary" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="16"
+                            height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                            <path
+                                d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+                        </svg></button>
+                </div>
+                <input type="text" class="form-control" placeholder="위치검색" aria-label=""
+                    aria-describedby="basic-addon1">
+                <div class="input-group-append">
+                    <button class="btn btn-secondary" type="button"> <svg xmlns="http://www.w3.org/2000/svg" width="16"
+                            height="16" fill="currentColor" class="bi bi-compass" viewBox="0 0 16 16">
+                            <path
+                                d="M8 16.016a7.5 7.5 0 0 0 1.962-14.74A1 1 0 0 0 9 0H7a1 1 0 0 0-.962 1.276A7.5 7.5 0 0 0 8 16.016zm6.5-7.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z" />
+                            <path d="m6.94 7.44 4.95-2.83-2.83 4.95-4.949 2.83 2.828-4.95z" />
+                        </svg></button>
+                </div>
+            </div>
+        </div>
+
+        <div class="control_box">
+            <div class="weather_box">
+                <div class="h4">동별 미세먼지</div>
+                <div class="row">
+                    <div class="h6 col-md-9" style="padding-left:30px;">
+                        PM10
+                    </div>
+                    <div class="col-md-3">
+                        <label class="switch">
+                            <input type="checkbox" id="show_pm10">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                </div>
+
+                <div class="row">
+                    <div class="h6 col-md-9" style="padding-left:30px;">
+                        PM2.5
+                    </div>
+                    <div class="col-md-3">
+                        <label class="switch">
+                            <input type="checkbox" id="show_pm25">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                </div>
+                <div class="row">
+                    <div class="h4 col-md-9">온도</div>
+                    <div class="col-md-3">
+                        <label class="switch">
+                            <input type="checkbox" id="show_t">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="h4 col-md-9">습도</div>
+                    <div class="col-md-3">
+                        <label class="switch">
+                            <input type="checkbox" id="show_h" checked>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+                <img src='./image/heat_bar_pm10.png' width="250px">
+            </div>
+
+            <div class="network_box">
+                <div class="h4">실외 공기 관측망</div>
+                <div class="row">
+                    <div class="h6 col-md-9" style="padding-left:30px;">
+                        IoT관측망 + 국가관측망
+                    </div>
+                    <div class="col-md-3">
+                        <label class="switch">
+                            <input type="checkbox" id="">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                </div>
+
+                <div class="row">
+                    <div class="h6 col-md-9" style="padding-left:30px;">
+                        IoT관측망
+                    </div>
+                    <div class="col-md-3">
+                        <label class="switch">
+                            <input type="checkbox" id="">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="h6 col-md-9" style="padding-left:30px;">
+                        국가관측망
+                    </div>
+                    <div class="col-md-3">
+                        <label class="switch">
+                            <input type="checkbox" id="">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="h4">실외 공기 관측망</div>
+                <div class="row">
+                    <div class="h6 col-md-9" style="padding-left:30px;">
+                        유인관측소
+                    </div>
+                    <div class="col-md-3">
+                        <label class="switch">
+                            <input type="checkbox" id="">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="h6 col-md-9" style="padding-left:30px;">
+                        AWS
+                    </div>
+                    <div class="col-md-3">
+                        <label class="switch">
+                            <input type="checkbox" id="">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+                <img src='./image/heat_bar_pm10.png' width="250px">
+            </div>
+
+            <div class="wind_box">
+                <div class="row">
+                    <div class="h4 col-md-9">바람</div>
+                    <div class="col-md-3">
+                        <label class="switch">
+                            <input type="checkbox" id="play_wind" checked>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="h4" id="current_state"></div>
+            </div>
+        </div>
+
+        <div class="bottom_box">
+            <button class="btn btn-secondary" id="play">play</button>
+            <div class="progress" id="date_progress" style="width:500px;">
+                <div class="progress-bar" id="date_progress_bar" role="progressbar" aria-valuemin="0"
+                    aria-valuemax="100" style="transition: width .1s ease; width:1%;"></div>
+            </div>
+            <div id="detail_box">
+                <div id = "info_box">
+                    <div class = "float-start" id = "current_location">ㅅㅓ울시</div>
+                    <div class='float-end btn btn-secondary' id = "close_detail_box">x button</div>
+                </div>
+                
+                <div id="detail_data">
+                    <div style="width:2000px; height:300px;">
+                        <table>
+                            <tr>
+                                <td>123</td>
+                                <td>123</td>
+                                <td>123</td>
+                                <td>123</td>
+                                <td>123</td>
+                            </tr>
+                            <tr>
+                                <td>123</td>
+                                <td>123</td>
+                                <td>123</td>
+                                <td>123</td>
+                                <td>123</td>
+                            </tr>
+                            <tr>
+                                <td>123</td>
+                                <td>123</td>
+                                <td>123</td>
+                                <td>123</td>
+                                <td>123</td>
+                            </tr>
+                            <tr>
+                                <td>123</td>
+                                <td>123</td>
+                                <td>123</td>
+                                <td>123</td>
+                                <td>123</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <script type="module" src="./js/main.js"></script>
+</body>
+
+</html>
