@@ -13,8 +13,6 @@ map.setMinZoom(5)
 L.rectangle([[32, 120], [44, 132]], { color: "#ff7800", weight: 1, fillOpacity: 0 }).addTo(map);
 L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png').addTo(map);
 
-
-
 function getRandomArbitrary(min, max) {
     return Math.random() * (max - min) + min;
 }
@@ -42,7 +40,7 @@ document.getElementById('show_t'), document.getElementById('show_h')]
 var current_heatmap_index = 3
 
 
-function set_state() {
+function set_state(delta = 0) {
     if (map.getZoom() >= 8) {
         current_state.latGap = 0.1
         current_state.lngGap = 0.1
@@ -87,7 +85,7 @@ function set_state() {
     current_state.gridX = Math.round((current_state.maxlng - current_state.minlng) / current_state.lngGap)
     current_state.gridY = Math.round((current_state.maxlat - current_state.minlat) / current_state.latGap)
 
-    var t = new Date()
+    var t = new Date(new Date().getTime() + delta)
     var year = t.getYear() + 1900
     var month = t.getMonth() + 1
     var date = t.getDate()
@@ -115,71 +113,54 @@ function set_state() {
 
 
 window.onload = function () {
-    current_state_div.innerText = `${map.getZoom()}level `
-    set_state()
-
-    var url = `http://${config.host}/test3`
-    var startT = new Date().getTime()
-    fetch(url, {
-        "method": "POST",
-        "headers": {
-            "Content-Type": "application/json"
-        },
-        "body": JSON.stringify(post_data)
-    })
-        .then(e => e.json())
-        .then(d => {
-            current_state_div.innerText = `${map.getZoom()}level ${current_state.latGap} / ${new Date().getTime() - startT}ms`
-            var converting_data = convert_data_one_time(d)
-            console.log(converting_data)
-            converting_data.forEach(d => {
-                wind_data.push(d[0])
-                heat_data.push(d[1])        //pm10
-                heat_data.push(d[2])        //pm25
-                heat_data.push(d[3])        //t
-                heat_data.push(d[4])        //h
-
-            })
-
-            windmap.set_data(current_state, wind_data[0])
-            heatmap.set_data(current_state, heat_data[current_heatmap_index])
-            windmap.startAnim()
-        })
+    map_update()
 }
 
 map.on('moveend', () => {
+    wind_data = []
+    heat_data = []
+    map_update(currentTimeIndex)
+})
 
-    set_state()
+function map_update(index = 0) {
+    set_state(currentTimeIndex * 3600000)
     var url = `http://${config.host}/test3`
     var startT = new Date().getTime()
-    fetch(url, {
-        "method": "POST",
-        "headers": {
-            "Content-Type": "application/json"
-        },
-        "body": JSON.stringify(post_data)
-    })
-        .then(e => e.json())
-        .then(d => {
-            wind_data = []
-            heat_data = []
-            current_state_div.innerText = `${map.getZoom()}level ${current_state.latGap} / ${new Date().getTime() - startT}ms`
-            var converting_data = convert_data_one_time(d)
-            console.log(converting_data)
-            converting_data.forEach(d => {
-                wind_data.push(d[0])
-                heat_data.push(d[1])        //pm10
-                heat_data.push(d[2])        //pm25
-                heat_data.push(d[3])        //t
-                heat_data.push(d[4])        //h
-
-            })
-
-            windmap.set_data(current_state, wind_data[0])
-            heatmap.set_data(current_state, heat_data[current_heatmap_index])
-            windmap.startAnim()
+    if (wind_data[index] == undefined && heat_data[index] == undefined) {
+        wind_data[index] = []
+        heat_data[index] = []
+        fetch(url, {
+            "method": "POST",
+            "headers": {
+                "Content-Type": "application/json"
+            },
+            "body": JSON.stringify(post_data)
         })
-})
+            .then(e => e.json())
+            .then(d => {
+                current_state_div.innerText = `${map.getZoom()}level ${current_state.latGap} / ${new Date().getTime() - startT}ms\n`
+                current_state_div.innerText += new Date(new Date().getTime() + currentTimeIndex * 3600000)
+                var converting_data = convert_data_one_time(d)
+                console.log(converting_data)
+                converting_data.forEach(d => {
+                    wind_data[index].push(d[0])
+                    heat_data[index].push(d[1])        //pm10
+                    heat_data[index].push(d[2])        //pm25
+                    heat_data[index].push(d[3])        //t
+                    heat_data[index].push(d[4])        //h
+
+                })
+
+                windmap.set_data(current_state, wind_data[index][0])
+                heatmap.set_data(current_state, heat_data[index][current_heatmap_index])
+                windmap.startAnim()
+            })
+    } else {
+        windmap.set_data(current_state, wind_data[index][0])
+        heatmap.set_data(current_state, heat_data[index][current_heatmap_index])
+        windmap.startAnim()
+    }
+}
 
 function convert_data_one_time(json_data) {
     var return_data = []
@@ -236,10 +217,10 @@ heatmap_layer[0].addEventListener('click', () => {
 })
 
 heatmap_layer[1].addEventListener('click', () => {
-    if (current_heatmap_index != 1) {     
+    if (current_heatmap_index != 1) {
         heatmap_layer[0].checked = false
         heatmap_layer[2].checked = false
-        heatmap_layer[3].checked = false   
+        heatmap_layer[3].checked = false
         current_heatmap_index = 1
         heatmap.set_showheat(true)
         heatmap.set_data(current_state, heat_data[current_heatmap_index])
@@ -284,12 +265,11 @@ document.getElementById('date_progress').addEventListener('click', (e) => {
 
     document.getElementById('date_progress_bar').style.width = (y / x) * 100 + '%'
 
-    currentTimeIndex = Math.floor(parseFloat(document.getElementById('date_progress_bar').style.width) / 8.3333)
-    windmap.set_data(current_state, wind_data[currentTimeIndex])
-    heatmap.set_data(current_state, pm10_data[currentTimeIndex])
-    heatmap.drawCanvas()
+    currentTimeIndex = Math.floor(parseFloat(document.getElementById('date_progress_bar').style.width) / 4.16667)
+    map_update(currentTimeIndex)
 })
 var Interval;
+
 document.getElementById('play').addEventListener('click', () => {
     var progress_bar = document.getElementById('date_progress_bar')
     if (document.getElementById('play').innerText == "play") {
@@ -302,15 +282,13 @@ document.getElementById('play').addEventListener('click', () => {
                 clearInterval(Interval)
                 progress_bar.style.width = '1%'
                 currentTimeIndex = 0
-                windmap.set_data(current_state, wind_data[currentTimeIndex])
-                heatmap.set_data(current_state, pm10_data[currentTimeIndex])
+                map_update(currentTimeIndex)
             }
 
-            var tmp = Math.floor(parseFloat(document.getElementById('date_progress_bar').style.width) / 8.3333)
+            var tmp = Math.floor(parseFloat(document.getElementById('date_progress_bar').style.width) / 4.16667)
             if (currentTimeIndex != tmp) {
                 currentTimeIndex = tmp
-                windmap.set_data(current_state, wind_data[currentTimeIndex])
-                heatmap.set_data(current_state, pm10_data[currentTimeIndex])
+                map_update(currentTimeIndex)
             }
 
         }, 100)
@@ -326,7 +304,7 @@ map.on('click', (e) => {
         console.log(e)
         document.getElementById('current_location').innerText = e.latlng
         dbox.style.visibility = 'visible'
-        dbox.style.height = "300px"
+        dbox.style.height = "180px"
     } else {
         document.getElementById('current_location').innerText = e.latlng
     }
