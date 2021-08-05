@@ -2,6 +2,7 @@ import { HeatMap as HeatMap } from './heatmap.js';
 import { WindMap as WindMap } from './windmap.js'
 import { config as config } from '../config.js'
 import { data as data } from './20210723_0000.js'
+import { heatData as point_data } from './data.js'
 
 
 
@@ -11,19 +12,19 @@ map.setMinZoom(5)
 
 
 L.rectangle([[32, 120], [44, 132]], { color: "#ff7800", weight: 1, fillOpacity: 0 }).addTo(map);
-L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png').addTo(map);
+L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png?api_key=8f890138-c2ce-4e19-a081-ec6b9154f34').addTo(map);
 
 function getRandomArbitrary(min, max) {
     return Math.random() * (max - min) + min;
 }
-for (var i = 0; i < 10; i++) {
-    var d = data[parseInt(getRandomArbitrary(0, 66504))]
-    console.log(d)
-    L.marker(L.latLng(d.latlng.lat, d.latlng.lng))
-        .addTo(map)
-        .bindTooltip(`${d.h.toFixed(3)}`)
-        .openTooltip()
-}
+// for (var i = 0; i < 10; i++) {
+//     var d = data[parseInt(getRandomArbitrary(0, 66504))]
+//     console.log(d)
+//     L.marker(L.latLng(d.latlng.lat, d.latlng.lng))
+//         .addTo(map)
+//         .bindTooltip(`${d.h.toFixed(3)}`)
+//         .openTooltip()
+// }
 
 var heatmap = new HeatMap(document.getElementById("heatmap"))
 var windmap = new WindMap(document.getElementById('windmap'))
@@ -33,11 +34,12 @@ window.wind_data = []
 window.heat_data = []       //0 : pm10, 1 : pm25, 2 : t, 3 : h
 
 var currentTimeIndex = 0
-var current_state_div = document.getElementById('current_state')
+
 var post_data = {}
 var heatmap_layer = [document.getElementById('show_pm10'), document.getElementById('show_pm25'),
 document.getElementById('show_t'), document.getElementById('show_h')]
-var current_heatmap_index = 3
+var current_heatmap_index = 2
+var show_marker = false
 
 
 function set_state(delta = 0) {
@@ -116,10 +118,11 @@ window.onload = function () {
     map_update()
 }
 
-map.on('moveend', () => {
+map.on('moveend', (e) => {
     wind_data = []
     heat_data = []
     map_update(currentTimeIndex)
+    change_marker()
 })
 
 function map_update(index = 0) {
@@ -138,8 +141,7 @@ function map_update(index = 0) {
         })
             .then(e => e.json())
             .then(d => {
-                current_state_div.innerText = `${map.getZoom()}level ${current_state.latGap} / ${new Date().getTime() - startT}ms\n`
-                current_state_div.innerText += new Date(new Date().getTime() + currentTimeIndex * 3600000)
+                
                 var converting_data = convert_data_one_time(d)
                 console.log(converting_data)
                 converting_data.forEach(d => {
@@ -152,12 +154,12 @@ function map_update(index = 0) {
                 })
 
                 windmap.set_data(current_state, wind_data[index][0])
-                heatmap.set_data(current_state, heat_data[index][current_heatmap_index])
+                heatmap.set_data(current_state, heat_data[index][current_heatmap_index], current_heatmap_index)
                 windmap.startAnim()
             })
     } else {
         windmap.set_data(current_state, wind_data[index][0])
-        heatmap.set_data(current_state, heat_data[index][current_heatmap_index])
+        heatmap.set_data(current_state, heat_data[index][current_heatmap_index], current_heatmap_index)
         windmap.startAnim()
     }
 }
@@ -210,7 +212,7 @@ heatmap_layer[0].addEventListener('click', () => {
         heatmap_layer[3].checked = false
         current_heatmap_index = 0
         heatmap.set_showheat(true)
-        heatmap.set_data(current_state, heat_data[current_heatmap_index])
+        heatmap.set_data(current_state, heat_data[currentTimeIndex][current_heatmap_index], current_heatmap_index)
     } else {
         heatmap.toggleHeatMap()
     }
@@ -223,7 +225,7 @@ heatmap_layer[1].addEventListener('click', () => {
         heatmap_layer[3].checked = false
         current_heatmap_index = 1
         heatmap.set_showheat(true)
-        heatmap.set_data(current_state, heat_data[current_heatmap_index])
+        heatmap.set_data(current_state, heat_data[currentTimeIndex][current_heatmap_index], current_heatmap_index)
     } else {
         heatmap.toggleHeatMap()
     }
@@ -236,7 +238,8 @@ heatmap_layer[2].addEventListener('click', () => {
         heatmap_layer[3].checked = false
         current_heatmap_index = 2
         heatmap.set_showheat(true)
-        heatmap.set_data(current_state, heat_data[current_heatmap_index])
+        heatmap.set_data(current_state, heat_data[currentTimeIndex][current_heatmap_index], current_heatmap_index)
+        document.getElementById("heat_bar").src = "./image/heat_bar_t2.png";
     } else {
         heatmap.toggleHeatMap()
     }
@@ -249,7 +252,8 @@ heatmap_layer[3].addEventListener('click', () => {
         heatmap_layer[2].checked = false
         current_heatmap_index = 3
         heatmap.set_showheat(true)
-        heatmap.set_data(current_state, heat_data[current_heatmap_index])
+        heatmap.set_data(current_state, heat_data[currentTimeIndex][current_heatmap_index], current_heatmap_index)
+        document.getElementById("heat_bar").src = "./image/heat_bar_t2.png";
     } else {
         heatmap.toggleHeatMap()
     }
@@ -257,6 +261,17 @@ heatmap_layer[3].addEventListener('click', () => {
 
 document.getElementById('play_wind').addEventListener('click', () => {
     windmap.toggleWindLayer()
+})
+
+document.getElementById('IoT_network').addEventListener('click', () => {
+    show_marker = document.getElementById('IoT_network').checked
+
+    if (show_marker){
+        overlay_marker()
+    } else {
+        remove_marker()
+    }
+
 })
 
 document.getElementById('date_progress').addEventListener('click', (e) => {
@@ -269,16 +284,20 @@ document.getElementById('date_progress').addEventListener('click', (e) => {
     map_update(currentTimeIndex)
 })
 var Interval;
-
-document.getElementById('play').addEventListener('click', () => {
+var play_btn = document.getElementById('play')
+play_btn.addEventListener('click', () => {
     var progress_bar = document.getElementById('date_progress_bar')
-    if (document.getElementById('play').innerText == "play") {
-        document.getElementById('play').innerText = "stop"
+    if (play_btn.children[0].id == "play_btn") {
+        play_btn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-pause-circle" viewBox="0 0 16 16">
+            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+            <path d="M5 6.25a1.25 1.25 0 1 1 2.5 0v3.5a1.25 1.25 0 1 1-2.5 0v-3.5zm3.5 0a1.25 1.25 0 1 1 2.5 0v3.5a1.25 1.25 0 1 1-2.5 0v-3.5z"/>
+        </svg>
+        `
         Interval = setInterval(() => {
-            progress_bar.style.width = (parseFloat(progress_bar.style.width) + 0.5) + "%"
-
+            progress_bar.style.width = (parseFloat(progress_bar.style.width) + 0.3) + "%"
             if (parseFloat(progress_bar.style.width) > 100) {
-                document.getElementById('play').innerText = "play"
+                play_btn.innerText = "play"
                 clearInterval(Interval)
                 progress_bar.style.width = '1%'
                 currentTimeIndex = 0
@@ -293,24 +312,220 @@ document.getElementById('play').addEventListener('click', () => {
 
         }, 100)
     } else {
-        document.getElementById('play').innerText = "play"
+        play_btn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" id = "play_btn" width="25" height="25" fill="currentColor" class="bi bi-play-circle" viewBox="0 0 16 16">
+            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+            <path d="M6.271 5.055a.5.5 0 0 1 .52.038l3.5 2.5a.5.5 0 0 1 0 .814l-3.5 2.5A.5.5 0 0 1 6 10.5v-5a.5.5 0 0 1 .271-.445z"/>
+        </svg>        
+        `
         clearInterval(Interval)
     }
 })
 
-map.on('click', (e) => {
+function show_detail_data(e) {
     var dbox = document.getElementById('detail_box')
     if (dbox.style.visibility != 'visible') {
         console.log(e)
-        document.getElementById('current_location').innerText = e.latlng
+        document.getElementById('current_location').innerText = e.latlng.lat.toFixed(3) + ',' + e.latlng.lng.toFixed(3)
         dbox.style.visibility = 'visible'
-        dbox.style.height = "180px"
+        dbox.style.height = "auto"
     } else {
-        document.getElementById('current_location').innerText = e.latlng
+        document.getElementById('current_location').innerText = e.latlng.lat.toFixed(3) + ',' + e.latlng.lng.toFixed(3)
     }
+}
+map.on('click', (e) => {
+    show_detail_data(e)
 })
 
 document.getElementById('close_detail_box').addEventListener('click', () => {
     document.getElementById('detail_box').style.visibility = 'hidden'
     document.getElementById('detail_box').style.height = "0px"
 })
+
+document.getElementById('dust_button').addEventListener('click', () => {
+    document.getElementById('weather_button').className = document.getElementById('dust_button').className.replace('primary', 'light')
+    document.getElementById('dust_button').className = document.getElementById('dust_button').className.replace('light', 'primary')
+})
+document.getElementById('weather_button').addEventListener('click', () => {
+    document.getElementById('weather_button').className = document.getElementById('dust_button').className.replace('light', 'primary')
+    document.getElementById('dust_button').className = document.getElementById('dust_button').className.replace('primary', 'light')
+
+})
+
+var icon1 = L.icon({
+    iconUrl: '../image/m1.png',
+    iconSize: [8, 8]
+})
+
+var icon1_red = L.icon({
+    iconUrl: '../image/m1_red.png',
+    iconSize: [8, 8]
+})
+
+var icon1_blue = L.icon({
+    iconUrl: '../image/m1_blue.png',
+    iconSize: [8, 8]
+})
+
+var icon1_black = L.icon({
+    iconUrl: '../image/m1_black.png',
+    iconSize: [8, 8]
+})
+
+var icon2 = L.icon({
+    iconUrl: '../image/m2.png',
+    iconSize: [20, 20]
+})
+
+var icon3 = L.icon({
+    iconUrl: '../image/m3.png',
+    iconSize: [80, 40]
+})
+
+var icon4 = L.icon({
+    iconUrl: '../image/m4.png',
+    iconSize: [50, 50]
+})
+var count = 0
+var layer = 1
+var markerList = []
+window.level1MarkerList = []
+window.level2MarkerList = []
+window.level3MarkerList = []
+point_data.forEach(d => {
+    if (count % 9 == 0) {
+        if (layer >= 1) {
+            level1MarkerList.push(
+                L.marker([d.latitude, d.longitude], { icon: icon4, id: count })
+                    .on('click', (e) => {
+                        console.log(e.target.options.id)
+                        show_detail_data(e)
+                    })
+            )
+        }
+        if (layer >= 2) {
+            level2MarkerList.push(L.marker([d.latitude, d.longitude], { icon: icon4, id: count })                
+                .on('click', (e) => {
+                    console.log(e.target.options.id)
+                    show_detail_data(e)
+                })
+            )
+        }
+        if (layer >= 3) {
+            level3MarkerList.push(L.marker([d.latitude, d.longitude], { icon: icon4, id: count })
+                .on('click', (e) => {
+                    console.log(e.target.options.id)
+                    show_detail_data(e)
+                })
+            )
+            layer = 0
+        }
+        layer++
+        count++
+    } else {
+        markerList.push(L.marker([d.latitude, d.longitude], {
+            icon: icon1,
+            id: count
+        })
+            .on('click', (e) => {
+                console.log(e.target.options.id)
+                show_detail_data(e)
+            })
+        )
+        count++
+    }
+})
+
+function change_marker(){
+    if (show_marker) {
+        if (map.getZoom() > 11) {
+            markerList.forEach(d => {
+                d.setIcon(icon3)
+            })
+            level3MarkerList.forEach(d => {
+                map.removeLayer(d)
+            })
+            level2MarkerList.forEach(d => {
+                map.removeLayer(d)
+            })
+            level1MarkerList.forEach(d => {
+                map.removeLayer(d)
+            })
+            level1MarkerList.forEach(d => {
+                d.addTo(map)
+            })
+        } else if (map.getZoom() > 8) {
+            markerList.forEach(d => {
+                d.setIcon(icon2)
+            })
+            level3MarkerList.forEach(d => {
+                map.removeLayer(d)
+            })
+            level2MarkerList.forEach(d => {
+                map.removeLayer(d)
+            })
+            level1MarkerList.forEach(d => {
+                map.removeLayer(d)
+            })
+            level2MarkerList.forEach(d => {
+                d.addTo(map)
+            })
+        } else {
+            markerList.forEach(d => {
+                d.setIcon(icon1)
+            })
+            level3MarkerList.forEach(d => {
+                map.removeLayer(d)
+            })
+            level2MarkerList.forEach(d => {
+                map.removeLayer(d)
+            })
+            level1MarkerList.forEach(d => {
+                map.removeLayer(d)
+            })
+            level3MarkerList.forEach(d => {
+                d.addTo(map)
+            })
+        }
+    }
+}
+
+function overlay_marker(){
+    if (map.getZoom() > 11) {
+        markerList.forEach(d => {
+            d.setIcon(icon3).addTo(map)
+        })
+        level1MarkerList.forEach(d => {
+            d.addTo(map)
+        })
+    } else if (map.getZoom() > 8) {
+        markerList.forEach(d => {
+            d.setIcon(icon2).addTo(map)
+        })        
+        level2MarkerList.forEach(d => {
+            d.addTo(map)
+        })
+    } else {
+        markerList.forEach(d => {
+            d.setIcon(icon1).addTo(map)
+        })
+        level3MarkerList.forEach(d => {
+            d.addTo(map)
+        })
+    }
+}
+
+function remove_marker(){
+    markerList.forEach(d => {
+        map.removeLayer(d)
+    })
+    level3MarkerList.forEach(d => {
+        map.removeLayer(d)
+    })
+    level2MarkerList.forEach(d => {
+        map.removeLayer(d)
+    })
+    level1MarkerList.forEach(d => {
+        map.removeLayer(d)
+    })
+}

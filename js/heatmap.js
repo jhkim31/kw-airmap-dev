@@ -5,13 +5,16 @@ var HeatMap = function (_canvas) {
     var ctx = canvas.getContext('2d')
     var showHeat = true
     var overlayImage = null
+    var overlay_type = 3
     
 
-    this.set_data = function(config, heat_data){
+    this.set_data = function(config, heat_data, _overlay_type){
         heat_config = config
         grid = heat_data
         canvas.width = window.innerWidth
         canvas.height = window.innerHeight
+        overlay_type = _overlay_type
+        // overlay_type = 2
         this.drawCanvas()
     }
 
@@ -26,7 +29,24 @@ var HeatMap = function (_canvas) {
                 for (var j = 0; j < canvas.width / pixelGap; j++) {
                     var x = pixelGap * j;
                     var y = pixelGap * i;
-                    value = getValue(x + 4, y + 4).toFixed(3);            
+                    value = getValue(x + 4, y + 4).toFixed(3);    
+                    if(value == 999){
+                        continue;
+                    }
+                    switch(overlay_type){
+                        case 0:         //pm10
+                            value = value
+                            break
+                        case 1:         //pm25
+                            value = value
+                            break;
+                        case 2:         //t
+                            value = (value) * 2.5
+                            break;
+                        case 3:
+                            value = 100 - value
+                            break
+                    }
                     var r,g,b;
                     if (value < 25){
                         r = 0;
@@ -51,9 +71,18 @@ var HeatMap = function (_canvas) {
                     } else {                        
                         ctx.fillStyle = `rgb(250,0,0)`
                     }
-                    if (value != 0){
-                        ctx.fillRect(x, y, pixelGap, pixelGap);
-                    }                    
+                    switch(overlay_type){
+                        case 0:
+                        case 1:
+                        case 2:
+                            if (value != 0){
+                                ctx.fillRect(x, y, pixelGap, pixelGap);
+                            }
+                            break
+                        case 3:
+                            ctx.fillRect(x, y, pixelGap, pixelGap);
+                            break;
+                    }   
                 }
             }
             overlayImage = L.imageOverlay(canvas.toDataURL(), map.getBounds(), {opacity: 0.5}).addTo(map)
@@ -65,8 +94,8 @@ var HeatMap = function (_canvas) {
         var latitude = map.containerPointToLatLng(point).lat
         var longitude = map.containerPointToLatLng(point).lng
 
-        if (latitude <= heat_config.minlat || latitude >= heat_config.maxlat) return 0
-        if (longitude <= heat_config.minlng || longitude >= heat_config.maxlng) return 0
+        if (latitude <= heat_config.minlat || latitude >= heat_config.maxlat) return 999
+        if (longitude <= heat_config.minlng || longitude >= heat_config.maxlng) return 999
 
         var gridn = selectGrid(latitude, longitude);
         var g00 = grid[gridn[0]][gridn[1]]

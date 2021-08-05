@@ -1,3 +1,4 @@
 export var config = {
-    "host" : "localhost:4500"
+    "host" : "211.214.35.45:15000"
+    //"host" : "106.244.205.29:4500"
 }
