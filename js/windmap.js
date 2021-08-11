@@ -144,6 +144,7 @@ var WindMap = function (_canvas) {
     }
 
     this.startAnim = function () {
+        this.stopAnim()
         build()
         anim()
     }

@@ -2,22 +2,18 @@ import { HeatMap as HeatMap } from './heatmap.js';
 import { WindMap as WindMap } from './windmap.js'
 import { config as config } from '../config.js'
 import { heatData as point_data } from './data.js'
-
-
+import {dust_forecast as dust_forecast} from './table.js'
+import {weather_forecast as weather_forecast} from './table.js'
 
 window.map = L.map('map')
     .setView([37, 128], 8)
 map.setMinZoom(5)
 
-
-
 L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png').addTo(map);
 
 var heatmap = new HeatMap(document.getElementById("heatmap"))
 var windmap = new WindMap(document.getElementById('windmap'))
-
-
-window.current_state = {
+var current_state = {
     "heatmap_index": 2,
     "time_index": 0,
     "show_marker": false,
@@ -33,12 +29,11 @@ window.current_state = {
         "gridY": 0
     }
 }
-
 var wind_data = []
 var heat_data = []       //0 : pm10, 1 : pm25, 2 : t, 3 : h
 var Interval;
 var play_btn = document.getElementById('play')
-window.on_map_info = null;
+var on_map_info = null;
 
 var post_data = {}
 var heatmap_layer = [document.getElementById('show_pm10'), document.getElementById('show_pm25'),
@@ -219,7 +214,7 @@ heatmap_layer[0].addEventListener('click', () => {
         heatmap_layer[1].checked = false
         heatmap_layer[2].checked = false
         heatmap_layer[3].checked = false
-        current_state.heatmap_index = 0        
+        current_state.heatmap_index = 0
         button_change()
         heatmap.set_showheat(true)
         heatmap.set_data(current_state.map, heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
@@ -240,7 +235,7 @@ heatmap_layer[1].addEventListener('click', () => {
         heatmap_layer[0].checked = false
         heatmap_layer[2].checked = false
         heatmap_layer[3].checked = false
-        current_state.heatmap_index = 1        
+        current_state.heatmap_index = 1
         button_change()
         heatmap.set_showheat(true)
         heatmap.set_data(current_state.map, heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
@@ -260,7 +255,7 @@ heatmap_layer[2].addEventListener('click', () => {
         heatmap_layer[0].checked = false
         heatmap_layer[1].checked = false
         heatmap_layer[3].checked = false
-        current_state.heatmap_index = 2        
+        current_state.heatmap_index = 2
         button_change()
         heatmap.set_showheat(true)
         heatmap.set_data(current_state.map, heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
@@ -281,7 +276,7 @@ heatmap_layer[3].addEventListener('click', () => {
         heatmap_layer[0].checked = false
         heatmap_layer[1].checked = false
         heatmap_layer[2].checked = false
-        current_state.heatmap_index = 3        
+        current_state.heatmap_index = 3
         button_change()
         heatmap.set_showheat(true)
         heatmap.set_data(current_state.map, heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
@@ -316,9 +311,9 @@ document.getElementById('date_progress').addEventListener('click', (e) => {
     var x = document.getElementById('date_progress').offsetWidth
     var y = e.x - document.getElementById('date_progress').offsetLeft
 
-    document.getElementById('date_progress_bar').style.width = (y / x) * 100 + '%'
+    document.getElementById('knob').style.left = ((y / x) * 480 - 10) + "px"
 
-    current_state.time_index = Math.floor(parseFloat(document.getElementById('date_progress_bar').style.width) / 4.16667)
+    current_state.time_index = Math.floor((parseFloat(document.getElementById('knob').style.left) / 480) / 0.0416667)
     map_update(current_state.time_index)
     if (on_map_info != undefined) {
         update_on_map_info()
@@ -326,25 +321,23 @@ document.getElementById('date_progress').addEventListener('click', (e) => {
 })
 
 play_btn.addEventListener('click', () => {
-    var progress_bar = document.getElementById('date_progress_bar')
+    var knob = document.getElementById('knob')
     if (play_btn.children[0].id == "play_btn") {
         play_btn.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-pause-circle" viewBox="0 0 16 16">
-            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-            <path d="M5 6.25a1.25 1.25 0 1 1 2.5 0v3.5a1.25 1.25 0 1 1-2.5 0v-3.5zm3.5 0a1.25 1.25 0 1 1 2.5 0v3.5a1.25 1.25 0 1 1-2.5 0v-3.5z"/>
+        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white" class="bi bi-pause-fill" viewBox="0 0 16 16">
+        <path d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5zm5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5z"/>
         </svg>
         `
         Interval = setInterval(() => {
-            progress_bar.style.width = (parseFloat(progress_bar.style.width) + 0.3) + "%"
-            if (parseFloat(progress_bar.style.width) > 100) {
+            knob.style.left = (parseFloat(knob.style.left) + 2) + "px"
+            if (parseInt(knob.style.left) > 480) {
                 play_btn.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" id = "play_btn" width="25" height="25" fill="currentColor" class="bi bi-play-circle" viewBox="0 0 16 16">
-                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                    <path d="M6.271 5.055a.5.5 0 0 1 .52.038l3.5 2.5a.5.5 0 0 1 0 .814l-3.5 2.5A.5.5 0 0 1 6 10.5v-5a.5.5 0 0 1 .271-.445z"/>
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" id = "play_btn" width="30" height="30" fill="white" class="bi bi-play-fill" viewBox="0 0 16 16">
+                <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
+                </svg>   
                 `
                 clearInterval(Interval)
-                progress_bar.style.width = '1%'
+                knob.style.left = '0px'
                 current_state.time_index = 0
                 map_update(current_state.time_index)
                 if (on_map_info != undefined) {
@@ -352,7 +345,7 @@ play_btn.addEventListener('click', () => {
                 }
             }
 
-            var tmp = Math.floor(parseFloat(document.getElementById('date_progress_bar').style.width) / 4.16667)
+            var tmp = Math.floor((parseFloat(knob.style.left) / 480) / 0.0416667)
             if (current_state.time_index != tmp) {
                 current_state.time_index = tmp
                 map_update(current_state.time_index)
@@ -364,12 +357,11 @@ play_btn.addEventListener('click', () => {
         }, 100)
     } else {
         play_btn.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" id = "play_btn" width="25" height="25" fill="currentColor" class="bi bi-play-circle" viewBox="0 0 16 16">
-            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-            <path d="M6.271 5.055a.5.5 0 0 1 .52.038l3.5 2.5a.5.5 0 0 1 0 .814l-3.5 2.5A.5.5 0 0 1 6 10.5v-5a.5.5 0 0 1 .271-.445z"/>
-        </svg>        
+        <svg xmlns="http://www.w3.org/2000/svg" id = "play_btn" width="30" height="30" fill="white" class="bi bi-play-fill" viewBox="0 0 16 16">
+        <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
+      </svg>      
         `
-        clearInterval(Interval)        
+        clearInterval(Interval)
     }
 })
 
@@ -389,814 +381,9 @@ function show_detail_data(e, type = 0) {        // type 위치검색 : 0, 지도
 function fill_detail_table(type = 0) {
     var detail_table = document.getElementById('detail_table')
     if (type < 2) {       // 미세먼지
-        detail_table.innerHTML =
-            `
-        <tr>
-                                <td>구분</td>
-                                <td colspan="8">오늘 6/3</td>
-                                <td colspan="8">내일 6/4</td>
-                                <td colspan="2">6/5</td>
-                                <td colspan="2">6/6</td>
-                                <td colspan="2">6/7</td>
-                                <td colspan="2">6/8</td>
-                                <td colspan="2">6/9</td>                                
-                            </tr>
-                            <tr>
-                                <td>미세먼지(PM10)</td>
-                                <td colspan="8">한때 나쁨</td>
-                                <td colspan="8">보통</td>
-                                <td colspan="2">한때 나쁨</td>
-                                <td colspan="2">보통</td>
-                                <td colspan="2">한때 나쁨</td>
-                                <td colspan="2">보통</td>
-                                <td colspan="2">한때 나쁨</td>
-
-                                
-                            </tr>
-                            <tr>
-                                <td>미세먼지(PM25)</td>
-                                <td colspan="8">한때 나쁨</td>
-                                <td colspan="8">보통</td>
-                                <td colspan="2">한때 나쁨</td>
-                                <td colspan="2">보통</td>
-                                <td colspan="2">한때 나쁨</td>
-                                <td colspan="2">보통</td>
-                                <td colspan="2">한때 나쁨</td>
-                            </tr>
-                            <tr>
-                                <td>오전/오후</td>
-                                <td colspan = "4">오전</td>
-                                <td colspan = "4">오후</td>
-                                <td colspan = "4">오전</td>
-                                <td colspan = "4">오후</td>
-
-                                <td rowspan="2" colspan = "1">오전</td>
-                                <td rowspan="2" colspan = "1">오후</td>
-                                <td rowspan="2" colspan = "1">오전</td>
-                                <td rowspan="2" colspan = "1">오후</td>
-                                <td rowspan="2" colspan = "1">오전</td>
-                                <td rowspan="2" colspan = "1">오후</td>
-                                <td rowspan="2" colspan = "1">오전</td>
-                                <td rowspan="2" colspan = "1">오후</td>
-                                <td rowspan="2" colspan = "1">오전</td>
-                                <td rowspan="2" colspan = "1">오후</td>                             
-                            </tr>
-                            <tr>
-                                <td>시각</td>
-                                <td>00~03</td>
-                                <td>03~06</td>
-                                <td>06~09</td>
-                                <td>09~12</td>
-                                <td>12~15</td>
-                                <td>15~18</td>
-                                <td>18~21</td>
-                                <td>21~24</td>
-                                <td>00~03</td>
-                                <td>03~06</td>
-                                <td>06~09</td>
-                                <td>09~12</td>
-                                <td>12~15</td>
-                                <td>15~18</td>
-                                <td>18~21</td>
-                                <td>21~24</td>
-                            </tr>
-                            <tr>
-                                <td>미세먼지(PM10)</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                            </tr>
-                            <tr>
-                                <td>미세먼지(PM25)</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                            </tr>
-        `   // dust forecast
+        detail_table.innerHTML = dust_forecast
     } else {                                    // 기상 상황
-        detail_table.innerHTML =
-            `
-        <tr>
-                        <td>날짜</td>
-                        <td colspan="24 ">오늘 6/3</td>
-                        <td colspan="24">내일 6/4</td>
-                        <td colspan="24">모래6/5</td>
-                        <td rowspan="2">날짜</td>
-                        <td colspan="2">6/6</td>
-                        <td colspan="2">6/7</td>
-                        <td colspan="2">6/8</td>
-                        <td colspan="2">6/9</td>
-                    </tr>
-                    <tr>
-                        <td rowspan="2">예보</td>
-                        <td colspan="6">새벽</td>
-                        <td colspan="6">아침</td>
-                        <td colspan="6">낯</td>
-                        <td colspan="6">저녁</td>
-                        <td colspan="6">새벽</td>
-                        <td colspan="6">아침</td>
-                        <td colspan="6">낯</td>
-                        <td colspan="6">저녁</td>
-                        <td colspan="6">새벽</td>
-                        <td colspan="6">아침</td>
-                        <td colspan="6">낯</td>
-                        <td colspan="6">저녁</td>
-                        <td>오전</td>
-                        <td>오후</td>
-                        <td>오전</td>
-                        <td>오후</td>
-                        <td>오전</td>
-                        <td>오후</td>
-                        <td>오전</td>
-                        <td>오후</td>
-                    </tr>
-                    <tr>
-                        <td colspan="6"><img src='image/forecast.png' width="30px"></td>
-                        <td colspan="6"><img src='image/forecast.png' width="30px"></td>
-                        <td colspan="6"><img src='image/forecast.png' width="30px"></td>
-                        <td colspan="6"><img src='image/forecast.png' width="30px"></td>
-                        <td colspan="6"><img src='image/forecast.png' width="30px"></td>
-                        <td colspan="6"><img src='image/forecast.png' width="30px"></td>
-                        <td colspan="6"><img src='image/forecast.png' width="30px"></td>
-                        <td colspan="6"><img src='image/forecast.png' width="30px"></td>
-                        <td colspan="6"><img src='image/forecast.png' width="30px"></td>
-                        <td colspan="6"><img src='image/forecast.png' width="30px"></td>
-                        <td colspan="6"><img src='image/forecast.png' width="30px"></td>
-                        <td colspan="6"><img src='image/forecast.png' width="30px"></td>
-                        <td>날씨</td>
-                        <td><img src='image/forecast.png' width="30px"></td>
-                        <td><img src='image/forecast.png' width="30px"></td>
-                        <td><img src='image/forecast.png' width="30px"></td>
-                        <td><img src='image/forecast.png' width="30px"></td>
-                        <td><img src='image/forecast.png' width="30px"></td>
-                        <td><img src='image/forecast.png' width="30px"></td>
-                        <td><img src='image/forecast.png' width="30px"></td>
-                        <td><img src='image/forecast.png' width="30px"></td>
-
-                    </tr>
-                    <tr>
-                        <td>시간</td>
-                        <td>0시</td>
-                        <td>1시</td>
-                        <td>2시</td>
-                        <td>3시</td>
-                        <td>4시</td>
-                        <td>5시</td>
-                        <td>6시</td>
-                        <td>7시</td>
-                        <td>8시</td>
-                        <td>9시</td>
-                        <td>10시</td>
-                        <td>11시</td>
-                        <td>12시</td>
-                        <td>13시</td>
-                        <td>14시</td>
-                        <td>15시</td>
-                        <td>16시</td>
-                        <td>17시</td>
-                        <td>18시</td>
-                        <td>19시</td>
-                        <td>20시</td>
-                        <td>21시</td>
-                        <td>22시</td>
-                        <td>23시</td>
-                        <td>0시</td>
-                        <td>1시</td>
-                        <td>2시</td>
-                        <td>3시</td>
-                        <td>4시</td>
-                        <td>5시</td>
-                        <td>6시</td>
-                        <td>7시</td>
-                        <td>8시</td>
-                        <td>9시</td>
-                        <td>10시</td>
-                        <td>11시</td>
-                        <td>12시</td>
-                        <td>13시</td>
-                        <td>14시</td>
-                        <td>15시</td>
-                        <td>16시</td>
-                        <td>17시</td>
-                        <td>18시</td>
-                        <td>19시</td>
-                        <td>20시</td>
-                        <td>21시</td>
-                        <td>22시</td>
-                        <td>23시</td>
-                        <td>0시</td>
-                        <td>1시</td>
-                        <td>2시</td>
-                        <td>3시</td>
-                        <td>4시</td>
-                        <td>5시</td>
-                        <td>6시</td>
-                        <td>7시</td>
-                        <td>8시</td>
-                        <td>9시</td>
-                        <td>10시</td>
-                        <td>11시</td>
-                        <td>12시</td>
-                        <td>13시</td>
-                        <td>14시</td>
-                        <td>15시</td>
-                        <td>16시</td>
-                        <td>17시</td>
-                        <td>18시</td>
-                        <td>19시</td>
-                        <td>20시</td>
-                        <td>21시</td>
-                        <td>22시</td>
-                        <td>23시</td>
-                        <td rowspan="4">최저 / 최고 (C)</td>
-                        <td rowspan="4" colspan="2">16/26</td>
-                        <td rowspan="4" colspan="2">16/26</td>
-                        <td rowspan="4" colspan="2">16/26</td>
-                        <td rowspan="4" colspan="2">16/26</td>
-                    </tr>
-                    <tr>
-                        <td>날씨</td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                        <td><img src='image/forecast.png' width="15px"></td>
-                    </tr>
-
-                    <tr>
-                        <td>강수확률 (%)</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                    </tr>
-
-                    <tr>
-                        <td>강수량 (mm)</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                    </tr>
-                    <tr>
-                        <td>기온 ( C )</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td rowspan="4">강수확률 (%)</td>
-                        <td rowspan="4" >20</td>
-                        <td rowspan="4" >10</td>
-                        <td rowspan="4" >20</td>
-                        <td rowspan="4" >10</td>
-                        <td rowspan="4" >20</td>
-                        <td rowspan="4" >10</td>
-                        <td rowspan="4" >20</td>
-                        <td rowspan="4" >10</td>
-                    </tr>
-                    <tr>
-                        <td>풍향</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                    </tr>
-                    <tr>
-                        <td>풍속 (m/s)</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                    </tr>
-                    <tr>
-                        <td>습도 (%)</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-                        <td>30</td>
-    </tr>
-        `   // weather forecast
+        detail_table.innerHTML = weather_forecast            
     }
 }
 map.on('click', (e) => {
@@ -1207,14 +394,14 @@ map.on('click', (e) => {
     button_change()
     show_detail_data(e, current_state.heatmap_index)
     var value = ""
-    if (current_state.heatmap_index < 2){        
+    if (current_state.heatmap_index < 2) {
         value = Math.round(heatmap.getValue(e.containerPoint.x, e.containerPoint.y)) + "µg/m³"
-    } else if (current_state.heatmap_index == 2){
+    } else if (current_state.heatmap_index == 2) {
         value = heatmap.getValue(e.containerPoint.x, e.containerPoint.y).toFixed(1) + "℃"
     } else {
         value = heatmap.getValue(e.containerPoint.x, e.containerPoint.y).toFixed(1) + "%"
     }
-    
+
     on_map_info = on_map_info = L.marker([e.latlng.lat, e.latlng.lng], {
         icon: L.divIcon({
             html: `
@@ -1223,22 +410,22 @@ map.on('click', (e) => {
             </div>
             ${value}
             </div>`,
-            className:'display-none'
+            className: 'display-none'
         })
     }).addTo(map)
 
 })
 
-function update_on_map_info(){
-    if (on_map_info != undefined){
+function update_on_map_info() {
+    if (on_map_info != undefined) {
         var latlng = on_map_info._latlng
         map.removeLayer(on_map_info)
         var point = map.latLngToContainerPoint(latlng)
 
         var value = ""
-        if (current_state.heatmap_index < 2){        
+        if (current_state.heatmap_index < 2) {
             value = Math.round(heatmap.getValue(point.x, point.y)) + "µg/m³"
-        } else if (current_state.heatmap_index == 2){
+        } else if (current_state.heatmap_index == 2) {
             value = heatmap.getValue(point.x, point.y).toFixed(1) + "℃"
         } else {
             value = heatmap.getValue(point.x, point.y).toFixed(1) + "%"
@@ -1251,7 +438,7 @@ function update_on_map_info(){
                 </div>
                 ${value}
                 </div>`,
-                className:'display-none'
+                className: 'display-none'
             })
         }).addTo(map)
     }
@@ -1463,4 +650,33 @@ $('#move_to_current_location').on('click', () => {
     } else {
         alert("이 브라우저에서는 Geolocation이 지원되지 않습니다.")
     }
+})
+
+var knob_move = false
+$('#knob').on('mousedown', (e) => {
+    knob_move = true
+})
+
+window.addEventListener('mouseup', (e) => {
+    if (knob_move) {
+        knob_move = false
+        $('#knob').css({
+            "transition": "left .1s ease"
+        })
+        current_state.time_index = Math.floor((parseFloat(document.getElementById('knob').style.left) / 480) / 0.0416667)
+        map_update(current_state.time_index)
+        if (on_map_info != undefined) {
+            update_on_map_info()
+        }
+    }
+})
+
+window.addEventListener('mousemove', (e) => {
+    if (knob_move) {
+        $('#knob').css({
+            "transition": "none"
+        })
+        $('#knob')[0].style.left = (e.x - 130) + "px"
+    }
+
 })
