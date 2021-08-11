@@ -16,6 +16,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
         crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.slim.js"
+        integrity="sha256-HwWONEZrpuoh951cQD1ov2HUK5zA5DwJ1DNUXaM6FsY=" crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -26,16 +28,24 @@
         <div class="row search_box">
             <div class="input-group">
                 <div class="input-group-prepend">
-                    <button class="btn btn-secondary" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="16"
-                            height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                    <button class="btn btn-secondary" id="search_btn" type="button"><svg
+                            xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-search" viewBox="0 0 16 16">
                             <path
                                 d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
                         </svg></button>
                 </div>
-                <input type="text" class="form-control" placeholder="위치검색" aria-label=""
-                    aria-describedby="basic-addon1">
+                <input placeholder="위치 검색" list="cities" name="myBrowser" id="search_field" /></label>
+                <datalist id="cities">
+                    <option data-value="37.539327, 126.977938" value="Seoul">
+                    <option data-value="35.1646501,128.9317159" value="Busan">
+                    <option data-value="35.1768202,126.7737601" value="Gwangju">
+                    <option data-value="37.4003657,127.0709101" value="Sungnam">
+                    <option data-value="37.278916,126.9558101" value="Suwon">
+                    <option data-value="37.4646656,126.604310" value="Incheon">
+                </datalist>
                 <div class="input-group-append">
-                    <button class="btn btn-secondary" type="button"> <svg xmlns="http://www.w3.org/2000/svg" width="16"
+                    <button class="btn btn-secondary" type="button" id = "move_to_current_location"> <svg xmlns="http://www.w3.org/2000/svg" width="16"
                             height="16" fill="currentColor" class="bi bi-compass" viewBox="0 0 16 16">
                             <path
                                 d="M8 16.016a7.5 7.5 0 0 0 1.962-14.74A1 1 0 0 0 9 0H7a1 1 0 0 0-.962 1.276A7.5 7.5 0 0 0 8 16.016zm6.5-7.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z" />
@@ -54,7 +64,7 @@
                     </div>
                     <div class="col-3">
                         <label class="switch">
-                            <input type="checkbox" id="show_pm10" disabled>
+                            <input type="checkbox" id="show_pm10">
                             <span class="slider round"></span>
                         </label>
                     </div>
@@ -67,7 +77,7 @@
                     </div>
                     <div class="col-3">
                         <label class="switch">
-                            <input type="checkbox" id="show_pm25" disabled>
+                            <input type="checkbox" id="show_pm25">
                             <span class="slider round"></span>
                         </label>
                     </div>
@@ -91,13 +101,13 @@
                         </label>
                     </div>
                 </div>
-                <img id = "heat_bar" src='./image/heat_bar_h.png' width="250px">
+                <img id="heat_bar" src='./image/heat_bar_t.png' width="250px">
             </div>
 
             <div class="network_box">
                 <div class="h4">실외 공기 관측망</div>
                 <div class="row">
-                    <div class="h6 col-9" style="padding-left:30px;" >
+                    <div class="h6 col-9" style="padding-left:30px;">
                         IoT관측망 + 국가관측망
                     </div>
                     <div class="col-3">
@@ -166,15 +176,17 @@
                             <span class="slider round"></span>
                         </label>
                     </div>
-                </div>                
+                </div>
             </div>
         </div>
 
         <div class="bottom_box">
-            <button class="btn btn-secondary" id="play" state = "play">
-                <svg xmlns="http://www.w3.org/2000/svg" id = "play_btn" width="25" height="25" fill="currentColor" class="bi bi-play-circle" viewBox="0 0 16 16">
-                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                    <path d="M6.271 5.055a.5.5 0 0 1 .52.038l3.5 2.5a.5.5 0 0 1 0 .814l-3.5 2.5A.5.5 0 0 1 6 10.5v-5a.5.5 0 0 1 .271-.445z"/>
+            <button class="btn btn-secondary" id="play" state="play">
+                <svg xmlns="http://www.w3.org/2000/svg" id="play_btn" width="25" height="25" fill="currentColor"
+                    class="bi bi-play-circle" viewBox="0 0 16 16">
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                    <path
+                        d="M6.271 5.055a.5.5 0 0 1 .52.038l3.5 2.5a.5.5 0 0 1 0 .814l-3.5 2.5A.5.5 0 0 1 6 10.5v-5a.5.5 0 0 1 .271-.445z" />
                 </svg>
             </button>
             <div class="progress" id="date_progress" style="width:500px;">
@@ -183,136 +195,28 @@
             </div>
             <br>
             <div id="detail_box">
-                <div id = "info_box" class = "row">
-                    <div class = "col-2 btn-light btn" id = "current_location"></div>
-                    <div class= "col-9" style = "text-align:center">
-                        <div class = "btn btn-primary col-3" id = "weather_button">날씨</div>
-                        <div class = "btn btn-light col-3" id = "dust_button">미세먼지</div>
+                <div id="info_box" class="row">
+                    <div class="col-2 btn-light btn" id="current_location"></div>
+                    <div class="col-9" style="text-align:center">
+                        <div class="btn btn-primary col-3" id="weather_button">날씨</div>
+                        <div class="btn btn-light col-3" id="dust_button">미세먼지</div>
                     </div>
-                    <div class='col-1 btn btn-light' id = "close_detail_box">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
-                      </svg>
+                    <div class='col-1 btn btn-light' id="close_detail_box">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-x-circle" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                            <path
+                                d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+                        </svg>
                     </div>
                 </div>
-                
                 <div id="detail_data">
-                    <div style="width:2000px;">
-                        <table class="table table-bordered align-middle" id = "dust_forecast">
-                            <tr class = "table_header">
-                                <td>구분</td>
-                                <td colspan="8">오늘 6/3</td>
-                                <td colspan="8">내일 6/4</td>
-                                <td colspan="8">6/5</td>
-                                <td colspan="8">6/6</td>
-                                <td colspan="8">6/7</td>
-                                <td colspan="8">6/8</td>
-                                <td colspan="8">6/9</td>
-                                
-                            </tr>
-                            <tr>
-                                <td class = "table_header">미세먼지(PM10)</td>
-                                <td colspan="8">한때 나쁨</td>
-                                <td colspan="8">보통</td>
-                                <td colspan="8">한때 나쁨</td>
-                                <td colspan="8">보통</td>
-                                <td colspan="8">한때 나쁨</td>
-                                <td colspan="8">보통</td>
-                                <td colspan="8">한때 나쁨</td>
-
-                                
-                            </tr>
-                            <tr>
-                                <td class = "table_header">미세먼지(PM25)</td>
-                                <td colspan="8">한때 나쁨</td>
-                                <td colspan="8">보통</td>
-                                <td colspan="8">한때 나쁨</td>
-                                <td colspan="8">보통</td>
-                                <td colspan="8">한때 나쁨</td>
-                                <td colspan="8">보통</td>
-                                <td colspan="8">한때 나쁨</td>
-                            </tr>
-                            <tr class = "table_header">
-                                <td>오전/오후</td>
-                                <td colspan = "4">오전</td>
-                                <td colspan = "4">오후</td>
-                                <td colspan = "4">오전</td>
-                                <td colspan = "4">오후</td>
-                                <td colspan = "4">오전</td>
-                                <td colspan = "4">오후</td>
-                                <td colspan = "4">오전</td>
-                                <td colspan = "4">오후</td>
-                                <td colspan = "4">오전</td>
-                                <td colspan = "4">오후</td>
-                                <td colspan = "4">오전</td>
-                                <td colspan = "4">오후</td>
-                                <td colspan = "4">오전</td>
-                                <td colspan = "4">오후</td>                             
-                            </tr>
-                            <tr class = "table_header">
-                                <td>시각</td>
-                                <td>00~03</td>
-                                <td>03~06</td>
-                                <td>06~09</td>
-                                <td>09~12</td>
-                                <td>12~15</td>
-                                <td>15~18</td>
-                                <td>18~21</td>
-                                <td>21~24</td>
-                                <td>00~03</td>
-                                <td>03~06</td>
-                                <td>06~09</td>
-                                <td>09~12</td>
-                                <td>12~15</td>
-                                <td>15~18</td>
-                                <td>18~21</td>
-                                <td>21~24</td>
-                            </tr>
-                            <tr>
-                                <td class = "table_header">미세먼지(PM10)</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                                <td>보통</td>
-                            </tr>
-                            <tr>
-                                <td class = "table_header">미세먼지(PM25)</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                                <td>한때나쁨</td>
-                            </tr>
-                        </table>
-                    </div>
+                    <table class="table-bordered align-middle" id="detail_table" style="white-space: nowrap;"></table>
                 </div>
             </div>
         </div>
 
+        
     </div>
     <script type="module" src="./js/main.js"></script>
 </body>

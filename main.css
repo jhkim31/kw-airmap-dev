@@ -4,7 +4,7 @@ html {
     margin: 0;
 }
 
-#map {
+#map{
     width: 100%;
     height: 100%;
     position: absolute;
@@ -18,6 +18,18 @@ html {
     pointer-events: none;
     z-index: 0;
     opacity: 1;
+}
+
+.on_map_info{
+  background:white;
+  border-radius:5px;  
+}
+.display-none{
+  border:0px;
+}
+#design{
+  width:10px;
+  height:30px;   
 }
 .overlay {
     position:absolute;
@@ -73,24 +85,9 @@ html {
 
 #detail_box{
   width:100%;
-  height:0px;
+  height:auto;
   pointer-events: auto;  
   visibility: hidden;
-}
-
-#detail_data{
-  background:white;
-  overflow:scroll;  
-}
-
-#dust_forecast tr{
-  text-align: center;
-  height:15px;
-  font-size:0.7em;
-}
-#dust_forecast .table_header{
-  background:#aaaaaa;
-  font-weight:bold;
 }
 
 #info_box{
@@ -98,6 +95,21 @@ html {
   height:40px;
 }
 
+
+#detail_data{
+  overflow:scroll;  
+}
+
+#detail_table tr{
+  background: white;
+  text-align: center;
+  height:15px;
+  font-size:0.7em;
+}
+#detail_table .table_header_color{
+  background:#aaaaaa;
+  font-weight:bold;
+}
 
 
 .leaflet-control{
