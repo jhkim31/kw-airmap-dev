@@ -68,7 +68,7 @@ var WindMap = function (_canvas) {
                 c.moveTo(ls.x, ls.y);
                 c.lineTo(this.x, this.y);
                 c.stroke();
-                c.closePath();
+                c.closePath();                
             }
         }
     }
@@ -182,15 +182,6 @@ var WindMap = function (_canvas) {
             buildobj(i)
         }
     }
-
-    // map.on('click', (e) => {
-    //     if (document.getElementById('playWind').checked){
-    //         if (!document.getElementById('showHeatMap').checked){
-    //             console.log(getVector(e.latlng.lat, e.latlng.lng)[0].toFixed(1), getVector(e.latlng.lat, e.latlng.lng)[1].toFixed(1))
-    //         }
-    //     }
-        
-    // })
 }
 
 export { WindMap }

@@ -3,6 +3,7 @@ export var dust_forecast =      `
                         <td>구분</td>
                         <td colspan="8">오늘 6/3</td>
                         <td colspan="8">내일 6/4</td>
+                        
                         <td colspan="2">6/5</td>
                         <td colspan="2">6/6</td>
                         <td colspan="2">6/7</td>
@@ -13,6 +14,7 @@ export var dust_forecast =      `
                         <td class = "table_header">미세먼지(PM10)</td>
                         <td colspan="8">한때 나쁨</td>
                         <td colspan="8">보통</td>
+                        
                         <td colspan="2">한때 나쁨</td>
                         <td colspan="2">보통</td>
                         <td colspan="2">한때 나쁨</td>
@@ -25,6 +27,7 @@ export var dust_forecast =      `
                         <td class = "table_header">미세먼지(PM25)</td>
                         <td colspan="8">한때 나쁨</td>
                         <td colspan="8">보통</td>
+                        
                         <td colspan="2">한때 나쁨</td>
                         <td colspan="2">보통</td>
                         <td colspan="2">한때 나쁨</td>
@@ -37,7 +40,7 @@ export var dust_forecast =      `
                         <td colspan = "4">오후</td>
                         <td colspan = "4">오전</td>
                         <td colspan = "4">오후</td>
-
+                        
                         <td rowspan="2" colspan = "1">오전</td>
                         <td rowspan="2" colspan = "1">오후</td>
                         <td rowspan="2" colspan = "1">오전</td>
@@ -67,6 +70,7 @@ export var dust_forecast =      `
                         <td>15~18</td>
                         <td>18~21</td>
                         <td>21~24</td>
+                        
                     </tr>
                     <tr>
                         <td class = "table_header">미세먼지(PM10)</td>
@@ -86,6 +90,7 @@ export var dust_forecast =      `
                         <td>보통</td>
                         <td>보통</td>
                         <td>보통</td>
+                        
                         <td>보통</td>
                         <td>보통</td>
                         <td>보통</td>
@@ -95,7 +100,7 @@ export var dust_forecast =      `
                         <td>보통</td>
                         <td>보통</td>
                         <td>보통</td>
-                        <td>보통</td>
+                        <td>보통</td>                        
                     </tr>
                     <tr>
                         <td class = "table_header">미세먼지(PM25)</td>
@@ -115,6 +120,8 @@ export var dust_forecast =      `
                         <td>한때나쁨</td>
                         <td>한때나쁨</td>
                         <td>한때나쁨</td>
+                        
+                        <td>한때나쁨</td>                        
                         <td>한때나쁨</td>
                         <td>한때나쁨</td>
                         <td>한때나쁨</td>
@@ -124,7 +131,7 @@ export var dust_forecast =      `
                         <td>한때나쁨</td>
                         <td>한때나쁨</td>
                         <td>한때나쁨</td>
-                        <td>한때나쁨</td>
+                        
                     </tr>
 `   // dust forecast
 

@@ -29,7 +29,7 @@ var HeatMap = function (_canvas) {
                 for (var j = 0; j < canvas.width / pixelGap; j++) {
                     var x = pixelGap * j;
                     var y = pixelGap * i;
-                    value = getValue(x + 4, y + 4).toFixed(3);    
+                    value = this.getValue(x + 4, y + 4).toFixed(3);    
                     if(value == 999){
                         continue;
                     }
@@ -89,7 +89,7 @@ var HeatMap = function (_canvas) {
         }
     }
 
-    function getValue(x, y) {
+    this.getValue = function(x, y) {
         var point = L.point(x, y)
         var latitude = map.containerPointToLatLng(point).lat
         var longitude = map.containerPointToLatLng(point).lng

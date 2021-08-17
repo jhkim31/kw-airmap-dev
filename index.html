@@ -26,7 +26,7 @@
     <canvas id="heatmap"></canvas>
     <canvas id="windmap"></canvas>
     <div id="overlay">
-        <div id="row search_box">
+        <div class = "row" id="search_box">
             <div class="input-group">
                 <div class="input-group-prepend">
                     <button class="btn btn-secondary" id="search_btn" type="button"><svg
@@ -56,7 +56,6 @@
                 </div>
             </div>
         </div>
-
         <div id="control_box">
             <div id="weather_box">
                 <div class="h4">동별 미세먼지</div>
@@ -72,7 +71,6 @@
                     </div>
 
                 </div>
-
                 <div class="row">
                     <div class="h6 col-9" style="padding-left:30px;">
                         PM2.5
@@ -114,7 +112,7 @@
                     </div>
                     <div class="col-3">
                         <label class="switch">
-                            <input type="checkbox" id="IoT_network">
+                            <input type="checkbox" id="iot_national_network">
                             <span class="slider round"></span>
                         </label>
                     </div>
@@ -127,7 +125,7 @@
                     </div>
                     <div class="col-3">
                         <label class="switch">
-                            <input type="checkbox" id="" disabled>
+                            <input type="checkbox" id="iot_network" >
                             <span class="slider round"></span>
                         </label>
                     </div>
@@ -139,7 +137,7 @@
                     </div>
                     <div class="col-3">
                         <label class="switch">
-                            <input type="checkbox" id="" disabled>
+                            <input type="checkbox" id="national_network" >
                             <span class="slider round"></span>
                         </label>
                     </div>
@@ -151,7 +149,7 @@
                     </div>
                     <div class="col-3">
                         <label class="switch">
-                            <input type="checkbox" id="" disabled>
+                            <input type="checkbox" id="manned_network" >
                             <span class="slider round"></span>
                         </label>
                     </div>
@@ -162,7 +160,7 @@
                     </div>
                     <div class="col-3">
                         <label class="switch">
-                            <input type="checkbox" id="" disabled>
+                            <input type="checkbox" id="aws_network" >
                             <span class="slider round"></span>
                         </label>
                     </div>
@@ -180,11 +178,35 @@
                     </div>
                 </div>
             </div>
-        </div>
 
+            <div id = "dust_std_box">
+                <div class = "row">
+                    <div class = "h5 col-6"  style = "margin:0;">미세먼지 요소</div>
+                    <div class="btn-group col-6" role="group" aria-label="Basic radio toggle button group">
+                        <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked>
+                        <label class="btn btn-outline-primary" for="btnradio1" style = "font-size:5px;">PM2.5</label>
+                      
+                        <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="btnradio2" style = "font-size:5px;">PM10</label>
+                      </div>              
+                </div>
+                <br>
+                <div class = "row">
+                    <div class = "h5 col-6" style = "margin:0;">미세먼지 기준</div>
+                    <div class="btn-group col-6" role="group" aria-label="Basic radio toggle button group">
+                        <input type="radio" class="btn-check" name="btnradio2" id="btnradio3" autocomplete="off" checked>
+                        <label class="btn btn-outline-primary" for="btnradio3" style = "font-size:5px;">WHO</label>
+                      
+                        <input type="radio" class="btn-check" name="btnradio2" id="btnradio4" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="btnradio4" style = "font-size:5px;">환경부</label>
+                      </div>     
+                </div>
+            </div>
+
+        </div>
         <div id="bottom_box">
             <div id = "timeline_control_box">
-                <div style="display:inline-block; width:100px; height:30px; float:left;">
+                <div id = "timeline_button_box">
                     <div class="my_btn">
                         <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white"
                             class="bi bi-skip-start-fill" viewBox="0 0 16 16">
@@ -209,12 +231,13 @@
                 </div>
                 <div id="date_progress">
                 </div>
-                <div id="knob">
+                <div id="knob" style = "left:480px;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="orange"
                         class="bi bi-circle-fill" viewBox="0 0 16 16">
                         <circle cx="8" cy="8" r="8" />
                     </svg>
                 </div>
+                <div id = "current_time">3/1</div>
             </div>
             <br>
             <div id="detail_box">
@@ -239,9 +262,9 @@
             </div>
         </div>
 
+        
 
     </div>
     <script type="module" src="./js/main.js"></script>
 </body>
-
 </html>
