@@ -44,7 +44,7 @@ var HeatMap = function (_canvas) {
                             value = (value) * 2.5
                             break;
                         case 3:
-                            value = 100 - value
+                            value = (100 - value) * 0.8
                             break
                     }
                     var r,g,b;

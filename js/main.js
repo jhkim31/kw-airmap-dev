@@ -13,9 +13,10 @@ L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.pn
 
 var heatmap = new HeatMap(document.getElementById("heatmap"))
 var windmap = new WindMap(document.getElementById('windmap'))
-var current_state = {
+window.current_state = {
     "heatmap_index": 2,
     "time_index": 24,
+    "timestamp" : 0,
     "show_detail_table": false,
     "knob_drag": false,
     "show_date_timeline": false,
@@ -35,8 +36,8 @@ var current_state = {
         "gridY": 0
     }
 }
-var wind_data = []
-var heat_data = []       //0 : pm10, 1 : pm25, 2 : t, 3 : h
+window.wind_data = []
+window.heat_data = []       //0 : pm10, 1 : pm25, 2 : t, 3 : h
 var Interval;
 var on_map_info = null;
 var marker_detail_popup = null
@@ -47,7 +48,6 @@ var point_layer = [$('#iot_national_network'), $('#iot_network'), $('#national_n
 
 var iot_network_list = []
 var national_network_list = []
-var manned_network_list = []
 var aws_network_list = []
 
 var manned_level1_network_list = []
@@ -108,8 +108,9 @@ function set_state(delta = 0) {
     var currentTime = `${year}/${month}/${date} ${hour}:00`
     console.log(currentTime)
     current_state.map.current_time_str = currentTime
+    current_state.timestamp = new Date(currentTime).getTime()
     post_data = {
-        "requestTime": new Date(currentTime).getTime(),
+        "requestTime": current_state.timestamp,
         "boundary": {
             "northEast": {
                 "lat": current_state.map.maxlat,
@@ -172,9 +173,7 @@ function map_update() {
     windmap.stopAnim()
     set_state(current_state.time_index * 3600000)
     var url = `http://${config.host}/test3`
-    if (wind_data[current_state.time_index] == undefined && heat_data[current_state.time_index] == undefined) {
-        wind_data[current_state.time_index] = []
-        heat_data[current_state.time_index] = []
+    if (wind_data[current_state.time_index] == undefined) {                
         fetch(url, {
             "method": "POST",
             "headers": {
@@ -184,8 +183,12 @@ function map_update() {
         })
             .then(e => e.json())
             .then(d => {
-                var converting_data = convert_data_one_time(d)
-                console.log(converting_data)
+                if (d[0].timestamp != current_state.timestamp){
+                    return
+                }
+                wind_data[current_state.time_index] = []
+                heat_data[current_state.time_index] = []
+                var converting_data = convert_data_one_time(d)                
                 wind_data[current_state.time_index].push(converting_data[0])
                 heat_data[current_state.time_index].push(converting_data[1])        //pm10
                 heat_data[current_state.time_index].push(converting_data[2])        //pm25
@@ -532,7 +535,7 @@ $('#play').on('click', () => {
                     "visibility": "visible",
                     "transition": "left .1s ease"
                 })
-                var tmp = Math.floor((parseFloat(knob.css('left')) / 480) / 0.0416667)
+                var tmp = Math.round((parseFloat(knob.css('left')) / 480) / 0.0416667)
                 if (current_state.time_index != tmp) {
                     current_state.time_index = tmp
                     map_update()
@@ -557,9 +560,61 @@ $('#play').on('click', () => {
     }
 })
 
+$('#skip_start_btn').on('click', () => {
+    if (current_state.is_playing) {
+        return;
+    }
+    var knob = $('#knob')
+    var current_time = $('#current_time')
+    var tmp = Math.floor((parseFloat(knob.css('left')) / 480) / 0.0416667)
+    if (tmp >= 0) {
+        knob.css({
+            'left': (20 * tmp) + 'px'
+        })
+        current_time.css({
+            "left": ((20 * tmp) - 60) + "px",
+            "visibility": "visible"
+        })
+        current_state.time_index = tmp
+        set_state(tmp * 3600000)
+        current_time.text(current_state.map.current_time_str)
+        map_update(current_state.time_index)
+        if (on_map_info != undefined) {
+            update_on_map_info()
+        }
+    }
+})
+
+$('#skip_end_btn').on('click', () => {
+    if (current_state.is_playing) {
+        return;
+    }
+    var knob = $('#knob')
+    var current_time = $('#current_time')
+    var tmp = Math.round((parseFloat(knob.css('left')) / 480) / 0.0416667)
+    if (tmp < 24) {
+        tmp += 1
+        knob.css({
+            'left': (20 * tmp) + 'px'
+        })
+        current_time.css({
+            "left": ((20 * tmp) - 60) + "px",
+            "visibility": "visible"
+        })
+        current_state.time_index = tmp
+        set_state(tmp * 3600000)
+        current_time.text(current_state.map.current_time_str)
+        map_update(current_state.time_index)
+        if (on_map_info != undefined) {
+            update_on_map_info()
+        }
+    }
+})
+
 //하단 상세 보기의 표를 채워주는 함수
 function fill_detail_table(type = 0) {
     var detail_table = document.getElementById('detail_table')
+    detail_table.style.height = "240px"
     if (type < 2) {       // 미세먼지일때
         detail_table.innerHTML = dust_forecast
     } else {              // 기상 상황일때
@@ -601,11 +656,22 @@ function update_on_map_info() {
                 <div style = "position:absolute;background:white; border-radius:5px; width:100px; height:30px; top:-72px; left:2px; font-size:17px;">
                 <div style = "background:white; position:absolute; width:5px; height:55px; top:28px;">
                 </div>
+                <svg class = "float-end" id = "on_map_info_close" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-square" viewBox="0 0 16 16">
+                <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                </svg> 
                 ${value}
                 </div>`,
                 className: 'display-none'
             })
-        }).addTo(map)
+        })
+        .addTo(map)
+        .on('click', (e) => {
+            if (e.originalEvent.path[0].id == "on_map_info_close" || e.originalEvent.path[1].id == "on_map_info_close") {
+                map.removeLayer(on_map_info)
+                on_map_info = null
+            }
+        })
     }
 }
 
@@ -645,12 +711,14 @@ map.on('click', (e) => {
         .on('click', (e) => {
             if (e.originalEvent.path[0].id == "on_map_info_close" || e.originalEvent.path[1].id == "on_map_info_close") {
                 map.removeLayer(on_map_info)
+                on_map_info = null
             }
         })
 })
 
 //하단 상세 보기 페이지를 닫는 함수
 $('#close_detail_box').on('click', () => {
+    detail_table.style.height = "0px"
     $('#detail_box').css({
         "visibility": "hidden",
         "height": "0px"
@@ -750,13 +818,13 @@ point_list.forEach(d => {
         }
         layer++
         count++
-    } else if (count % 7 == 0) {    
+    } else if (count % 7 == 0) {
         aws_network_list.push(L.marker([d.latitude, d.longitude], { icon: icon5, id: count })
             .on('click', (e) => {
                 e.sourceTarget.setIcon(icon6)
-                if (current_state.last_aws_marker != undefined){
+                if (current_state.last_aws_marker != undefined) {
                     current_state.last_aws_marker.setIcon(icon5)
-                }    
+                }
                 current_state.last_aws_marker = e.sourceTarget
                 show_detail_data(e)
                 show_marker_detail_popup(e, 1)
@@ -770,7 +838,7 @@ point_list.forEach(d => {
                 icon: icon1,
                 id: count
             })
-                .on('click', (e) => {                    
+                .on('click', (e) => {
                     show_detail_data(e)
                     show_marker_detail_popup(e)
                 })
@@ -793,8 +861,6 @@ point_list.forEach(d => {
         }
     }
 })
-
-
 
 function show_marker_detail_popup(e, kind = 0) { // kind  0 : 실외공기관측망, 1: aws
     if (marker_detail_popup != undefined) {
@@ -823,8 +889,8 @@ function show_marker_detail_popup(e, kind = 0) { // kind  0 : 실외공기관측
         .addTo(map)
         .on('click', (click_e) => {
             if (click_e.originalEvent.path[0].id == "marker_detail_close" || click_e.originalEvent.path[1].id == "marker_detail_close") {
-                map.removeLayer(marker_detail_popup)                
-                if (kind == 1){
+                map.removeLayer(marker_detail_popup)
+                if (kind == 1) {
                     e.sourceTarget.setIcon(icon5)
                 }
             }

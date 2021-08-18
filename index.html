@@ -3,7 +3,8 @@
 
 <head>
     <title>simpleheat demo</title>
-    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <!-- <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" /> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
         integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
         crossorigin="" />
@@ -18,7 +19,7 @@
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
         crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.slim.js"
-        integrity="sha256-HwWONEZrpuoh951cQD1ov2HUK5zA5DwJ1DNUXaM6FsY=" crossorigin="anonymous"></script>
+        integrity="sha256-HwWONEZrpuotest12351cQD1ov2HUK5zA5DwJ1DNUXaM6FsY=" crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -58,9 +59,9 @@
         </div>
         <div id="control_box">
             <div id="weather_box">
-                <div class="h4">동별 미세먼지</div>
+                <div class="h5">동별 미세먼지</div>
                 <div class="row">
-                    <div class="h6 col-9" style="padding-left:30px;">
+                    <div class="test123 col-9" style="padding-left:30px;">
                         PM10
                     </div>
                     <div class="col-3">
@@ -72,7 +73,7 @@
 
                 </div>
                 <div class="row">
-                    <div class="h6 col-9" style="padding-left:30px;">
+                    <div class="test123 col-9" style="padding-left:30px;">
                         PM2.5
                     </div>
                     <div class="col-3">
@@ -84,7 +85,7 @@
 
                 </div>
                 <div class="row">
-                    <div class="h4 col-9">온도</div>
+                    <div class="h5 col-9">온도</div>
                     <div class="col-3">
                         <label class="switch">
                             <input type="checkbox" id="show_t" checked>
@@ -93,7 +94,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="h4 col-9">습도</div>
+                    <div class="h5 col-9">습도</div>
                     <div class="col-3">
                         <label class="switch">
                             <input type="checkbox" id="show_h">
@@ -101,13 +102,13 @@
                         </label>
                     </div>
                 </div>
-                <img id="heat_bar" src='./image/heat_bar_t.png' width="250px">
+                <img id="heat_bar" src='./image/heat_bar_t.png' width="200px">
             </div>
 
             <div id="network_box">
-                <div class="h4">실외 공기 관측망</div>
+                <div class="h5">실외 공기 관측망</div>
                 <div class="row">
-                    <div class="h6 col-9" style="padding-left:30px;">
+                    <div class="test123 col-9" style="padding-left:30px;">
                         IoT관측망 + 국가관측망
                     </div>
                     <div class="col-3">
@@ -120,7 +121,7 @@
                 </div>
 
                 <div class="row">
-                    <div class="h6 col-9" style="padding-left:30px;">
+                    <div class="test123 col-9" style="padding-left:30px;">
                         IoT관측망
                     </div>
                     <div class="col-3">
@@ -132,7 +133,7 @@
                 </div>
 
                 <div class="row">
-                    <div class="h6 col-9" style="padding-left:30px;">
+                    <div class="test123 col-9" style="padding-left:30px;">
                         국가관측망
                     </div>
                     <div class="col-3">
@@ -142,9 +143,9 @@
                         </label>
                     </div>
                 </div>
-                <div class="h4">실외 공기 관측망</div>
+                <div class="h5">실외 공기 관측망</div>
                 <div class="row">
-                    <div class="h6 col-9" style="padding-left:30px;">
+                    <div class="test123 col-9" style="padding-left:30px;">
                         유인관측소
                     </div>
                     <div class="col-3">
@@ -155,7 +156,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="h6 col-9" style="padding-left:30px;">
+                    <div class="test123 col-9" style="padding-left:30px;">
                         AWS
                     </div>
                     <div class="col-3">
@@ -169,7 +170,7 @@
 
             <div id="wind_box">
                 <div class="row">
-                    <div class="h4 col-9">바람</div>
+                    <div class="h5 col-9">바람</div>
                     <div class="col-3">
                         <label class="switch">
                             <input type="checkbox" id="play_wind" checked>
@@ -181,24 +182,24 @@
 
             <div id = "dust_std_box">
                 <div class = "row">
-                    <div class = "h5 col-6"  style = "margin:0;">미세먼지 요소</div>
+                    <div class = "h6 col-6"  style = "margin:0;">미세먼지 요소</div>
                     <div class="btn-group col-6" role="group" aria-label="Basic radio toggle button group">
                         <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked>
-                        <label class="btn btn-outline-primary" for="btnradio1" style = "font-size:5px;">PM2.5</label>
+                        <label class="btn btn-outline-primary" for="btnradio1" style = "font-size:5px; padding:0;">PM2.5</label>
                       
                         <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
-                        <label class="btn btn-outline-primary" for="btnradio2" style = "font-size:5px;">PM10</label>
+                        <label class="btn btn-outline-primary" for="btnradio2" style = "font-size:5px; padding:0;">PM10</label>
                       </div>              
                 </div>
                 <br>
                 <div class = "row">
-                    <div class = "h5 col-6" style = "margin:0;">미세먼지 기준</div>
+                    <div class = "h6 col-6" style = "margin:0;">미세먼지 기준</div>
                     <div class="btn-group col-6" role="group" aria-label="Basic radio toggle button group">
                         <input type="radio" class="btn-check" name="btnradio2" id="btnradio3" autocomplete="off" checked>
-                        <label class="btn btn-outline-primary" for="btnradio3" style = "font-size:5px;">WHO</label>
+                        <label class="btn btn-outline-primary" for="btnradio3" style = "font-size:5px; padding:0;">WHO</label>
                       
                         <input type="radio" class="btn-check" name="btnradio2" id="btnradio4" autocomplete="off">
-                        <label class="btn btn-outline-primary" for="btnradio4" style = "font-size:5px;">환경부</label>
+                        <label class="btn btn-outline-primary" for="btnradio4" style = "font-size:5px; padding:0;">환경부</label>
                       </div>     
                 </div>
             </div>
@@ -207,7 +208,7 @@
         <div id="bottom_box">
             <div id = "timeline_control_box">
                 <div id = "timeline_button_box">
-                    <div class="my_btn">
+                    <div class="my_btn" id = "skip_start_btn">
                         <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white"
                             class="bi bi-skip-start-fill" viewBox="0 0 16 16">
                             <path
@@ -221,7 +222,7 @@
                                 d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z" />
                         </svg>
                     </div>
-                    <div class="my_btn">
+                    <div class="my_btn" id = "skip_end_btn">
                         <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white"
                             class="bi bi-skip-end-fill" viewBox="0 0 16 16">
                             <path

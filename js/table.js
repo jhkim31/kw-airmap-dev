@@ -183,7 +183,7 @@ export var weather_forecast = `
                 <td colspan="6"><img src='image/forecast.png' width="30px"></td>
                 <td colspan="6"><img src='image/forecast.png' width="30px"></td>
                 <td colspan="6"><img src='image/forecast.png' width="30px"></td>
-                <td>날씨</td>
+                <td class = "table_header">날씨</td>
                 <td><img src='image/forecast.png' width="30px"></td>
                 <td><img src='image/forecast.png' width="30px"></td>
                 <td><img src='image/forecast.png' width="30px"></td>
@@ -268,7 +268,7 @@ export var weather_forecast = `
                 <td>21시</td>
                 <td>22시</td>
                 <td>23시</td>
-                <td rowspan="4">최저 / 최고 (C)</td>
+                <td rowspan="4" class = "table_header">최저 / 최고 (C)</td>
                 <td rowspan="4" colspan="2">16/26</td>
                 <td rowspan="4" colspan="2">16/26</td>
                 <td rowspan="4" colspan="2">16/26</td>
@@ -575,7 +575,7 @@ export var weather_forecast = `
                 <td>30</td>
                 <td>30</td>
                 <td>30</td>
-                <td rowspan="4">강수확률 (%)</td>
+                <td rowspan="4" class = "table_header">강수확률 (%)</td>
                 <td rowspan="4" >20</td>
                 <td rowspan="4" >10</td>
                 <td rowspan="4" >20</td>
