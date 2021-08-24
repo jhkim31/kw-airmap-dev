@@ -26,6 +26,7 @@ body,html {
   opacity:1;
   
 }
+
 /* Overlay */
 #overlay {
   position:absolute;
@@ -51,7 +52,7 @@ body,html {
   opacity: 0.8;     
   pointer-events: auto;
   border-radius:3px;
-  width:250px;
+  width:200px;
   -ms-user-select: none; 
   -moz-user-select: -moz-none; 
   -webkit-user-select: none; 
@@ -86,7 +87,10 @@ body,html {
   width:50px;
   
 }
-
+.test123{
+  font-size:13px;
+  font-weight:bold;
+}
   /* bottom box */
 #bottom_box{
   position:absolute;
@@ -150,7 +154,7 @@ cursor:pointer;
   position:relative; 
   left:0px; 
   top:-22px; 
-  transition: left .1s ease;
+  transition: left .05s ease;
 }
 
 #knob:hover{

@@ -154,7 +154,7 @@ cursor:pointer;
   position:relative; 
   left:0px; 
   top:-22px; 
-  transition: left .1s ease;
+  transition: left .05s ease;
 }
 
 #knob:hover{
