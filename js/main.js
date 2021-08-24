@@ -113,7 +113,7 @@ function set_state(delta = 0) {
     current_state.map.current_time_str = currentTime
     current_state.timestamp = new Date(currentTime).getTime()
     post_data = {
-        "requestTime": current_state.timestamp,
+        // "requestTime": current_state.timestamp,
         "boundary": {
             "northEast": {
                 "lat": current_state.map.maxlat,
@@ -172,15 +172,15 @@ function convert_data_one_time(json_data) {
 //히트맵, 플로우맵들을 현재 상태로 업데이트 하는 함수
 function map_update() {
     windmap.stopAnim()
-    // set_state(current_state.time_index * 3600000)
-    var url = `http://${config.host}/test3`
-    // var url = 'https://kwapi.kweather.co.kr/v1/klps/model/data'
+    set_state(current_state.time_index * 3600000)
+
+    var url = 'https://kwapi.kweather.co.kr/v1/klps/model/data'
     if (wind_data[current_state.time_index] == undefined) {                
         fetch(url, {
             "method": "POST",
             "headers": {
-                "Content-Type": "application/json"
-                // "auth" : "kweather-test"
+                "Content-Type": "application/json",
+                "auth" : "kweather-test"
             },
             "body": JSON.stringify(post_data)
         })
@@ -192,7 +192,7 @@ function map_update() {
                 // }
                 wind_data[current_state.time_index] = []
                 heat_data[current_state.time_index] = []
-                var converting_data = convert_data_one_time(d[0])                
+                var converting_data = convert_data_one_time(d)                
                 wind_data[current_state.time_index].push(converting_data[0])
                 heat_data[current_state.time_index].push(converting_data[1])        //pm10
                 heat_data[current_state.time_index].push(converting_data[2])        //pm25
