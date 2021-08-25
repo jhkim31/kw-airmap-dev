@@ -85,7 +85,7 @@ var HeatMap = function (_canvas) {
                     }   
                 }
             }
-            overlayImage = L.imageOverlay(canvas.toDataURL(), map.getBounds(), {opacity: 0.5}).addTo(map)
+            overlayImage = L.imageOverlay(canvas.toDataURL(), map.getBounds(), {opacity: 0.4}).addTo(map)
         }
     }
 

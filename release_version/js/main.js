@@ -6,7 +6,8 @@ import { dust_forecast as dust_forecast } from './table.js'
 import { weather_forecast as weather_forecast } from './table.js'
 
 window.map = L.map('map', {
-    maxBounds : [[30, 120], [42, 132]]
+    // maxBounds : [[30, 120], [42, 132]]
+    // fadeAnimation : false
 })
     .setView([37, 128], 8)
 map.setMinZoom(5)
@@ -112,7 +113,7 @@ function set_state(delta = 0) {
     current_state.map.current_time_str = currentTime
     current_state.timestamp = new Date(currentTime).getTime()
     post_data = {
-        "requestTime": current_state.timestamp,
+        // "requestTime": current_state.timestamp,
         "boundary": {
             "northEast": {
                 "lat": current_state.map.maxlat,
@@ -133,39 +134,37 @@ function set_state(delta = 0) {
 //서버에서 넘어온 json데이터를 사용할 수 있게 배열로 만들어 리턴하는 함수
 function convert_data_one_time(json_data) {
     var one_timestamp = []
-    json_data.forEach(d => {
 
-        var return_wind_data = []
-        var return_pm10_data = []
-        var return_pm25_data = []
-        var return_h_data = []
-        var return_t_data = []
-        d.data.forEach(a => {
-            var wind_tmp = []
-            var pm10_tmp = []
-            var pm25_tmp = []
-            var t_tmp = []
-            var h_tmp = []
-            a.forEach(b => {
-                wind_tmp.push([b.wx, b.wy])
-                pm10_tmp.push(b.pm10)
-                pm25_tmp.push(b.pm25)
-                h_tmp.push(b.h)
-                t_tmp.push(b.t)
-            })
-            return_wind_data.push(wind_tmp)
-            return_pm10_data.push(pm10_tmp)
-            return_pm25_data.push(pm25_tmp)
-            return_h_data.push(h_tmp)
-            return_t_data.push(t_tmp)
+    var return_wind_data = []
+    var return_pm10_data = []
+    var return_pm25_data = []
+    var return_h_data = []
+    var return_t_data = []
+    json_data.data.reverse().forEach(a => {
+        var wind_tmp = []
+        var pm10_tmp = []
+        var pm25_tmp = []
+        var t_tmp = []
+        var h_tmp = []
+        a.forEach(b => {
+            wind_tmp.push([b.wx, b.wy])
+            pm10_tmp.push(b.pm10)
+            pm25_tmp.push(b.pm25)
+            h_tmp.push(b.h)
+            t_tmp.push(b.t)
         })
-
-        one_timestamp.push(return_wind_data)
-        one_timestamp.push(return_pm10_data)
-        one_timestamp.push(return_pm25_data)
-        one_timestamp.push(return_t_data)
-        one_timestamp.push(return_h_data)
+        return_wind_data.push(wind_tmp)
+        return_pm10_data.push(pm10_tmp)
+        return_pm25_data.push(pm25_tmp)
+        return_h_data.push(h_tmp)
+        return_t_data.push(t_tmp)
     })
+
+    one_timestamp.push(return_wind_data)
+    one_timestamp.push(return_pm10_data)
+    one_timestamp.push(return_pm25_data)
+    one_timestamp.push(return_t_data)
+    one_timestamp.push(return_h_data)
 
     return one_timestamp
 }
@@ -174,20 +173,23 @@ function convert_data_one_time(json_data) {
 function map_update() {
     windmap.stopAnim()
     set_state(current_state.time_index * 3600000)
-    var url = `http://${config.host}/test3`
+
+    var url = 'https://kwapi.kweather.co.kr/v1/klps/model/data'
     if (wind_data[current_state.time_index] == undefined) {                
         fetch(url, {
             "method": "POST",
             "headers": {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "auth" : "kweather-test"
             },
             "body": JSON.stringify(post_data)
         })
             .then(e => e.json())
             .then(d => {
-                if (d[0].timestamp != current_state.timestamp){
-                    return
-                }
+                console.log(d)
+                // if (d.timestamp != current_state.timestamp){
+                //     return
+                // }
                 wind_data[current_state.time_index] = []
                 heat_data[current_state.time_index] = []
                 var converting_data = convert_data_one_time(d)                
@@ -530,7 +532,7 @@ $('#play').on('click', () => {
             } else {
                 current_state.is_playing = true
                 knob.css({
-                    "left": (parseFloat(knob.css('left')) + 2) + "px"
+                    "left": (parseFloat(knob.css('left')) + 1) + "px"
                 })
                 current_time.css({
                     "left": (parseFloat(knob.css('left')) - 60) + "px",
@@ -981,7 +983,21 @@ $('#search_btn').on('click', () => {
         "visibility": "visible",
         "height": "auto"
     })
-    map.flyTo(L.latLng($('#cities [value="' + value + '"]').data('value').split(',')), 10)
+    var addr = $('#cities [value="' + value + '"]').data('value')
+    fetch(`https://kwapi.kweather.co.kr/v1/gis/geo/addrtoloc?addr=${addr}`, {
+        "method" : "GET", 
+        "headers" : {
+            "auth" : "kweather-test"
+        }        
+    })
+    .then(e => e.json())
+    .then(d => {
+        var lat = d.data[0].lat
+        var lng = d.data[0].lon
+        console.log(d.data[0])
+        map.flyTo(L.latLng(lat, lng), 13)
+    })
+    // map.flyTo(L.latLng($('#cities [value="' + value + '"]').data('value').split(',')), 10)
 })
 
 $('#dust_button').on('click', (e) => {

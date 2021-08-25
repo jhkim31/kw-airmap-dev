@@ -173,7 +173,6 @@ function convert_data_one_time(json_data) {
 function map_update() {
     windmap.stopAnim()
     set_state(current_state.time_index * 3600000)
-
     var url = 'https://kwapi.kweather.co.kr/v1/klps/model/data'
     if (wind_data[current_state.time_index] == undefined) {                
         fetch(url, {
@@ -626,16 +625,36 @@ function fill_detail_table(type = 0) {
     }
 }
 
+function latlng_2_hang(lat, lng){
+    var url = 'https://kwapi.kweather.co.kr/v1/gis/geo/loctoaddr?lat=' + lat + '&lon=' + lng
+    fetch(url, {
+        "method" : "GET", 
+        "headers" : {
+            "auth" : "kweather-test"
+        } 
+    })
+    .then(e => e.json())
+    .then(d => {
+        if (d.data != null){
+            var hang_nm = d.data.sido_nm + " " + d.data.sg_nm + "</br>" + d.data.emd_nm
+            $('#current_location').html(hang_nm)
+        } else {
+            $('#current_location').html("")
+        }
+    })
+}
+
 //하단 상세보기를 다루는 함수
 function show_detail_data(e, type = 0) {        // type 위치검색 : 0, 지도선택 : 1, 마커선택 : 2
     var dbox = $('#detail_box')[0]
     if (dbox.style.visibility != 'visible') {
-        $('#current_location').text(e.latlng.lat.toFixed(3) + ',' + e.latlng.lng.toFixed(3))
+        latlng_2_hang(e.latlng.lat, e.latlng.lng)
+        
         dbox.style.visibility = 'visible'
         fill_detail_table(type)
         dbox.style.height = 'auto';
     } else {
-        document.getElementById('current_location').innerText = e.latlng.lat.toFixed(3) + ',' + e.latlng.lng.toFixed(3)
+        latlng_2_hang(e.latlng.lat, e.latlng.lng)
     }
 }
 
@@ -983,7 +1002,21 @@ $('#search_btn').on('click', () => {
         "visibility": "visible",
         "height": "auto"
     })
-    map.flyTo(L.latLng($('#cities [value="' + value + '"]').data('value').split(',')), 10)
+    var addr = $('#cities [value="' + value + '"]').data('value')
+    fetch(`https://kwapi.kweather.co.kr/v1/gis/geo/addrtoloc?addr=${addr}`, {
+        "method" : "GET", 
+        "headers" : {
+            "auth" : "kweather-test"
+        }        
+    })
+    .then(e => e.json())
+    .then(d => {
+        var lat = d.data[0].lat
+        var lng = d.data[0].lon
+        console.log(d)
+        map.flyTo(L.latLng(lat, lng), 13)
+    })
+    // map.flyTo(L.latLng($('#cities [value="' + value + '"]').data('value').split(',')), 10)
 })
 
 $('#dust_button').on('click', (e) => {
