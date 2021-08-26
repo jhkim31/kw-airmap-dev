@@ -1,5 +1,6 @@
 import { HeatMap as HeatMap } from './heatmap.js';
 import { WindMap as WindMap } from './windmap.js'
+import {config as config} from "../config.js"
 import { heatData as point_list } from './data.js'
 import { dust_forecast as dust_forecast } from './table.js'
 import { weather_forecast as weather_forecast } from './table.js'
@@ -109,7 +110,7 @@ function set_state(delta = 0) {
     current_state.map.current_time_str = currentTime
     current_state.timestamp = new Date(currentTime).getTime()
     post_data = {
-        // "requestTime": current_state.timestamp,
+        "requestTime": current_state.timestamp,
         "boundary": {
             "northEast": {
                 "lat": current_state.map.maxlat,
@@ -136,7 +137,7 @@ function convert_data_one_time(json_data) {
     var return_pm25_data = []
     var return_h_data = []
     var return_t_data = []
-    json_data.data.reverse().forEach(a => {
+    json_data.data.forEach(a => {
         var wind_tmp = []
         var pm10_tmp = []
         var pm25_tmp = []
@@ -169,7 +170,7 @@ function convert_data_one_time(json_data) {
 function map_update() {
     windmap.stopAnim()
     set_state(current_state.time_index * 3600000)
-    var url = 'https://kwapi.kweather.co.kr/v1/klps/model/data'
+    var url = `http://${config.host}/test3`
     if (wind_data[current_state.time_index] == undefined) {                
         fetch(url, {
             "method": "POST",
@@ -182,12 +183,9 @@ function map_update() {
             .then(e => e.json())
             .then(d => {
                 console.log(d)
-                // if (d.timestamp != current_state.timestamp){
-                //     return
-                // }
                 wind_data[current_state.time_index] = []
                 heat_data[current_state.time_index] = []
-                var converting_data = convert_data_one_time(d)                
+                var converting_data = convert_data_one_time(d[0])                
                 wind_data[current_state.time_index].push(converting_data[0])
                 heat_data[current_state.time_index].push(converting_data[1])        //pm10
                 heat_data[current_state.time_index].push(converting_data[2])        //pm25
