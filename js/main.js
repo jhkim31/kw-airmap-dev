@@ -56,43 +56,32 @@ var manned_level3_network_list = []
 
 //맵이 이동할때마다 매번 새롭게 boundary값을 정하는 함수
 function set_state(delta = 0) {
-    if (map.getZoom() >= 8) {
+    var zoom = map.getZoom()
+    if (zoom >= 8) {
         current_state.map.latGap = 0.1
         current_state.map.lngGap = 0.1
-    } else if (map.getZoom() >= 7) {
+    } else if (zoom >= 7) {
         current_state.map.latGap = 0.2
         current_state.map.lngGap = 0.2
-    } else if (map.getZoom() >= 5) {
+    } else if (zoom >= 5) {
         current_state.map.latGap = 0.5
         current_state.map.lngGap = 0.5
     }
     current_state.map.maxlat = parseFloat((map.getBounds()._northEast.lat - map.getBounds()._northEast.lat % current_state.map.latGap + current_state.map.latGap).toFixed(3))
-    if (current_state.map.maxlat > 44) {
-        current_state.map.maxlat = 44
-    } if (current_state.map.maxlat < 32) {
-        current_state.map.maxlat = 32
-    }
+    current_state.map.maxlat = (current_state.map.maxlat > 44) ? 44 : current_state.map.maxlat
+    current_state.map.maxlat = (current_state.map.maxlat < 32) ? 32 : current_state.map.maxlat
+
     current_state.map.maxlng = parseFloat((map.getBounds()._northEast.lng - map.getBounds()._northEast.lng % current_state.map.lngGap + current_state.map.lngGap).toFixed(3))
-    if (current_state.map.maxlng > 132) {
-        current_state.map.maxlng = 132
-    }
-    if (current_state.map.maxlng < 120) {
-        current_state.map.maxlng = 120
-    }
+    current_state.map.maxlng = (current_state.map.maxlng > 132) ? 132 : current_state.map.maxlng
+    current_state.map.maxlng = (current_state.map.maxlng < 120) ? 120 :  current_state.map.maxlng     
+
     current_state.map.minlat = parseFloat((map.getBounds()._southWest.lat - map.getBounds()._southWest.lat % current_state.map.latGap - current_state.map.latGap).toFixed(3))
-    if (current_state.map.minlat > 44) {
-        current_state.map.minlat = 44
-    }
-    if (current_state.map.minlat < 32) {
-        current_state.map.minlat = 32
-    }
+    current_state.map.minlat = (current_state.map.minlat > 44) ? 44 : current_state.map.minlat
+    current_state.map.minlat = (current_state.map.minlat < 32) ? 32 : current_state.map.minlat    
+
     current_state.map.minlng = parseFloat((map.getBounds()._southWest.lng - map.getBounds()._southWest.lng % current_state.map.lngGap - current_state.map.lngGap).toFixed(3))
-    if (current_state.map.minlng > 132) {
-        current_state.map.minlng = 132
-    }
-    if (current_state.map.minlng < 120) {
-        current_state.map.minlng = 120
-    }
+    current_state.map.minlng = (current_state.map.minlng > 132) ? 132 : current_state.map.minlng
+    current_state.map.minlng = (current_state.map.minlng < 120) ? 120 : current_state.map.minlng
 
     current_state.map.gridX = Math.round((current_state.map.maxlng - current_state.map.minlng) / current_state.map.lngGap)
     current_state.map.gridY = Math.round((current_state.map.maxlat - current_state.map.minlat) / current_state.map.latGap)
@@ -105,7 +94,7 @@ function set_state(delta = 0) {
     var date = t.getDate()
     var hour = t.getHours()
     var currentTime = `${year}/${month}/${date} ${hour}:00`
-    console.log(currentTime)
+
     current_state.map.current_time_str = currentTime
     current_state.timestamp = new Date(currentTime).getTime()
     post_data = {
@@ -123,7 +112,8 @@ function set_state(delta = 0) {
         "gridSize": {
             "x": current_state.map.gridX,
             "y": current_state.map.gridY
-        }
+        },
+        "period" : "0,1"
     }
 }
 
@@ -136,7 +126,7 @@ function convert_data_one_time(json_data) {
     var return_pm25_data = []
     var return_h_data = []
     var return_t_data = []
-    json_data.data.reverse().forEach(a => {
+    json_data.data.reverse().forEach(a => {     //리턴되는 데이터가 구현 방법의 역순으로 오기 때문에 resverse해줌
         var wind_tmp = []
         var pm10_tmp = []
         var pm25_tmp = []
@@ -187,7 +177,7 @@ function map_update() {
                 // }
                 wind_data[current_state.time_index] = []
                 heat_data[current_state.time_index] = []
-                var converting_data = convert_data_one_time(d)                
+                var converting_data = convert_data_one_time(d.data[0])                
                 wind_data[current_state.time_index].push(converting_data[0])
                 heat_data[current_state.time_index].push(converting_data[1])        //pm10
                 heat_data[current_state.time_index].push(converting_data[2])        //pm25
@@ -325,21 +315,21 @@ point_layer[0].on('click', () => {
 
         if (map.getZoom() > 11) {
             iot_network_list.forEach(d => {
-                d.setIcon(icon3).addTo(map)
+                d.setIcon(icon7).addTo(map)
             })
             national_network_list.forEach(d => {
                 d.setIcon(icon3).addTo(map)
             })
         } else if (map.getZoom() > 8) {
             iot_network_list.forEach(d => {
-                d.setIcon(icon2).addTo(map)
+                d.setIcon(icon7).addTo(map)
             })
             national_network_list.forEach(d => {
                 d.setIcon(icon2).addTo(map)
             })
         } else {
             iot_network_list.forEach(d => {
-                d.setIcon(icon1).addTo(map)
+                d.setIcon(icon7).addTo(map)
             })
             national_network_list.forEach(d => {
                 d.setIcon(icon1).addTo(map)
@@ -363,15 +353,15 @@ point_layer[1].on('click', () => {
 
         if (map.getZoom() > 11) {
             iot_network_list.forEach(d => {
-                d.setIcon(icon3).addTo(map)
+                d.setIcon(icon7).addTo(map)
             })
         } else if (map.getZoom() > 8) {
             iot_network_list.forEach(d => {
-                d.setIcon(icon2).addTo(map)
+                d.setIcon(icon7).addTo(map)
             })
         } else {
             iot_network_list.forEach(d => {
-                d.setIcon(icon1).addTo(map)
+                d.setIcon(icon7).addTo(map)
             })
         }
     } else {
@@ -801,9 +791,13 @@ var icon6 = L.divIcon({
     className: 'display-none'
 })
 
-var icon7 = L.icon({
-    iconUrl: '../image/m1_circle.png',
-    iconSize: [50, 50]
+var icon7 = L.divIcon({
+    html: `
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="green" class="bi bi-circle-fill" viewBox="0 0 16 16">
+    <circle cx="8" cy="8" r="8"/>
+    </svg>
+    `,
+    className: 'display-none'
 })
 
 
@@ -927,14 +921,14 @@ function change_marker() {
         if (map.getZoom() > 11) {
             if (current_state.pointmap_index == 0) {
                 iot_network_list.forEach(d => {
-                    d.setIcon(icon3)
+                    d.setIcon(icon7)
                 })
                 national_network_list.forEach(d => {
                     d.setIcon(icon3)
                 })
             } else if (current_state.pointmap_index == 1) {
                 iot_network_list.forEach(d => {
-                    d.setIcon(icon3)
+                    d.setIcon(icon7)
                 })
             } else if (current_state.pointmap_index == 2) {
                 national_network_list.forEach(d => {
@@ -949,14 +943,14 @@ function change_marker() {
         } else if (map.getZoom() > 8) {
             if (current_state.pointmap_index == 0) {
                 iot_network_list.forEach(d => {
-                    d.setIcon(icon2)
+                    d.setIcon(icon7)
                 })
                 national_network_list.forEach(d => {
                     d.setIcon(icon2)
                 })
             } else if (current_state.pointmap_index == 1) {
                 iot_network_list.forEach(d => {
-                    d.setIcon(icon2)
+                    d.setIcon(icon7)
                 })
             } else if (current_state.pointmap_index == 2) {
                 national_network_list.forEach(d => {
@@ -971,14 +965,14 @@ function change_marker() {
         } else {
             if (current_state.pointmap_index == 0) {
                 iot_network_list.forEach(d => {
-                    d.setIcon(icon1)
+                    d.setIcon(icon7)
                 })
                 national_network_list.forEach(d => {
                     d.setIcon(icon1)
                 })
             } else if (current_state.pointmap_index == 1) {
                 iot_network_list.forEach(d => {
-                    d.setIcon(icon1)
+                    d.setIcon(icon7)
                 })
             } else if (current_state.pointmap_index == 2) {
                 national_network_list.forEach(d => {
@@ -1003,8 +997,8 @@ $('#search_btn').on('click', () => {
         "visibility": "visible",
         "height": "auto"
     })
-    var addr = $('#cities [value="' + value + '"]').data('value')
-    fetch(`https://kwapi.kweather.co.kr/v1/gis/geo/addrtoloc?addr=${addr}`, {
+    var hand_cd = $('#cities [value="' + value + '"]').data('value')
+    fetch(`https://kwapi.kweather.co.kr/v1/gis/geo/hangaddr?hangCd=${hand_cd}`, {
         "method" : "GET", 
         "headers" : {
             "auth" : "kweather-test"
@@ -1012,12 +1006,11 @@ $('#search_btn').on('click', () => {
     })
     .then(e => e.json())
     .then(d => {
-        var lat = d.data[0].lat
-        var lng = d.data[0].lon
         console.log(d)
+        var lat = d.data.lat
+        var lng = d.data.lon
         map.flyTo(L.latLng(lat, lng), 13)
     })
-    // map.flyTo(L.latLng($('#cities [value="' + value + '"]').data('value').split(',')), 10)
 })
 
 $('#dust_button').on('click', (e) => {
