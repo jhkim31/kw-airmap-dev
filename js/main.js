@@ -11,7 +11,7 @@ window.map = L.map('map', {
         [44, 132]
     ]])
 })
-    .setView([36, 129], 10)
+    .setView([37, 127], 10)
 map.setMinZoom(5)
 
 
@@ -48,7 +48,6 @@ window.wind_data = []
 window.heat_data = []       //0 : pm10, 1 : pm25, 2 : t, 3 : h
 var Interval;
 var on_map_info = null;
-var marker_detail_popup = null
 
 var post_data = {}
 var heatmap_layer = [$('#show_pm10')[0], $('#show_pm25')[0], $('#show_t')[0], $('#show_h')[0]]
@@ -62,108 +61,6 @@ var manned_level1_network_list = []
 var manned_level2_network_list = []
 var manned_level3_network_list = []
 
-//마커 아이콘
-var icon1 = L.icon({
-    iconUrl: 'image/m1.png',
-    iconSize: [8, 8]
-})
-
-var icon2 = L.icon({
-    iconUrl: 'image/m2.png',
-    iconSize: [20, 20]
-})
-
-var icon3 = L.icon({
-    iconUrl: 'image/m3.png',
-    iconSize: [80, 40]
-})
-
-var icon4 = L.icon({
-    iconUrl: 'image/m4.png',
-    iconSize: [50, 50]
-})
-
-var icon5 = L.divIcon({
-    html: `
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
-    <circle cx="8" cy="8" r="8"/>
-    </svg>
-    `,
-    className: 'display-none'
-})
-
-var icon6 = L.divIcon({
-    html: `
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" class="bi bi-circle-fill" viewBox="0 0 16 16">
-    <circle cx="8" cy="8" r="8"/>    
-    </svg>
-    `,
-    className: 'display-none'
-})
-
-var icon7 = L.divIcon({
-    html: `
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="green" class="bi bi-circle-fill" viewBox="0 0 16 16">
-    <circle cx="8" cy="8" r="8"/>
-    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-    </svg>
-    `,
-    className: 'display-none'
-})
-
-// var icon7 = L.icon({
-//     iconUrl: 'image/m7.png',
-//     iconSize: [8,8]
-// })
-
-//마커 초기 세팅 (이벤트등)
-var count = 0
-var layer = 1
-// var aws_index = 0
-point_list.forEach(d => {
-    if (count % 5 == 0) {
-        if (layer >= 1) {
-            manned_level1_network_list.push(
-                L.marker([d.latitude, d.longitude], { icon: icon4, id: count })
-                    .on('click', (e) => {
-                        show_detail_data(e)
-                    })
-            )
-        }
-        if (layer >= 2) {
-            manned_level2_network_list.push(L.marker([d.latitude, d.longitude], { icon: icon4, id: count })
-                .on('click', (e) => {
-                    show_detail_data(e)
-                })
-            )
-        }
-        if (layer >= 3) {
-            manned_level3_network_list.push(L.marker([d.latitude, d.longitude], { icon: icon4, id: count })
-                .on('click', (e) => {
-                    show_detail_data(e)
-                })
-            )
-            layer = 0
-        }
-        layer++
-        count++
-    } else if (count % 7 == 0) {
-        aws_network_list.push(L.marker([d.latitude, d.longitude], { icon: icon5, id: count })
-            .on('click', (e) => {
-                e.sourceTarget.setIcon(icon6)
-                if (current_state.last_aws_marker != undefined) {
-                    current_state.last_aws_marker.setIcon(icon5)
-                }
-                current_state.last_aws_marker = e.sourceTarget
-                show_detail_data(e)
-                show_marker_detail_popup(e, 1)
-            })
-        )
-        count++;
-    } else {
-        count++;
-    }
-})
 
 function get_point_map(){
     var url = 'https://kwapi.kweather.co.kr/v1/air/stations?type=all'
@@ -176,32 +73,24 @@ function get_point_map(){
     })
     .then(e => e.json())
     .then(d => {
-        console.log(d.data)
+
         d.data.forEach(i => {
-            if (Math.random() < 0.1){
-                return
-            }
             if (i.deviceType == "AK"){
-                national_network_list.push(L.marker([i.latlng.lat, i.latlng.lon], {
-                    icon: icon1,
-                    id: i.serial
-                })
-                    .on('click', (e) => {
-                        if (map.getZoom() <= 11) {
-                            show_detail_data(e)
-                            show_marker_detail_popup(e)
-                        }
-                    })
+
+                national_network_list.push(
+                    { 
+                        "_latlng" : [i.latlng.lat, i.latlng.lon],
+                        "serial" : i.serial,
+                        "deviceType" : i.deviceType
+                    }
                 )
             } else {
-                iot_network_list.push(L.marker([i.latlng.lat, i.latlng.lon], {
-                    icon: icon7,
-                    id: i.serial
-                })
-                    .on('click', (e) => {
-                        show_detail_data(e)
-                        show_marker_detail_popup(e)
-                    })
+                iot_network_list.push(
+                    { 
+                        "_latlng" : [i.latlng.lat, i.latlng.lon],
+                        "serial" : i.serial,
+                        "deviceType" : i.deviceType
+                    }
                 )
             }            
         })
@@ -342,12 +231,14 @@ function map_update() {
                 windmap.set_data(current_state.map, wind_data[current_state.time_index][0])
                 heatmap.set_data(current_state.map, heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
                 pointmap.set_data(current_state, iot_network_list, national_network_list)
+                pointmap.update_point_map(current_state.pointmap_index)
                 windmap.startAnim()
             })
     } else {
         windmap.set_data(current_state.map, wind_data[current_state.time_index][0])
         heatmap.set_data(current_state.map, heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
         pointmap.set_data(current_state, iot_network_list, national_network_list)
+        pointmap.update_point_map(current_state.pointmap_index)
         windmap.startAnim()
     }
 }
@@ -361,29 +252,6 @@ function update_detail_box_button() {
         document.getElementById('weather_button').className = document.getElementById('weather_button').className.replace('light', 'primary')
         document.getElementById('dust_button').className = document.getElementById('dust_button').className.replace('primary', 'light')
     }
-}
-
-//모든 마커 삭제
-function remove_all_marker() {
-    iot_network_list.forEach(d => {
-        map.removeLayer(d)
-    })
-    national_network_list.forEach(d => {
-        map.removeLayer(d)
-    })
-    manned_level3_network_list.forEach(d => {
-        map.removeLayer(d)
-    })
-    manned_level2_network_list.forEach(d => {
-        map.removeLayer(d)
-    })
-    manned_level1_network_list.forEach(d => {
-        map.removeLayer(d)
-    })
-    aws_network_list.forEach(d => {
-        map.removeLayer(d)
-    })
-
 }
 
 //하단 상세 보기의 표를 채워주는 함수
@@ -421,8 +289,8 @@ function get_lifestyle_data(lat, lng) {
                         "auth": "kweather-test"
                     }
                 })
-                    .then(j => j.json())
-                    .then(d => console.log(d))
+                    // .then(j => j.json())
+                    // .then(d => console.log(d))
             } else {
                 $('#current_location').html("")
             }
@@ -482,126 +350,7 @@ function update_on_map_info() {
     }
 }
 
-function show_marker_detail_popup(e, kind = 0) { // kind  0 : 실외공기관측망, 1: aws
-    if (marker_detail_popup != undefined) {
-        map.removeLayer(marker_detail_popup)
-    }
-    var p = e.containerPoint
-    var left_delta = 0;
-    if (p.x < window.innerWidth / 2) {
-        left_delta = 50
-    } else {
-        left_delta = -200
-    }
-    marker_detail_popup = L.marker(e.latlng, {
-        icon: L.divIcon({
-            html: `
-            <div style = "position:absolute;background:white; border-radius:5px; width:120px; height:70px; top:-72px; left:${left_delta}px; font-size:17px;">
-            <svg class = "float-end" id = "marker_detail_close" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-square" viewBox="0 0 16 16">
-            <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
-            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
-            </svg>
-            ${"마커 선택시 뜨는 팝업입니다."}            
-            </div>`,
-            className: 'display-none'
-        })
-    })
-        .addTo(map)
-        .on('click', (click_e) => {
-            if (click_e.originalEvent.path[0].id == "marker_detail_close" || click_e.originalEvent.path[1].id == "marker_detail_close") {
-                map.removeLayer(marker_detail_popup)
-                if (kind == 1) {
-                    e.sourceTarget.setIcon(icon5)
-                }
-            }
-        })
-}
-
 //줌 레벨에 따라 달라지는 마커 이벤트
-function change_marker() {
-    if (current_state.pointmap_index >= 0) {
-        if (map.getZoom() > 11) {
-            if (current_state.pointmap_index == 0) {
-                iot_network_list.forEach(d => {
-                    d.setIcon(icon7)
-                    .addTo(map)
-                })
-                national_network_list.forEach(d => {
-                    d.setIcon(icon3)
-                    .addTo(map)
-                })
-            } else if (current_state.pointmap_index == 1) {
-                iot_network_list.forEach(d => {
-                    d.setIcon(icon7)
-                    .addTo(map)
-                })
-            } else if (current_state.pointmap_index == 2) {
-                national_network_list.forEach(d => {
-                    d.setIcon(icon3)
-                    .addTo(map)
-                })
-            } else if (current_state.pointmap_index == 3) {
-                remove_all_marker()
-                manned_level1_network_list.forEach(d => {
-                    d.addTo(map)
-                    .addTo(map)
-                })
-            }
-        } else if (map.getZoom() > 8) {
-            if (current_state.pointmap_index == 0) {
-                iot_network_list.forEach(d => {
-                    d.setIcon(icon7)
-                    .addTo(map)
-                })
-                national_network_list.forEach(d => {
-                    d.setIcon(icon2)
-                    .addTo(map)
-                })
-            } else if (current_state.pointmap_index == 1) {
-                iot_network_list.forEach(d => {
-                    d.setIcon(icon7)
-                    .addTo(map)
-                })
-            } else if (current_state.pointmap_index == 2) {
-                national_network_list.forEach(d => {
-                    d.setIcon(icon2)
-                    .addTo(map)
-                })
-            } else if (current_state.pointmap_index == 3) {
-                manned_level2_network_list.forEach(d => {
-                    d.addTo(map)
-                    .addTo(map)
-                })
-            }
-        } else {
-            if (current_state.pointmap_index == 0) {
-                iot_network_list.forEach(d => {
-                    d.setIcon(icon7)
-                    .addTo(map)
-                })
-                national_network_list.forEach(d => {
-                    d.setIcon(icon1)
-                    .addTo(map)
-                })
-            } else if (current_state.pointmap_index == 1) {
-                iot_network_list.forEach(d => {
-                    d.setIcon(icon7)
-                    .addTo(map)
-                })
-            } else if (current_state.pointmap_index == 2) {
-                national_network_list.forEach(d => {
-                    d.setIcon(icon1)
-                    .addTo(map)
-                })
-            } else if (current_state.pointmap_index == 3) {
-                manned_level3_network_list.forEach(d => {
-                    d.addTo(map)
-                    .addTo(map)
-                })
-            }
-        }
-    }
-}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -710,146 +459,72 @@ heatmap_layer[3].addEventListener('click', () => {
 })
 
 //iot, 국가관측망 선택 버튼 이벤트 처리
-point_layer[0].on('click', () => {
-    remove_all_marker()
-    if (current_state.pointmap_index != 0) {
+point_layer[0].on('click', () => {    
+    if (point_layer[0][0].checked){
+        current_state.pointmap_index = 0
+        pointmap.update_point_map(current_state.pointmap_index)
         point_layer.forEach(d => {
             d[0].checked = false
         })
         point_layer[0][0].checked = true
-        current_state.pointmap_index = 0
-
-        if (map.getZoom() > 11) {
-            iot_network_list.forEach(d => {
-                d.setIcon(icon7).addTo(map)
-            })
-            national_network_list.forEach(d => {
-                d.setIcon(icon3).addTo(map)
-            })
-        } else if (map.getZoom() > 8) {
-            iot_network_list.forEach(d => {
-                d.setIcon(icon7).addTo(map)
-            })
-            national_network_list.forEach(d => {
-                d.setIcon(icon2).addTo(map)
-            })
-        } else {
-            iot_network_list.forEach(d => {
-                d.setIcon(icon7).addTo(map)
-            })
-            national_network_list.forEach(d => {
-                d.setIcon(icon1).addTo(map)
-            })
-        }
-    } else {
+    } else {        
         current_state.pointmap_index = -1
-        remove_all_marker()
+        pointmap.remove_overlay_image()
     }
+    
 })
 
 //iot 관측망 선택 버튼 이벤트 처리
 point_layer[1].on('click', () => {
-    remove_all_marker()
-    if (current_state.pointmap_index != 1) {
+    if (point_layer[1][0].checked){
+        current_state.pointmap_index = 1
+        pointmap.update_point_map(current_state.pointmap_index)
         point_layer.forEach(d => {
             d[0].checked = false
         })
         point_layer[1][0].checked = true
-        current_state.pointmap_index = 1
-
-        if (map.getZoom() > 11) {
-            iot_network_list.forEach(d => {
-                d.setIcon(icon7).addTo(map)
-            })
-        } else if (map.getZoom() > 8) {
-            iot_network_list.forEach(d => {
-                d.setIcon(icon7).addTo(map)
-            })
-        } else {
-            iot_network_list.forEach(d => {
-                d.setIcon(icon7).addTo(map)
-            })
-        }
     } else {
         current_state.pointmap_index = -1
-        remove_all_marker()
+        pointmap.remove_overlay_image()
     }
 })
 
 //국가관측망 선택 버튼 이벤트 처리
 point_layer[2].on('click', () => {
-    remove_all_marker()
-    if (current_state.pointmap_index != 2) {
+    pointmap.remove_overlay_image()
+    if (point_layer[2][0].checked){
+        current_state.pointmap_index = 2
+        pointmap.update_point_map(current_state.pointmap_index)
         point_layer.forEach(d => {
             d[0].checked = false
         })
         point_layer[2][0].checked = true
-        current_state.pointmap_index = 2
-
-        if (map.getZoom() > 11) {
-            national_network_list.forEach(d => {
-                d.setIcon(icon3).addTo(map)
-            })
-        } else if (map.getZoom() > 8) {
-            national_network_list.forEach(d => {
-                d.setIcon(icon2).addTo(map)
-            })
-        } else {
-            national_network_list.forEach(d => {
-                d.setIcon(icon1).addTo(map)
-            })
-        }
     } else {
         current_state.pointmap_index = -1
-        remove_all_marker()
+        pointmap.remove_overlay_image()
     }
 })
 
 //유인관측망 선택 버튼 이벤트 처리
 point_layer[3].on('click', () => {
-    remove_all_marker()
-    if (current_state.pointmap_index != 3) {
+    pointmap.remove_overlay_image()
+    if (point_layer[3][0].checked){        
         point_layer.forEach(d => {
             d[0].checked = false
         })
         point_layer[3][0].checked = true
-        current_state.pointmap_index = 3
-
-        if (map.getZoom() > 11) {
-            manned_level1_network_list.forEach(d => {
-                d.addTo(map)
-            })
-        } else if (map.getZoom() > 8) {
-            manned_level2_network_list.forEach(d => {
-                d.addTo(map)
-            })
-        } else {
-            manned_level3_network_list.forEach(d => {
-                d.addTo(map)
-            })
-        }
-    } else {
-        current_state.pointmap_index = -1
-        remove_all_marker()
     }
 })
 
 //aws망 선택 버튼 이벤트 처리
 point_layer[4].on('click', () => {
-    remove_all_marker()
-    if (current_state.pointmap_index != 4) {
+    if (point_layer[4][0].checked){
         point_layer.forEach(d => {
             d[0].checked = false
         })
         point_layer[4][0].checked = true
-        current_state.pointmap_index = 4
-
-        aws_network_list.forEach(d => {
-            d.addTo(map)
-        })
     } else {
-        current_state.pointmap_index = -1
-        remove_all_marker()
+        pointmap.remove_overlay_image()
     }
 })
 
@@ -1024,6 +699,8 @@ map.on('click', (e) => {
                 on_map_info = null
             }
         })
+    var tmp = pointmap.is_marker(e.containerPoint)
+    console.log(tmp)
 })
 
 //하단 상세 보기 페이지를 닫는 함수
@@ -1071,7 +748,6 @@ $('#search_btn').on('click', () => {
     })
         .then(e => e.json())
         .then(d => {
-            console.log(d)
             var hang_nm = d.data.sido_nm + " " + d.data.sg_nm + "</br>" + d.data.emd_nm
             $('#current_location').html(hang_nm)
             var lat = d.data.lat
@@ -1175,25 +851,7 @@ window.onload = function () {
 
 //맵 이동시마다 실행되는 이벤트
 map.on('moveend', (e) => {
-    console.log(e)
     wind_data = []
     heat_data = []
     map_update(current_state.time_index)
-    change_marker()
-})
-
-map.on('movestart', (e) => {
-    remove_all_marker()
-    // current_state.pointmap_index = -1        
-    // point_layer.forEach(d => {
-    //     d[0].checked = false
-    // })
-})
-
-map.on('zoomstart', (e) => {
-    remove_all_marker()
-    // current_state.pointmap_index = -1    
-    // point_layer.forEach(d => {
-    //     d[0].checked = false
-    // })
 })
