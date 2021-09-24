@@ -19,10 +19,17 @@ body,html {
   opacity: 1;
 }
 
+#pointmap {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 1;
+}
+
 #windmap {
   position: absolute;
   pointer-events: none;
-  z-index: 3;   
+  z-index: 4;   
   opacity:1;
   
 }

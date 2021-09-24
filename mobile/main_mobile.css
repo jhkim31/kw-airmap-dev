@@ -112,6 +112,10 @@
       user-select:none;
     }
     
+    #current_location{
+      font-size: 0.4em;
+    }
+
         /* timeline control box */
     #timeline_control_box{
     position:absolute;

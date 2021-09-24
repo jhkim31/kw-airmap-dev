@@ -1,6 +1,5 @@
 import { HeatMap as HeatMap } from './heatmap.js';
 import { WindMap as WindMap } from './windmap.js'
-import { config as config } from '../config.js'
 import { heatData as point_list } from './data.js'
 import { dust_forecast as dust_forecast } from './table.js'
 import { weather_forecast as weather_forecast } from './table.js'
@@ -12,8 +11,7 @@ window.map = L.map('map', {
     .setView([37, 128], 8)
 map.setMinZoom(5)
 
-L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png').addTo(map);
-
+L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png').addTo(map);
 var heatmap = new HeatMap(document.getElementById("heatmap"))
 var windmap = new WindMap(document.getElementById('windmap'))
 window.current_state = {
@@ -47,7 +45,6 @@ var on_map_info = null;
 var marker_detail_popup = null
 var count = 0
 var layer = 1
-var iot_bit = 0
 
 var post_data = {}
 var heatmap_layer = [$('#show_pm10')[0], $('#show_pm25')[0], $('#show_t')[0], $('#show_h')[0]]
@@ -60,28 +57,25 @@ var aws_network_list = []
 var manned_level1_network_list = []
 var manned_level2_network_list = []
 var manned_level3_network_list = []
-var mql = window.matchMedia("screen and (max-width: 768px)");
-
-
 
 //마커 아이콘
 var icon1 = L.icon({
-    iconUrl: '../image/m1.png',
+    iconUrl: 'image/m1.png',
     iconSize: [8, 8]
 })
 
 var icon2 = L.icon({
-    iconUrl: '../image/m2.png',
+    iconUrl: 'image/m2.png',
     iconSize: [20, 20]
 })
 
 var icon3 = L.icon({
-    iconUrl: '../image/m3.png',
+    iconUrl: 'image/m3.png',
     iconSize: [80, 40]
 })
 
 var icon4 = L.icon({
-    iconUrl: '../image/m4.png',
+    iconUrl: 'image/m4.png',
     iconSize: [50, 50]
 })
 
@@ -103,6 +97,14 @@ var icon6 = L.divIcon({
     className: 'display-none'
 })
 
+var icon7 = L.divIcon({
+    html: `
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="green" class="bi bi-circle-fill" viewBox="0 0 16 16">
+    <circle cx="8" cy="8" r="8"/>
+    </svg>
+    `,
+    className: 'display-none'
+})
 
 //마커 초기 세팅 (이벤트등)
 point_list.forEach(d => {
@@ -149,91 +151,96 @@ point_list.forEach(d => {
         )
         count++;
     } else {
-        if (iot_bit == 0) {
-            iot_bit = 1
-            iot_network_list.push(L.marker([d.latitude, d.longitude], {
-                icon: icon1,
-                id: count
-            })
-                .on('click', (e) => {
-                    show_detail_data(e)
-                    show_marker_detail_popup(e)
-                })
-            )
-            count++
-        } else {
-            iot_bit = 0
-            national_network_list.push(L.marker([d.latitude, d.longitude], {
-                icon: icon1,
-                id: count
-            })
-                .on('click', (e) => {
-                    (e)
-                    if (map.getZoom() <= 11) {
-                        show_detail_data(e)
-                        show_marker_detail_popup(e)
-                    }
-                })
-            )
-        }
+        count++
     }
 })
 
+function get_point_map(){
+    var url = 'https://kwapi.kweather.co.kr/v1/air/stations?type=all'
+
+    fetch(url, {
+        "headers": {
+            "Content-Type": "application/json",
+            "auth": "kweather-test"
+        }
+    })
+    .then(e => e.json())
+    .then(d => {
+        console.log(d.data)
+        d.data.forEach(i => {
+            if (i.deviceType == "AK"){
+                national_network_list.push(L.marker([i.latlng.lat, i.latlng.lon], {
+                    icon: icon1,
+                    id: i.serial
+                })
+                    .on('click', (e) => {
+                        if (map.getZoom() <= 11) {
+                            show_detail_data(e)
+                            show_marker_detail_popup(e)
+                        }
+                    })
+                )
+            } else {
+                iot_network_list.push(L.marker([i.latlng.lat, i.latlng.lon], {
+                    icon: icon7,
+                    id: i.serial
+                })
+                    .on('click', (e) => {
+                        show_detail_data(e)
+                        show_marker_detail_popup(e)
+                    })
+                )
+            }
+        })
+    })
+}
+
 //맵이 이동할때마다 매번 새롭게 boundary값을 정하는 함수
 function set_state(delta = 0) {
-    if (map.getZoom() >= 8) {
+    var zoom = map.getZoom()
+    if (zoom >= 8) {
         current_state.map.latGap = 0.1
         current_state.map.lngGap = 0.1
-    } else if (map.getZoom() >= 7) {
+    } else if (zoom >= 7) {
         current_state.map.latGap = 0.2
         current_state.map.lngGap = 0.2
-    } else if (map.getZoom() >= 5) {
+    } else if (zoom >= 5) {
         current_state.map.latGap = 0.5
         current_state.map.lngGap = 0.5
     }
     current_state.map.maxlat = parseFloat((map.getBounds()._northEast.lat - map.getBounds()._northEast.lat % current_state.map.latGap + current_state.map.latGap).toFixed(3))
-    if (current_state.map.maxlat > 44) {
-        current_state.map.maxlat = 44
-    } if (current_state.map.maxlat < 32) {
-        current_state.map.maxlat = 32
-    }
+    current_state.map.maxlat = (current_state.map.maxlat > 44) ? 44 : current_state.map.maxlat
+    current_state.map.maxlat = (current_state.map.maxlat < 32) ? 32 : current_state.map.maxlat
+
     current_state.map.maxlng = parseFloat((map.getBounds()._northEast.lng - map.getBounds()._northEast.lng % current_state.map.lngGap + current_state.map.lngGap).toFixed(3))
-    if (current_state.map.maxlng > 132) {
-        current_state.map.maxlng = 132
-    }
-    if (current_state.map.maxlng < 120) {
-        current_state.map.maxlng = 120
-    }
+    current_state.map.maxlng = (current_state.map.maxlng > 132) ? 132 : current_state.map.maxlng
+    current_state.map.maxlng = (current_state.map.maxlng < 120) ? 120 : current_state.map.maxlng
+
     current_state.map.minlat = parseFloat((map.getBounds()._southWest.lat - map.getBounds()._southWest.lat % current_state.map.latGap - current_state.map.latGap).toFixed(3))
-    if (current_state.map.minlat > 44) {
-        current_state.map.minlat = 44
-    }
-    if (current_state.map.minlat < 32) {
-        current_state.map.minlat = 32
-    }
+    current_state.map.minlat = (current_state.map.minlat > 44) ? 44 : current_state.map.minlat
+    current_state.map.minlat = (current_state.map.minlat < 32) ? 32 : current_state.map.minlat
+
     current_state.map.minlng = parseFloat((map.getBounds()._southWest.lng - map.getBounds()._southWest.lng % current_state.map.lngGap - current_state.map.lngGap).toFixed(3))
-    if (current_state.map.minlng > 132) {
-        current_state.map.minlng = 132
-    }
-    if (current_state.map.minlng < 120) {
-        current_state.map.minlng = 120
-    }
+    current_state.map.minlng = (current_state.map.minlng > 132) ? 132 : current_state.map.minlng
+    current_state.map.minlng = (current_state.map.minlng < 120) ? 120 : current_state.map.minlng
 
     current_state.map.gridX = Math.round((current_state.map.maxlng - current_state.map.minlng) / current_state.map.lngGap)
     current_state.map.gridY = Math.round((current_state.map.maxlat - current_state.map.minlat) / current_state.map.latGap)
 
-    var t = new Date(new Date().getTime() - 86400000 + delta)       //현재는 시간을 임의로 고정시킴.
-    // var t = new Date(1628262000000 + delta)
+    var t = new Date(new Date().getTime() - 86400000 + delta)      
+    // var t = new Date(1628262000000 + delta)               //현재는 시간을 임의로 고정시킴.
     current_state.map.current_time = t
     var year = t.getYear() + 1900
     var month = t.getMonth() + 1
     var date = t.getDate()
     var hour = t.getHours()
     var currentTime = `${year}/${month}/${date} ${hour}:00`
+
     current_state.map.current_time_str = currentTime
     current_state.timestamp = new Date(currentTime).getTime()
+
+    var tmp = 24 - current_state.time_index 
     post_data = {
-        "requestTime": current_state.timestamp,
         "boundary": {
             "northEast": {
                 "lat": current_state.map.maxlat,
@@ -247,19 +254,21 @@ function set_state(delta = 0) {
         "gridSize": {
             "x": current_state.map.gridX,
             "y": current_state.map.gridY
-        }
+        },
+        "period": `${tmp},${tmp}`
     }
 }
 
 //서버에서 넘어온 json데이터를 사용할 수 있게 배열로 만들어 리턴하는 함수
 function convert_data_one_time(json_data) {
-    var one_timestamp = []   
+    var one_timestamp = []
+
     var return_wind_data = []
     var return_pm10_data = []
     var return_pm25_data = []
     var return_h_data = []
     var return_t_data = []
-    json_data.data.forEach(a => {
+    json_data.data.reverse().forEach(a => {     //리턴되는 데이터가 구현 방법의 역순으로 오기 때문에 resverse해줌
         var wind_tmp = []
         var pm10_tmp = []
         var pm25_tmp = []
@@ -285,7 +294,6 @@ function convert_data_one_time(json_data) {
     one_timestamp.push(return_t_data)
     one_timestamp.push(return_h_data)
 
-
     return one_timestamp
 }
 
@@ -294,24 +302,23 @@ function map_update() {
     windmap.stopAnim()
     set_state(current_state.time_index * 3600000)
     var url = 'https://kwapi.kweather.co.kr/v1/klps/model/data'
-    if (wind_data[current_state.time_index] == undefined) {                
+    if (wind_data[current_state.time_index] == undefined) {
         fetch(url, {
             "method": "POST",
             "headers": {
                 "Content-Type": "application/json",
-                "auth" : "kweather-test"
+                "auth": "kweather-test"
             },
             "body": JSON.stringify(post_data)
         })
             .then(e => e.json())
             .then(d => {
-                console.log(d)
                 // if (d.timestamp != current_state.timestamp){
                 //     return
                 // }
                 wind_data[current_state.time_index] = []
                 heat_data[current_state.time_index] = []
-                var converting_data = convert_data_one_time(d)                
+                var converting_data = convert_data_one_time(d.data[0])
                 wind_data[current_state.time_index].push(converting_data[0])
                 heat_data[current_state.time_index].push(converting_data[1])        //pm10
                 heat_data[current_state.time_index].push(converting_data[2])        //pm25
@@ -374,16 +381,51 @@ function fill_detail_table(type = 0) {
     }
 }
 
+function get_lifestyle_data(lat, lng) {
+    var url = 'https://kwapi.kweather.co.kr/v1/gis/geo/loctoaddr?lat=' + lat + '&lon=' + lng
+    fetch(url, {
+        "method": "GET",
+        "headers": {
+            "auth": "kweather-test"
+        }
+    })
+        .then(e => e.json())
+        .then(d => {
+            if (d.data != null) {
+                var hangCd = d.data.hang_cd
+                var hang_nm = d.data.sido_nm + " " + d.data.sg_nm + "</br>" + d.data.emd_nm
+                $('#current_location').html(hang_nm)
+                var dt = new Date()
+                var d_s = dt.getFullYear() + (dt.getMonth() + 1).toString().padStart(2, '0') + dt.getDate().toString().padStart(2, '0')
+                var dt = new Date(dt.getTime() + 604800000)
+                var d_e = dt.getFullYear() + (dt.getMonth() + 1).toString().padStart(2, '0') + dt.getDate().toString().padStart(2, '0')
+                hangCd = 11110000
+                fetch(`https://kwapi.kweather.co.kr/kweather/lifestyle/date?hangCd=${hangCd}&startDate=${d_s}&endDate=${d_e}`, {
+                    headers: {
+                        "auth": "kweather-test"
+                    }
+                })
+                    .then(j => j.json())
+                    .then(d => console.log(d))
+            } else {
+                $('#current_location').html("")
+            }
+        })
+        
+}
+
+
 //하단 상세보기를 다루는 함수
 function show_detail_data(e, type = 0) {        // type 위치검색 : 0, 지도선택 : 1, 마커선택 : 2
     var dbox = $('#detail_box')[0]
     if (dbox.style.visibility != 'visible') {
-        $('#current_location').text(e.latlng.lat.toFixed(3) + ',' + e.latlng.lng.toFixed(3))
+        get_lifestyle_data(e.latlng.lat, e.latlng.lng)
+
         dbox.style.visibility = 'visible'
         fill_detail_table(type)
         dbox.style.height = 'auto';
     } else {
-        document.getElementById('current_location').innerText = e.latlng.lat.toFixed(3) + ',' + e.latlng.lng.toFixed(3)
+        get_lifestyle_data(e.latlng.lat, e.latlng.lng)
     }
 }
 
@@ -544,20 +586,46 @@ $('#search_btn').on('click', () => {
         "visibility": "visible",
         "height": "auto"
     })
-    var addr = $('#cities [value="' + value + '"]').data('value')
-    fetch(`https://kwapi.kweather.co.kr/v1/gis/geo/addrtoloc?addr=${addr}`, {
-        "method" : "GET", 
-        "headers" : {
-            "auth" : "kweather-test"
-        }        
+    var hand_cd = $('#cities [value="' + value + '"]').data('value')
+    fetch(`https://kwapi.kweather.co.kr/v1/gis/geo/hangaddr?hangCd=${hand_cd}`, {
+        "method": "GET",
+        "headers": {
+            "auth": "kweather-test"
+        }
     })
-    .then(e => e.json())
-    .then(d => {
-        var lat = d.data[0].lat
-        var lng = d.data[0].lon
-        console.log(d.data[0])
-        map.flyTo(L.latLng(lat, lng), 13)
+        .then(e => e.json())
+        .then(d => {
+            console.log(d)
+            var hang_nm = d.data.sido_nm + " " + d.data.sg_nm + "</br>" + d.data.emd_nm
+            $('#current_location').html(hang_nm)
+            var lat = d.data.lat
+            var lng = d.data.lon
+            map.flyTo(L.latLng(lat, lng), 13)
+        })
+})
+
+$('#search_field').on('propertychange change keyup paste input', (e) => {
+    var value = e.currentTarget.value
+    value = value.split(' ')[value.split(' ').length - 1]
+    var url = 'https://kwapi.kweather.co.kr/v1/gis/geo/findaddr?name=' + value
+    fetch(url, {
+        "method": "GET",
+        "headers": {
+            "auth": "kweather-test"
+        }
     })
+        .then(e => e.json())
+        .then(d => {
+            if (d != null) {
+                $('#cities').html('')
+                d.data.slice(0, 20).forEach(i => {
+                    var el = `<option data-value='${i.hang_cd}' value='${i.sido_nm} ${i.sg_nm} ${i.emd_nm}'></option>`
+                    $('#cities').append(el)
+                })
+
+
+            }
+        })
 })
 
 $('#dust_button').on('click', (e) => {
@@ -573,17 +641,14 @@ $('#move_to_current_location').on('click', () => {
     if (navigator.geolocation) {
         //위치 정보를 얻기
         navigator.geolocation.getCurrentPosition(function (pos) {
-            map.flyTo(L.latLng(pos.coords.latitude, pos.coords.longitude), 10);
+            map.flyTo(L.latLng(pos.coords.latitude, pos.coords.longitude), 14);
         });
     } else {
         alert("이 브라우저에서는 현재위치찾기가 지원되지 않습니다.")
     }
 })
 
-
-
 //맵 이동시마다 실행되는 이벤트
-
 window.onload = function () {
     map_update()
     $('#timeline_control_box').css({
@@ -592,6 +657,7 @@ window.onload = function () {
     $('#date_progress').css({
         'width': (window.innerWidth - 120) + 'px'
     })
+    get_point_map()
 }
 
 //컨트롤러에서 선택시 이벤트 처리 0

@@ -115,15 +115,16 @@ var HeatMap = function (_canvas) {
                     }
                     switch (overlay_type) {
                         case 0:
-                        case 1:
+                        case 1:                                                    
+                        case 3:
+                            if (value >= 0){
+                                ctx.fillRect(x, y, pixelGap, pixelGap);
+                            }
+                            break;
                         case 2:
                             if (value != 0) {
                                 ctx.fillRect(x, y, pixelGap, pixelGap);
                             }
-                            break
-                        case 3:
-                            ctx.fillRect(x, y, pixelGap, pixelGap);
-                            break;
                     }
                 }
             }

@@ -12,11 +12,16 @@ var WindMap = function (_canvas) {
     var grid = []
     var animationId
     var showWind = true
-    var windCount = 1000;
-    var showSpeed = 0.5;
-
+    window.wind_status = {
+        zoom : 10,
+        speed : 0.5,
+        opacity : 0.1,
+        count : 1000
+    }
+        
     function buildobj(i) {            
-        var latLng = L.latLng(getRandomArbitrary(wind_config.minlat, wind_config.maxlat), getRandomArbitrary(wind_config.minlng, wind_config.maxlng))        
+        var maxBounds = map.getBounds()
+        var latLng = L.latLng(getRandomArbitrary(maxBounds._southWest.lat, maxBounds._northEast.lat), getRandomArbitrary(maxBounds._southWest.lng, maxBounds._northEast.lng))        
         var point = map.latLngToContainerPoint(latLng)
         a[i] = new wind(point.x, point.y, latLng, i, animationId + getRandomArbitrary(50, 250))      
     }
@@ -42,7 +47,7 @@ var WindMap = function (_canvas) {
         this.endFrame = endFrame
 
         this.windMove = function () {
-            if (this.latitude > wind_config.maxlat || this.latitude < wind_config.minlat || this.longitude > wind_config.maxlng || this.longitude < wind_config.minlng) {
+            if (this.x > window.innerWidth || this.x < 0 || this.y > window.innerHeight || this.y < 0) {
                 return removeObj(this.index)
             } else {
                 if (animationId > this.endFrame) {
@@ -53,8 +58,8 @@ var WindMap = function (_canvas) {
                     y: this.y
                 };
                 var nextVec = getVector(this.latitude, this.longitude)
-                this.x = ls.x + nextVec[0] * showSpeed
-                this.y = ls.y + nextVec[1] * showSpeed
+                this.x = ls.x + nextVec[0] * wind_status.speed
+                this.y = ls.y + nextVec[1] * wind_status.speed
 
                 var point = L.point(this.x, this.y)
                 var latLng = map.containerPointToLatLng(point)
@@ -63,7 +68,7 @@ var WindMap = function (_canvas) {
                 this.longitude = latLng.lng
 
                 c.beginPath();
-                c.lineWidth = 2;
+                c.lineWidth = 3;
                 c.strokeStyle = "white"
                 c.moveTo(ls.x, ls.y);
                 c.lineTo(this.x, this.y);
@@ -133,7 +138,7 @@ var WindMap = function (_canvas) {
         if (showWind) {            
             animationId = requestAnimationFrame(anim)
             c.save()
-            c.fillStyle = 'rgba(255,255,255,0.1)'
+            c.fillStyle = `rgba(255,255,255,${wind_status.opacity})`
             c.globalCompositeOperation = 'destination-out';
             c.fillRect(0, 0, cn.width, cn.height);
             c.restore()
@@ -167,7 +172,12 @@ var WindMap = function (_canvas) {
         }
     }
 
-    this.set_data = function (config, wind_data) {
+    this.set_data = function (config, wind_data) {        
+        wind_status.zoom = map.getZoom();
+        wind_status.speed = 0.5 * (1.2 ** (wind_status.zoom - 10))
+        if (wind_status.speed > 0.5){
+            wind_status.speed = 0.5
+        }
         cn.width = window.innerWidth
         cn.height = window.innerHeight
         cnx = cn.width - 1
@@ -178,7 +188,7 @@ var WindMap = function (_canvas) {
     }
 
     function build() {
-        for (var i = 0; i < windCount; i++) {
+        for (var i = 0; i < wind_status.count; i++) {
             buildobj(i)
         }
     }
