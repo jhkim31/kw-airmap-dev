@@ -15,7 +15,6 @@ var PointMap = function (_canvas){
         national_network_list = national
         cn.width = window.innerWidth
         cn.height = window.innerHeight        
-        this.drawCanvas()
     }
 
     this.drawCanvas = function(){
