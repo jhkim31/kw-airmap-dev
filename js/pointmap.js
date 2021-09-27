@@ -9,8 +9,7 @@ var PointMap = function (_canvas){
     var overlayImage = null
     var c = cn.getContext('2d');
 
-    this.set_data = function (config, iot, national) {
-        point_config = config
+    this.set_data = function (iot, national) {
         iot_network_list = iot
         national_network_list = national
         cn.width = window.innerWidth

@@ -218,7 +218,7 @@ cursor:pointer;
 }
 
 
-#detail_table tr{
+#detail_table1 tr{
 background: white;
 text-align: center;
 height:15px;
@@ -226,12 +226,33 @@ font-size:0.7em;
 white-space: nowrap;
 }
 
-#detail_table .table_header{
+#detail_table1 td{
+  border: 1px solid black;
+}
+
+#detail_table1 .table_header{
 background:#aaaaaa;
 font-weight:bold;
 font-size:1em;
 }
 
+#detail_table2 tr{
+  background: white;
+  text-align: center;
+  height:15px;
+  font-size:0.7em;
+  white-space: nowrap;
+  }
+
+  #detail_table2 td{
+    border: 1px solid black;
+  }
+  
+  #detail_table2 .table_header{
+  background:#aaaaaa;
+  font-weight:bold;
+  font-size:1em;
+  }
 
 .leaflet-control{
 top:50px;
