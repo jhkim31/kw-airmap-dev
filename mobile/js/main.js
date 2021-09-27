@@ -1,6 +1,7 @@
 import { HeatMap as HeatMap } from './heatmap.js';
 import { WindMap as WindMap } from './windmap.js'
 import { PointMap as PointMap } from './pointmap.js'
+import {dust_forecast as dust_forecast} from './table.js'
 
 window.map = L.map('map', {
     "maxBounds": L.latLngBounds([[
@@ -426,20 +427,27 @@ function get_lifestyle_data(lat, lng) {
                 return null
             }
         })
-        .then(j => j.json())
+        .then(j => j.json())        
         .then(d => {
             data.forecast_data = convert_lifestyle_data(d, hangCd)
         })
-
+        .catch(e => {
+            if ($('#mobile_overlay').css('display') == "none"){
+                $('#mobile_overlay').show()            
+            }            
+            $('#detail_box').css({
+                "visibility": "hidden",
+                "height": "0px"
+            })
+            $('#detail_table1').html('')
+            $('#detail_table2').html('')
+            current_state.show_detail_table = false
+        })    
 }
 
 //하단 상세보기를 다루는 함수
-function show_detail_data(e) {        // type 위치검색 : 0, 지도선택 : 1, 마커선택 : 2
-    var dbox = $('#detail_box')[0]        
+function show_detail_data(e) {        // type 위치검색 : 0, 지도선택 : 1, 마커선택 : 2    
     get_lifestyle_data(e.latlng.lat, e.latlng.lng)
-    dbox.style.visibility = 'visible'
-    dbox.style.height = 'auto';
-    
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -448,7 +456,11 @@ function show_detail_data(e) {        // type 위치검색 : 0, 지도선택 : 1
 
 //하단 상세 보기의 표를 채워주는 함수 <<<<<incompletion>>>>>>
 function fill_detail_table(type = 3, forecast_data) {
-    console.log(forecast_data)
+    $('#mobile_overlay').hide()
+    $('#control_box').hide()
+    var dbox = $('#detail_box')[0]            
+    dbox.style.visibility = 'visible'
+    dbox.style.height = 'auto';  
     var forecast_data = type >= 2 ? forecast_data.lifestyle_data : forecast_data.dust_data 
     var header = ['강수확률 (%)', '강수량 (mm)', '기온(C)', '풍향(8)', '풍속 (m/s)', '습도(%)']
     var detail_table1 = $('#detail_table1')
@@ -459,7 +471,7 @@ function fill_detail_table(type = 3, forecast_data) {
     detail_table2.html('')
 
     if (type < 2) {       // 미세먼지일때
-
+        detail_table1.html(dust_forecast)
 
     } else {              // 기상 상황일때
         var today = new Date().getTime()
@@ -595,99 +607,12 @@ function update_on_map_info() {
     }
 }
 
-//좌상단 검색필드 검색버튼누를 때 이벤트
-$('#search_btn').on('click', () => {
-    update_detail_box_button()
-    fill_detail_table(current_state.heatmap_index, data.forecast_data)
-    var value = $('#search_field').val();
-    $('#detail_box').css({
-        "visibility": "visible",
-        "height": "auto"
-    })
-    var hand_cd = $('#cities [value="' + value + '"]').data('value')
-    fetch(`https://kwapi.kweather.co.kr/v1/gis/geo/hangaddr?hangCd=${hand_cd}`, {
-        "method": "GET",
-        "headers": {
-            "auth": "kweather-test"
-        }
-    })
-        .then(e => e.json())
-        .then(d => {
-            console.log(d)
-            var hang_nm = d.data.sido_nm + " " + d.data.sg_nm + "</br>" + d.data.emd_nm
-            $('#current_location').html(hang_nm)
-            var lat = d.data.lat
-            var lng = d.data.lon
-            map.flyTo(L.latLng(lat, lng), 13)
-        })
-})
-
-$('#search_field').on('propertychange change keyup paste input', (e) => {
-    var value = e.currentTarget.value
-    value = value.split(' ')[value.split(' ').length - 1]
-    var url = 'https://kwapi.kweather.co.kr/v1/gis/geo/findaddr?name=' + value
-    fetch(url, {
-        "method": "GET",
-        "headers": {
-            "auth": "kweather-test"
-        }
-    })
-        .then(e => e.json())
-        .then(d => {
-            if (d != null) {
-                $('#cities').html('')
-                d.data.slice(0, 20).forEach(i => {
-                    var el = `<option data-value='${i.hang_cd}' value='${i.sido_nm} ${i.sg_nm} ${i.emd_nm}'></option>`
-                    $('#cities').append(el)
-                })
-
-
-            }
-        })
-})
-//하단 상세보기 미세먼지 버튼 이벤트
-$('#dust_button').on('click', () => {
-    $('#weather_button').addClass('btn-light')
-    $('#weather_button').removeClass('btn-primary')
-    $('#dust_button').addClass('btn-primary')
-    $('#dust_button').removeClass('btn-light')
-    fill_detail_table(current_state.heatmap_index, data.forecast_data)
-})
-
-
-//하단 상세보기 날씨 버튼 이벤트
-$('#weather_button').on('click', () => {
-    $('#weather_button').removeClass('btn-light')
-    $('#weather_button').addClass('btn-primary')
-    $('#dust_button').removeClass('btn-primary')
-    $('#dust_button').addClass('btn-light')
-    fill_detail_table(current_state.heatmap_index, data.forecast_data)
-})
-
-//현재 위치로 이동 이벤트
-$('#move_to_current_location').on('click', () => {
-    if (navigator.geolocation) {
-        //위치 정보를 얻기
-        navigator.geolocation.getCurrentPosition(function (pos) {
-            map.flyTo(L.latLng(pos.coords.latitude, pos.coords.longitude), 14);
-        });
-    } else {
-        alert("이 브라우저에서는 현재위치찾기가 지원되지 않습니다.")
-    }
-})
-
-//맵 이동시마다 실행되는 이벤트
-window.onload = function () {
-    get_model_data()
-    get_point_map_data()
-    $('#timeline_control_box').css({
-        'width': window.innerWidth + 'px'
-    })
-    $('#date_progress').css({
-        'width': (window.innerWidth - 120) + 'px'
-    })
-    
-}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // 동별 미세먼지 pm10 버튼 이벤트 처리
 heatmap_layer[0].addEventListener('click', () => {
@@ -856,26 +781,147 @@ point_layer[4].on('click', () => {
     }
 })
 
-map.on('moveend', (e) => {
-    wind_data = []
-    heat_data = []
-    map_update(current_state.time_index)
+// 바람 선택 이벤트 처리
+$('#play_wind').on('click', () => {
+    windmap.toggleWindLayer()
 })
 
+//하단 상세보기 미세먼지 버튼 이벤트
+$('#dust_button').on('click', () => {
+    $('#weather_button').addClass('btn-light')
+    $('#weather_button').removeClass('btn-primary')
+    $('#dust_button').addClass('btn-primary')
+    $('#dust_button').removeClass('btn-light')
+    fill_detail_table(current_state.heatmap_index, data.forecast_data)
+})
 
-//하단 상세 보기 페이지를 닫는 함수
-$('#close_detail_box').on('click', () => {
-    $('#mobile_overlay').show()
-    detail_table.style.height = "0px"
-    $('#detail_box').css({
-        "visibility": "hidden",
-        "height": "0px"
-    })
-    $('#detail_table1').html('')
-    current_state.show_detail_table = false
+//하단 상세보기 날씨 버튼 이벤트
+$('#weather_button').on('click', () => {
+    $('#weather_button').removeClass('btn-light')
+    $('#weather_button').addClass('btn-primary')
+    $('#dust_button').removeClass('btn-primary')
+    $('#dust_button').addClass('btn-light')
+    fill_detail_table(current_state.heatmap_index, data.forecast_data)
+})
+
+//좌상단 검색필드 검색버튼누를 때 이벤트
+$('#search_btn').on('click', () => {
     update_detail_box_button()
+    fill_detail_table(current_state.heatmap_index, data.forecast_data)
+    var value = $('#search_field').val();
+    $('#detail_box').css({
+        "visibility": "visible",
+        "height": "auto"
+    })
+    var hand_cd = $('#cities [value="' + value + '"]').data('value')
+    fetch(`https://kwapi.kweather.co.kr/v1/gis/geo/hangaddr?hangCd=${hand_cd}`, {
+        "method": "GET",
+        "headers": {
+            "auth": "kweather-test"
+        }
+    })
+        .then(e => e.json())
+        .then(d => {
+            var hang_nm = d.data.sido_nm + " " + d.data.sg_nm + "</br>" + d.data.emd_nm
+            $('#current_location').html(hang_nm)
+            var lat = d.data.lat
+            var lng = d.data.lon
+            map.flyTo(L.latLng(lat, lng), 13)
+        })
 })
 
+$('#search_field').on('propertychange change keyup paste input', (e) => {
+    var value = e.currentTarget.value
+    value = value.split(' ')[value.split(' ').length - 1]
+    var url = 'https://kwapi.kweather.co.kr/v1/gis/geo/findaddr?name=' + value
+    fetch(url, {
+        "method": "GET",
+        "headers": {
+            "auth": "kweather-test"
+        }
+    })
+        .then(e => e.json())
+        .then(d => {
+            if (d != null) {
+                $('#cities').html('')
+                d.data.slice(0, 20).forEach(i => {
+                    var el = `<option data-value='${i.hang_cd}' value='${i.sido_nm} ${i.sg_nm} ${i.emd_nm}'></option>`
+                    $('#cities').append(el)
+                })
+
+
+            }
+        })
+})
+
+$('#weather_button').on('click', () => {
+    
+})
+//현재 위치로 이동 이벤트
+$('#move_to_current_location_btn').on('click', () => {
+    if (navigator.geolocation) {
+        //위치 정보를 얻기
+        navigator.geolocation.getCurrentPosition(function (pos) {
+            map.flyTo(L.latLng(pos.coords.latitude, pos.coords.longitude), 14);
+        });
+    } else {
+        alert("이 브라우저에서는 현재위치찾기가 지원되지 않습니다.")
+    }
+})
+
+//날짜 타임라인바 컨트롤 이벤트들
+$('#knob').on('mousedown', (e) => {
+    if (!current_state.is_playing) {
+        current_state.knob_drag = true
+    }
+})
+
+//날짜 타임라인바 컨트롤 이벤트들
+window.addEventListener('mouseup', (e) => {
+    if (current_state.knob_drag && !current_state.is_playing) {
+        current_state.knob_drag = false
+        $('#knob').css({
+            "transition": "left .1s ease"
+        })
+        current_state.time_index = Math.floor((parseFloat(document.getElementById('knob').style.left) / 480) / 0.0416667)
+        get_model_data(current_state.time_index)
+        if (on_map_info != undefined) {
+            update_on_map_info()
+        }
+    }
+})
+
+//날짜 타임라인바 컨트롤 이벤트들
+window.addEventListener('mousemove', (e) => {
+    var current_time = $('#current_time')
+    if (current_state.knob_drag) {
+        if (e.x < 612 && e.x > 130) {
+            $('#knob').css({
+                "transition": "none"
+            })
+            $('#knob')[0].style.left = (e.x - 130) + "px"
+            current_time.css({
+                "left": (parseFloat($('#knob').css('left')) - 60) + "px",
+                "visibility": "visible"
+            })
+            var tmp = Math.floor((parseFloat($('#knob').css('left')) / 480) / 0.0416667)
+            if (current_state.time_index != tmp) {
+                current_state.time_index = tmp
+                set_current_state(tmp * 3600000)
+            }
+            current_time.text(current_state.map.current_time_str)
+        }
+    }
+})
+
+
+
+//맵 이동시마다 실행되는 이벤트
+map.on('moveend', (e) => {
+    data.model_data.wind_data = []
+    data.model_data.heat_data = []
+    get_model_data(current_state.time_index)
+})
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //mobile only///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -905,11 +951,19 @@ $('#control_box_close_btn').on('click', () => {
     $('#mobile_overlay').show()
     $('#control_box').hide()
 })
-
+window.onload = function () {
+    get_model_data()
+    get_point_map_data()
+    $('#timeline_control_box').css({
+        'width': window.innerWidth + 'px'
+    })
+    $('#date_progress').css({
+        'width': (window.innerWidth - 120) + 'px'
+    })
+    
+}
 //맵 클릭 이벤투
-map.on('click', (e) => {
-    $('#mobile_overlay').hide()
-    $('#control_box').hide()
+map.on('click', (e) => {    
     if (on_map_info != undefined) {
         map.removeLayer(on_map_info)
     }
@@ -965,16 +1019,16 @@ $('#play').on('click', () => {
             <path d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5zm5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5z"/>
         </svg>
         `
-        Interval = setInterval(() => {
+        current_state.Interval = setInterval(() => {
             if (parseInt(knob[0].style.left) >= 100) {
                 if (current_state.is_playing) {
                     var tmp = Math.floor(parseFloat(knob[0].style.left) / 4.166667)
                     if (current_state.time_index != tmp) {
                         current_state.time_index = tmp
-                        map_update()
+                        get_model_data()
                         current_time.text(current_state.map.current_time_str)
                     }
-                    clearInterval(Interval)
+                    clearInterval(current_state.Interval)
                     current_state.is_playing = false
                     current_time.css({
                         "transition": "none"
@@ -988,7 +1042,7 @@ $('#play').on('click', () => {
                     knob.css({
                         "left": "0%"
                     })
-                    map_update(current_state.time_index)
+                    get_model_data(current_state.time_index)
                     if (on_map_info != undefined) {
                         update_on_map_info()
                     }
@@ -1006,7 +1060,7 @@ $('#play').on('click', () => {
                 var tmp = Math.round(parseFloat(knob[0].style.left) / 4.166667)
                 if (current_state.time_index != tmp) {
                     current_state.time_index = tmp
-                    map_update()
+                    get_model_data()
                     current_time.text(current_state.map.current_time_str)
                 }
                 if (on_map_info != undefined) {
@@ -1026,7 +1080,7 @@ $('#play').on('click', () => {
         current_time.css({
             "transition": "none"
         })
-        clearInterval(Interval)
+        clearInterval(current_state.Interval)
         current_state.is_playing = false
     }
 })
@@ -1048,9 +1102,9 @@ $('#skip_start_btn').on('click', () => {
             "visibility": "visible"
         })
         current_state.time_index = tmp
-        set_state(tmp * 3600000)
+        set_current_state(tmp * 3600000)
         current_time.text(current_state.map.current_time_str)
-        map_update(current_state.time_index)
+        get_model_data(current_state.time_index)
         if (on_map_info != undefined) {
             update_on_map_info()
         }
@@ -1074,11 +1128,32 @@ $('#skip_end_btn').on('click', () => {
             "visibility": "visible"
         })
         current_state.time_index = tmp
-        set_state(tmp * 3600000)
+        set_current_state(tmp * 3600000)
         current_time.text(current_state.map.current_time_str)
-        map_update(current_state.time_index)
+        get_model_data(current_state.time_index)
         if (on_map_info != undefined) {
             update_on_map_info()
         }
     }
+})
+
+//하단 상세 보기 페이지를 닫는 함수
+$('#close_detail_box').on('click', () => {
+    $('#mobile_overlay').show()
+    var detail_table1 = $('#detail_table1')
+    var detail_table2 = $('#detail_table2')
+    detail_table1.css({
+        'height' : '0px'
+    })
+    detail_table2.css({
+        'height' : '0px'
+    })
+    $('#detail_box').css({
+        "visibility": "hidden",
+        "height": "0px"
+    })
+    detail_table1.html('')
+    detail_table2.html('')
+    current_state.show_detail_table = false
+    update_detail_box_button()
 })
