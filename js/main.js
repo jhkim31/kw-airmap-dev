@@ -433,7 +433,6 @@ function get_lifestyle_data(lat, lng) {
 
 }
 
-
 //하단 상세보기를 다루는 함수
 function show_detail_data(e) {        // type 위치검색 : 0, 지도선택 : 1, 마커선택 : 2
     var dbox = $('#detail_box')[0]        
@@ -965,6 +964,7 @@ $('#dust_button').on('click', () => {
     $('#weather_button').removeClass('btn-primary')
     $('#dust_button').addClass('btn-primary')
     $('#dust_button').removeClass('btn-light')
+    fill_detail_table(current_state.heatmap_index, data.forecast_data)
 })
 
 //하단 상세보기 날씨 버튼 이벤트
@@ -973,6 +973,7 @@ $('#weather_button').on('click', () => {
     $('#weather_button').addClass('btn-primary')
     $('#dust_button').removeClass('btn-primary')
     $('#dust_button').addClass('btn-light')
+    fill_detail_table(current_state.heatmap_index, data.forecast_data)
 })
 
 //좌상단 검색필드 검색버튼누를 때 이벤트
@@ -1025,12 +1026,8 @@ $('#search_field').on('propertychange change keyup paste input', (e) => {
         })
 })
 
-$('#dust_button').on('click', (e) => {
-    fill_detail_table(current_state.heatmap_index, data.forecast_data)
-})
-
 $('#weather_button').on('click', () => {
-    fill_detail_table(current_state.heatmap_index, data.forecast_data)
+    
 })
 //현재 위치로 이동 이벤트
 $('#move_to_current_location_btn').on('click', () => {
