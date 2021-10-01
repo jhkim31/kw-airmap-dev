@@ -781,11 +781,6 @@ point_layer[4].on('click', () => {
     }
 })
 
-// 바람 선택 이벤트 처리
-$('#play_wind').on('click', () => {
-    windmap.toggleWindLayer()
-})
-
 //하단 상세보기 미세먼지 버튼 이벤트
 $('#dust_button').on('click', () => {
     $('#weather_button').addClass('btn-light')

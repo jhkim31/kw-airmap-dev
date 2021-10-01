@@ -56,6 +56,8 @@ window.data = {
     "_observ_network" : {
         "iot_network_list" : [],
         "national_network_list": [],
+        "soko_network_list" : [],
+        "aws_network_list" : []
     },
     "_forecast_data" : {
         "lifestyle_data" : {},
@@ -81,9 +83,21 @@ Object.defineProperty(data, "observ_network", {
         return this._observ_network
     },
     set : function(d) {
-        this._observ_network.national_network_list = d[0]
-        this._observ_network.iot_network_list = d[1]
-        pointmap.set_data(data._observ_network.iot_network_list, data._observ_network.national_network_list)        
+        if (d[2].length == 0 && d[3].length == 0){
+            this._observ_network.national_network_list = d[0]
+            this._observ_network.iot_network_list = d[1]
+        } else if (d[2].length != 0){
+            this._observ_network.soko_network_list = d[2]
+        } else if(d[3].length != 0){
+            this._observ_network.aws_network_list = d[3]
+        }
+        if (this._observ_network.national_network_list.length != 0 &&
+            this._observ_network.iot_network_list.length != 0 &&
+            this._observ_network.soko_network_list.length != 0 &&
+            this._observ_network.aws_network_list.length != 0){
+                pointmap.set_data(data._observ_network.iot_network_list, data._observ_network.national_network_list, data._observ_network.soko_network_list, data._observ_network.aws_network_list)        
+            }
+        
     }
 })
 
@@ -93,8 +107,11 @@ Object.defineProperty(data, "forecast_data", {
     },
     set : function(d) {
         console.log(d)
-        this._forecast_data.lifestyle_data = d               
+        this._forecast_data.lifestyle_data = d                       
         fill_detail_table(current_state.heatmap_index, this._forecast_data) 
+        var dbox = $('#detail_box')[0]            
+        dbox.style.visibility = 'visible'
+        dbox.style.height = 'auto';        
     }
 })
 
@@ -102,12 +119,12 @@ var on_map_info = null;
 
 //pointmap 데이터를 받아오는 함수
 function get_point_map_data() {
-    /*
+    /*    
     point map 에 대한 데이터를 받아온다.
     받아온 데이터는 data.observ_network 에 저장
     저장되면 변수가 저장됨을 감지해, pointmap을 세팅함
     */  
-    var url = 'https://kwapi.kweather.co.kr/v1/air/stations?type=all'
+    var url = 'https://kwapi.kweather.co.kr/v1/air/stations?type=all'   //IOT, 국가관측망
     fetch(url, {
         "headers": {
             "Content-Type": "application/json",
@@ -137,8 +154,54 @@ function get_point_map_data() {
                     )
                 }
             })
-            data.observ_network = [tmp1, tmp2]      
+            data.observ_network = [tmp1, tmp2, [], []]      
         })
+
+    var url = 'https://kwapi.kweather.co.kr/v1/kma/shko/stations'   //유인관측소
+    fetch(url, {
+        "headers": {
+            "Content-Type": "application/json",
+            "auth": "kweather-test"
+        }
+    })
+    .then(e => e.json())
+    .then(d => {
+        var tmp = []
+        d.data.forEach(station => {
+            tmp.push({
+                "_latlng" : [station.lat, station.lon],
+                "areaname" : station.areaname,
+                "icon" : station.icon40,
+                "wtext" : station.wtext,
+                "areacode" : station.areacode
+            })
+        })
+        data.observ_network = [[], [], tmp, []]
+    })
+
+    var url = 'https://kwapi.kweather.co.kr/v1/kma/aws/stations'   //aws 무인관측소
+    fetch(url, {
+        "headers": {
+            "Content-Type": "application/json",
+            "auth": "kweather-test"
+        }
+    })
+    .then(e => e.json())
+    .then(d => {
+        var tmp = []
+        d.data.forEach(station => {
+            tmp.push({
+                "_latlng" : [station.lat, station.lon],
+                "areaname" : station.areaname,
+                "icon" : station.icon40,
+                "wtext" : station.wtext,
+                "areacode" : station.areacode
+
+            })
+        })
+        data.observ_network = [[], [], [], tmp]
+    })
+    
 }
 
 //현재 상태 세팅
@@ -430,16 +493,18 @@ function get_lifestyle_data(lat, lng) {
         .then(d => {
             data.forecast_data = convert_lifestyle_data(d, hangCd)
         })
+        .catch(e => {
+            console.log(e)
+            var dbox = $('#detail_box')[0]            
+            dbox.style.visibility = 'hidden'
+            dbox.style.height = '0px'; 
+        })
 
 }
 
 //하단 상세보기를 다루는 함수
-function show_detail_data(e) {        // type 위치검색 : 0, 지도선택 : 1, 마커선택 : 2
-    var dbox = $('#detail_box')[0]        
-    get_lifestyle_data(e.latlng.lat, e.latlng.lng)
-    dbox.style.visibility = 'visible'
-    dbox.style.height = 'auto';
-    
+function show_detail_data(e) {
+    get_lifestyle_data(e.latlng.lat, e.latlng.lng)    
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -612,7 +677,7 @@ heatmap_layer[0].addEventListener('click', () => {
         update_detail_box_button()
         heatmap.set_showheat(true)
         heatmap.set_data(current_state.map, data.model_data.heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
-        document.getElementById("heat_bar").src = "./image/heat_bar_pm10.png";
+        document.getElementById("heat_bar").src = "image/heat_bar_pm10.png";
         if (on_map_info != undefined) {
             update_on_map_info()
         }
@@ -637,7 +702,7 @@ heatmap_layer[1].addEventListener('click', () => {
         update_detail_box_button()
         heatmap.set_showheat(true)
         heatmap.set_data(current_state.map, data.model_data.heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
-        document.getElementById("heat_bar").src = "./image/heat_bar_pm10.png";
+        document.getElementById("heat_bar").src = "image/heat_bar_pm10.png";
         if (on_map_info != undefined) {
             update_on_map_info()
         }
@@ -661,7 +726,7 @@ heatmap_layer[2].addEventListener('click', () => {
         update_detail_box_button()
         heatmap.set_showheat(true)
         heatmap.set_data(current_state.map, data.model_data.heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
-        document.getElementById("heat_bar").src = "./image/heat_bar_t2.png";
+        document.getElementById("heat_bar").src = "image/heat_bar_t2.png";
         if (on_map_info != undefined) {
             update_on_map_info()
         }
@@ -685,7 +750,7 @@ heatmap_layer[3].addEventListener('click', () => {
         update_detail_box_button()
         heatmap.set_showheat(true)
         heatmap.set_data(current_state.map, data.model_data.heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
-        document.getElementById("heat_bar").src = "./image/heat_bar_h.png";
+        document.getElementById("heat_bar").src = "image/heat_bar_h.png";
         if (on_map_info != undefined) {
             update_on_map_info()
         }
@@ -749,21 +814,30 @@ point_layer[2].on('click', () => {
 point_layer[3].on('click', () => {
     pointmap.remove_overlay_image()
     if (point_layer[3][0].checked) {
+        current_state.pointmap_index = 3
+        pointmap.update_point_map(current_state.pointmap_index)
         point_layer.forEach(d => {
             d[0].checked = false
         })
         point_layer[3][0].checked = true
+    } else {
+        current_state.pointmap_index = -1
+        pointmap.remove_overlay_image()
     }
 })
 
 //aws망 선택 버튼 이벤트 처리
 point_layer[4].on('click', () => {
+    pointmap.remove_overlay_image()
     if (point_layer[4][0].checked) {
+        current_state.pointmap_index = 4
+        pointmap.update_point_map(current_state.pointmap_index)
         point_layer.forEach(d => {
             d[0].checked = false
         })
         point_layer[4][0].checked = true
     } else {
+        current_state.pointmap_index = -1
         pointmap.remove_overlay_image()
     }
 })
@@ -1096,11 +1170,32 @@ map.on('click', (e) => {
                     map.removeLayer(on_map_info)
                     on_map_info = null
                 }
+            })        
+    } else {
+        on_map_info = on_map_info = L.marker([e.latlng.lat, e.latlng.lng], {
+            icon: L.divIcon({
+                html: `
+                <div style = "position:absolute;background:white; border-radius:5px; width:100px; height:30px; top:-72px; left:2px; font-size:10px;">
+                <div style = "background:white; position:absolute; width:5px; height:55px; top:28px;">
+                </div>
+                <svg class = "float-end" id = "on_map_info_close" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-square" viewBox="0 0 16 16">
+                <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                </svg>      
+                ${is_marker} : 마커입니다                                       
+                </div>`,
+                className: 'display-none'
             })
+        })
+            .addTo(map)
+            .on('click', (e) => {
+                if (e.originalEvent.path[0].id == "on_map_info_close" || e.originalEvent.path[1].id == "on_map_info_close") {
+                    map.removeLayer(on_map_info)
+                    on_map_info = null
+                }
+            })
+        console.log(is_marker)
     }
-
-
-    console.log(is_marker)
 })
 
 window.onload = function () {
