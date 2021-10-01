@@ -53,6 +53,12 @@ window.data = {
     "heat_data" : [],
     "post_data": {},
     "lifestyle_data" : {},
+    "num_observ_network" : {
+        "iot_network" : 0,
+        "national_network": 0,
+        "soko_network" : 0,
+        "aws_network" : 0
+    },
     "_observ_network" : {
         "iot_network_list" : [],
         "national_network_list": [],
@@ -101,19 +107,6 @@ Object.defineProperty(data, "observ_network", {
     }
 })
 
-Object.defineProperty(data, "forecast_data", {
-    get : function() {
-        return this._forecast_data
-    },
-    set : function(d) {
-        console.log(d)
-        this._forecast_data.lifestyle_data = d                       
-        fill_detail_table(current_state.heatmap_index, this._forecast_data) 
-        var dbox = $('#detail_box')[0]            
-        dbox.style.visibility = 'visible'
-        dbox.style.height = 'auto';        
-    }
-})
 
 var on_map_info = null;
 
@@ -144,6 +137,7 @@ function get_point_map_data() {
                             "deviceType": i.deviceType
                         }
                     )
+                    data.num_observ_network.national_network++
                 } else {
                     tmp2.push(
                         {
@@ -152,6 +146,7 @@ function get_point_map_data() {
                             "deviceType": i.deviceType
                         }
                     )
+                    data.num_observ_network.iot_network++
                 }
             })
             data.observ_network = [tmp1, tmp2, [], []]      
@@ -168,6 +163,7 @@ function get_point_map_data() {
     .then(d => {
         var tmp = []
         d.data.forEach(station => {
+            data.num_observ_network.soko_network++
             tmp.push({
                 "_latlng" : [station.lat, station.lon],
                 "areaname" : station.areaname,
@@ -190,6 +186,7 @@ function get_point_map_data() {
     .then(d => {
         var tmp = []
         d.data.forEach(station => {
+            data.num_observ_network.aws_network++
             tmp.push({
                 "_latlng" : [station.lat, station.lon],
                 "areaname" : station.areaname,
@@ -445,61 +442,6 @@ function convert_lifestyle_data(d, hangCd) {
     }
 
     return return_data.slice(0, 7)
-}
-
-//해당 좌표의 lifestyle_data를 얻어온다
-function get_lifestyle_data(lat, lng) {
-    /*
-    lifestyle_data란 
-    시간별 강수량, 강수확률, 구름량, 온.습도 등... 다양한 데이터들.
-
-    단순 좌표로만은 얻을 수 없기 때문에
-    좌표로 => 행정동 코드를 얻은다음
-    얻은 행정동 코드를 통해
-    행정동 코드 => lifestyle data를 얻어온다.
-
-    이또한 데이터가 업데이트 되면 자동으로 이벤트 일어남
-    */
-    var hangCd = ""
-    var url = 'https://kwapi.kweather.co.kr/v1/gis/geo/loctoaddr?lat=' + lat + '&lon=' + lng
-    fetch(url, {
-        "method": "GET",
-        "headers": {
-            "auth": "kweather-test"
-        }
-    })
-        .then(e => e.json())
-        .then(d => {
-            if (d.data != null) {
-                hangCd = d.data.hang_cd
-                var hang_nm = d.data.sido_nm + " " + d.data.sg_nm + "</br>" + d.data.emd_nm
-                $('#current_location').html(hang_nm)
-                var dt = new Date()
-                var d_s = dt.getFullYear() + (dt.getMonth() + 1).toString().padStart(2, '0') + dt.getDate().toString().padStart(2, '0')
-                var dt = new Date(dt.getTime() + 604800000)
-                var d_e = dt.getFullYear() + (dt.getMonth() + 1).toString().padStart(2, '0') + dt.getDate().toString().padStart(2, '0')
-                hangCd = 11110000       //현재 다른 데이터는 아직 오지 않음.
-                return fetch(`https://kwapi.kweather.co.kr/kweather/lifestyle/date?hangCd=${hangCd}&startDate=${d_s}&endDate=${d_e}`, {
-                    headers: {
-                        "auth": "kweather-test"
-                    }
-                })                    
-            } else {
-                $('#current_location').html("")
-                return null
-            }
-        })
-        .then(j => j.json())
-        .then(d => {
-            data.forecast_data = convert_lifestyle_data(d, hangCd)
-        })
-        .catch(e => {
-            console.log(e)
-            var dbox = $('#detail_box')[0]            
-            dbox.style.visibility = 'hidden'
-            dbox.style.height = '0px'; 
-        })
-
 }
 
 //하단 상세보기를 다루는 함수
@@ -766,6 +708,8 @@ heatmap_layer[3].addEventListener('click', () => {
 //iot, 국가관측망 선택 버튼 이벤트 처리
 point_layer[0].on('click', () => {
     if (point_layer[0][0].checked) {
+        var comment = `Iot측정소 : ${data.num_observ_network.iot_network}개   국가측정소 : ${data.num_observ_network.national_network}개` 
+        $('#num_stations').text(comment)
         current_state.pointmap_index = 0
         pointmap.update_point_map(current_state.pointmap_index)
         point_layer.forEach(d => {
@@ -773,6 +717,7 @@ point_layer[0].on('click', () => {
         })
         point_layer[0][0].checked = true
     } else {
+        $('#num_stations').text('')
         current_state.pointmap_index = -1
         pointmap.remove_overlay_image()
     }
@@ -782,6 +727,8 @@ point_layer[0].on('click', () => {
 //iot 관측망 선택 버튼 이벤트 처리
 point_layer[1].on('click', () => {
     if (point_layer[1][0].checked) {
+        var comment = `Iot측정소 : ${data.num_observ_network.iot_network}개` 
+        $('#num_stations').text(comment)
         current_state.pointmap_index = 1
         pointmap.update_point_map(current_state.pointmap_index)
         point_layer.forEach(d => {
@@ -789,6 +736,7 @@ point_layer[1].on('click', () => {
         })
         point_layer[1][0].checked = true
     } else {
+        $('#num_stations').text('')
         current_state.pointmap_index = -1
         pointmap.remove_overlay_image()
     }
@@ -798,6 +746,8 @@ point_layer[1].on('click', () => {
 point_layer[2].on('click', () => {
     pointmap.remove_overlay_image()
     if (point_layer[2][0].checked) {
+        var comment = `국가측정소 : ${data.num_observ_network.national_network}개` 
+        $('#num_stations').text(comment)
         current_state.pointmap_index = 2
         pointmap.update_point_map(current_state.pointmap_index)
         point_layer.forEach(d => {
@@ -805,6 +755,7 @@ point_layer[2].on('click', () => {
         })
         point_layer[2][0].checked = true
     } else {
+        $('#num_stations').text('')
         current_state.pointmap_index = -1
         pointmap.remove_overlay_image()
     }
@@ -814,6 +765,8 @@ point_layer[2].on('click', () => {
 point_layer[3].on('click', () => {
     pointmap.remove_overlay_image()
     if (point_layer[3][0].checked) {
+        var comment = `유인관측망 : ${data.num_observ_network.soko_network}개` 
+        $('#num_stations').text(comment)
         current_state.pointmap_index = 3
         pointmap.update_point_map(current_state.pointmap_index)
         point_layer.forEach(d => {
@@ -821,6 +774,7 @@ point_layer[3].on('click', () => {
         })
         point_layer[3][0].checked = true
     } else {
+        $('#num_stations').text('')
         current_state.pointmap_index = -1
         pointmap.remove_overlay_image()
     }
@@ -830,6 +784,8 @@ point_layer[3].on('click', () => {
 point_layer[4].on('click', () => {
     pointmap.remove_overlay_image()
     if (point_layer[4][0].checked) {
+        var comment = `무인관측소 : ${data.num_observ_network.aws_network}개` 
+        $('#num_stations').text(comment)
         current_state.pointmap_index = 4
         pointmap.update_point_map(current_state.pointmap_index)
         point_layer.forEach(d => {
@@ -837,6 +793,7 @@ point_layer[4].on('click', () => {
         })
         point_layer[4][0].checked = true
     } else {
+        $('#num_stations').text('')
         current_state.pointmap_index = -1
         pointmap.remove_overlay_image()
     }
@@ -1002,6 +959,76 @@ map.on('moveend', (e) => {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+Object.defineProperty(data, "forecast_data", {
+    get : function() {
+        return this._forecast_data
+    },
+    set : function(d) {
+        console.log(d)
+        this._forecast_data.lifestyle_data = d                       
+        fill_detail_table(current_state.heatmap_index, this._forecast_data) 
+        var dbox = $('#detail_box')[0]            
+        dbox.style.visibility = 'visible'
+        dbox.style.height = 'auto';        
+    }
+})
+
+//해당 좌표의 lifestyle_data를 얻어온다
+function get_lifestyle_data(lat, lng) {
+    /*
+    lifestyle_data란 
+    시간별 강수량, 강수확률, 구름량, 온.습도 등... 다양한 데이터들.
+
+    단순 좌표로만은 얻을 수 없기 때문에
+    좌표로 => 행정동 코드를 얻은다음
+    얻은 행정동 코드를 통해
+    행정동 코드 => lifestyle data를 얻어온다.
+
+    이또한 데이터가 업데이트 되면 자동으로 이벤트 일어남
+    */
+    var hangCd = ""
+    var url = 'https://kwapi.kweather.co.kr/v1/gis/geo/loctoaddr?lat=' + lat + '&lon=' + lng
+    fetch(url, {
+        "method": "GET",
+        "headers": {
+            "auth": "kweather-test"
+        }
+    })
+        .then(e => e.json())
+        .then(d => {
+            if (d.data != null) {
+                hangCd = d.data.hang_cd
+                var hang_nm = d.data.sido_nm + " " + d.data.sg_nm + "</br>" + d.data.emd_nm
+                $('#current_location').html(hang_nm)
+                var dt = new Date()
+                var d_s = dt.getFullYear() + (dt.getMonth() + 1).toString().padStart(2, '0') + dt.getDate().toString().padStart(2, '0')
+                var dt = new Date(dt.getTime() + 604800000)
+                var d_e = dt.getFullYear() + (dt.getMonth() + 1).toString().padStart(2, '0') + dt.getDate().toString().padStart(2, '0')
+                hangCd = 11110000       //현재 다른 데이터는 아직 오지 않음.
+                return fetch(`https://kwapi.kweather.co.kr/kweather/lifestyle/date?hangCd=${hangCd}&startDate=${d_s}&endDate=${d_e}`, {
+                    headers: {
+                        "auth": "kweather-test"
+                    }
+                })                    
+            } else {
+                $('#current_location').html("")
+                return null
+            }
+        })
+        .then(j => j.json())
+        .then(d => {
+            data.forecast_data = convert_lifestyle_data(d, hangCd)
+        })
+        .catch(e => {
+            console.log(e)
+            var dbox = $('#detail_box')[0]            
+            dbox.style.visibility = 'hidden'
+            dbox.style.height = '0px'; 
+        })
+
+}
 
 //재생 버튼 이벤트 처리
 $('#play').on('click', () => {
