@@ -172,7 +172,7 @@ var WindMap = function (_canvas) {
         }
     }
 
-    this.set_data = function (config, wind_data) {        
+    this.init = function (config, wind_data) {        
         wind_status.zoom = map.getZoom();
         wind_status.speed = 0.5 * (1.2 ** (wind_status.zoom - 10))
         if (wind_status.speed > 0.5){

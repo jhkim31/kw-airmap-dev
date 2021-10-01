@@ -101,7 +101,7 @@ Object.defineProperty(data, "observ_network", {
             this._observ_network.iot_network_list.length != 0 &&
             this._observ_network.soko_network_list.length != 0 &&
             this._observ_network.aws_network_list.length != 0){
-                pointmap.set_data(data._observ_network.iot_network_list, data._observ_network.national_network_list, data._observ_network.soko_network_list, data._observ_network.aws_network_list)        
+                pointmap.init(data._observ_network.iot_network_list, data._observ_network.national_network_list, data._observ_network.soko_network_list, data._observ_network.aws_network_list)        
             }
         
     }
@@ -134,7 +134,9 @@ function get_point_map_data() {
                         {
                             "_latlng": [i.latlng.lat, i.latlng.lon],
                             "serial": i.serial,
-                            "deviceType": i.deviceType
+                            "deviceType": i.deviceType,
+                            "pm10" : i.pm10,
+                            "pm25" : i.pm25
                         }
                     )
                     data.num_observ_network.national_network++
@@ -143,7 +145,9 @@ function get_point_map_data() {
                         {
                             "_latlng": [i.latlng.lat, i.latlng.lon],
                             "serial": i.serial,
-                            "deviceType": i.deviceType
+                            "deviceType": i.deviceType,
+                            "pm10" : i.pm10,
+                            "pm25" : i.pm25
                         }
                     )
                     data.num_observ_network.iot_network++
@@ -169,7 +173,8 @@ function get_point_map_data() {
                 "areaname" : station.areaname,
                 "icon" : station.icon40,
                 "wtext" : station.wtext,
-                "areacode" : station.areacode
+                "areacode" : station.areacode,
+                "temp" : station.temp
             })
         })
         data.observ_network = [[], [], tmp, []]
@@ -192,7 +197,8 @@ function get_point_map_data() {
                 "areaname" : station.areaname,
                 "icon" : station.icon40,
                 "wtext" : station.wtext,
-                "areacode" : station.areacode
+                "areacode" : station.areacode,
+                "temp" : station.temp
 
             })
         })
@@ -271,7 +277,6 @@ function set_current_state(delta = 0) {
 
 //서버에서 넘어온 json데이터를 사용할 수 있게 배열로 만들어 리턴하는 함수
 function convert_data_one_time(json_data) {
-    console.log(json_data)
     /*
         parameter -----
         json_data : timestamp, data로 구성
@@ -341,8 +346,8 @@ function convert_data_one_time(json_data) {
 
 //모든 overlay 맵 업데이트
 function map_update(){
-    windmap.set_data(current_state.map, data.model_data.wind_data[current_state.time_index])
-    heatmap.set_data(current_state.map, data.model_data.heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
+    windmap.init(current_state.map, data.model_data.wind_data[current_state.time_index])
+    heatmap.init(current_state.map, data.model_data.heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
     pointmap.update_point_map(current_state.pointmap_index)
     windmap.startAnim()
 }
@@ -391,7 +396,6 @@ function update_detail_box_button() {
 //lifestyle_data를 사용할 수 있게 컨버팅 한다.
 function convert_lifestyle_data(d, hangCd) {
     var lifestyle_data = d.data[hangCd]
-    console.log(lifestyle_data)
     lifestyle_data = lifestyle_data[[Object.keys(lifestyle_data)[0]]]
     var return_data = []
     var index = 0
@@ -399,7 +403,6 @@ function convert_lifestyle_data(d, hangCd) {
         if (index < 3) {
             var forecast = []
 
-            console.log(lifestyle_data[key])
             var tmp = []
 
             tmp.push(lifestyle_data[key].WTEXT06)
@@ -445,8 +448,8 @@ function convert_lifestyle_data(d, hangCd) {
 }
 
 //하단 상세보기를 다루는 함수
-function show_detail_data(e) {
-    get_lifestyle_data(e.latlng.lat, e.latlng.lng)    
+function show_detail_data(e, type = 0) { // type = 0 : 지도, type = 1 : 마커
+    get_lifestyle_data(e.latlng.lat, e.latlng.lng, type)    
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -966,7 +969,6 @@ Object.defineProperty(data, "forecast_data", {
         return this._forecast_data
     },
     set : function(d) {
-        console.log(d)
         this._forecast_data.lifestyle_data = d                       
         fill_detail_table(current_state.heatmap_index, this._forecast_data) 
         var dbox = $('#detail_box')[0]            
@@ -976,7 +978,7 @@ Object.defineProperty(data, "forecast_data", {
 })
 
 //해당 좌표의 lifestyle_data를 얻어온다
-function get_lifestyle_data(lat, lng) {
+function get_lifestyle_data(lat, lng, type) {
     /*
     lifestyle_data란 
     시간별 강수량, 강수확률, 구름량, 온.습도 등... 다양한 데이터들.
@@ -1022,7 +1024,6 @@ function get_lifestyle_data(lat, lng) {
             data.forecast_data = convert_lifestyle_data(d, hangCd)
         })
         .catch(e => {
-            console.log(e)
             var dbox = $('#detail_box')[0]            
             dbox.style.visibility = 'hidden'
             dbox.style.height = '0px'; 
@@ -1164,8 +1165,7 @@ map.on('click', (e) => {
     }
 
     current_state.show_detail_table = true
-    update_detail_box_button()
-    show_detail_data(e)
+    update_detail_box_button()    
     var value = ""
     if (current_state.heatmap_index < 2) {
         value = Math.round(heatmap.getValue(e.containerPoint.x, e.containerPoint.y)) + "µg/m³"
@@ -1197,7 +1197,8 @@ map.on('click', (e) => {
                     map.removeLayer(on_map_info)
                     on_map_info = null
                 }
-            })        
+            })      
+            show_detail_data(e, type = 0)
     } else {
         on_map_info = on_map_info = L.marker([e.latlng.lat, e.latlng.lng], {
             icon: L.divIcon({
@@ -1221,11 +1222,13 @@ map.on('click', (e) => {
                     on_map_info = null
                 }
             })
-        console.log(is_marker)
+            show_detail_data(e, type = 1)
     }
 })
 
-window.onload = function () {
+
+window.onload = async function () {
     get_model_data()
     get_point_map_data()
 }
+

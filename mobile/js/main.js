@@ -53,6 +53,12 @@ window.data = {
     "heat_data" : [],
     "post_data": {},
     "lifestyle_data" : {},
+    "num_observ_network" : {
+        "iot_network" : 0,
+        "national_network": 0,
+        "soko_network" : 0,
+        "aws_network" : 0
+    },
     "_observ_network" : {
         "iot_network_list" : [],
         "national_network_list": [],
@@ -95,11 +101,12 @@ Object.defineProperty(data, "observ_network", {
             this._observ_network.iot_network_list.length != 0 &&
             this._observ_network.soko_network_list.length != 0 &&
             this._observ_network.aws_network_list.length != 0){
-                pointmap.set_data(data._observ_network.iot_network_list, data._observ_network.national_network_list, data._observ_network.soko_network_list, data._observ_network.aws_network_list)        
+                pointmap.init(data._observ_network.iot_network_list, data._observ_network.national_network_list, data._observ_network.soko_network_list, data._observ_network.aws_network_list)        
             }
         
     }
 })
+
 
 var on_map_info = null;
 
@@ -127,17 +134,23 @@ function get_point_map_data() {
                         {
                             "_latlng": [i.latlng.lat, i.latlng.lon],
                             "serial": i.serial,
-                            "deviceType": i.deviceType
+                            "deviceType": i.deviceType,
+                            "pm10" : i.pm10,
+                            "pm25" : i.pm25
                         }
                     )
+                    data.num_observ_network.national_network++
                 } else {
                     tmp2.push(
                         {
                             "_latlng": [i.latlng.lat, i.latlng.lon],
                             "serial": i.serial,
-                            "deviceType": i.deviceType
+                            "deviceType": i.deviceType,
+                            "pm10" : i.pm10,
+                            "pm25" : i.pm25
                         }
                     )
+                    data.num_observ_network.iot_network++
                 }
             })
             data.observ_network = [tmp1, tmp2, [], []]      
@@ -154,12 +167,14 @@ function get_point_map_data() {
     .then(d => {
         var tmp = []
         d.data.forEach(station => {
+            data.num_observ_network.soko_network++
             tmp.push({
                 "_latlng" : [station.lat, station.lon],
                 "areaname" : station.areaname,
                 "icon" : station.icon40,
                 "wtext" : station.wtext,
-                "areacode" : station.areacode
+                "areacode" : station.areacode,
+                "temp" : station.temp
             })
         })
         data.observ_network = [[], [], tmp, []]
@@ -176,12 +191,14 @@ function get_point_map_data() {
     .then(d => {
         var tmp = []
         d.data.forEach(station => {
+            data.num_observ_network.aws_network++
             tmp.push({
                 "_latlng" : [station.lat, station.lon],
                 "areaname" : station.areaname,
                 "icon" : station.icon40,
                 "wtext" : station.wtext,
-                "areacode" : station.areacode
+                "areacode" : station.areacode,
+                "temp" : station.temp
 
             })
         })
@@ -260,7 +277,6 @@ function set_current_state(delta = 0) {
 
 //서버에서 넘어온 json데이터를 사용할 수 있게 배열로 만들어 리턴하는 함수
 function convert_data_one_time(json_data) {
-    console.log(json_data)
     /*
         parameter -----
         json_data : timestamp, data로 구성
@@ -330,8 +346,8 @@ function convert_data_one_time(json_data) {
 
 //모든 overlay 맵 업데이트
 function map_update(){
-    windmap.set_data(current_state.map, data.model_data.wind_data[current_state.time_index])
-    heatmap.set_data(current_state.map, data.model_data.heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
+    windmap.init(current_state.map, data.model_data.wind_data[current_state.time_index])
+    heatmap.init(current_state.map, data.model_data.heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
     pointmap.update_point_map(current_state.pointmap_index)
     windmap.startAnim()
 }
@@ -380,7 +396,6 @@ function update_detail_box_button() {
 //lifestyle_data를 사용할 수 있게 컨버팅 한다.
 function convert_lifestyle_data(d, hangCd) {
     var lifestyle_data = d.data[hangCd]
-    console.log(lifestyle_data)
     lifestyle_data = lifestyle_data[[Object.keys(lifestyle_data)[0]]]
     var return_data = []
     var index = 0
@@ -388,7 +403,6 @@ function convert_lifestyle_data(d, hangCd) {
         if (index < 3) {
             var forecast = []
 
-            console.log(lifestyle_data[key])
             var tmp = []
 
             tmp.push(lifestyle_data[key].WTEXT06)
@@ -697,6 +711,8 @@ heatmap_layer[3].addEventListener('click', () => {
 //iot, 국가관측망 선택 버튼 이벤트 처리
 point_layer[0].on('click', () => {
     if (point_layer[0][0].checked) {
+        var comment = `Iot측정소 : ${data.num_observ_network.iot_network}개   국가측정소 : ${data.num_observ_network.national_network}개` 
+        $('#num_stations').text(comment)
         current_state.pointmap_index = 0
         pointmap.update_point_map(current_state.pointmap_index)
         point_layer.forEach(d => {
@@ -704,6 +720,7 @@ point_layer[0].on('click', () => {
         })
         point_layer[0][0].checked = true
     } else {
+        $('#num_stations').text('')
         current_state.pointmap_index = -1
         pointmap.remove_overlay_image()
     }
@@ -713,6 +730,8 @@ point_layer[0].on('click', () => {
 //iot 관측망 선택 버튼 이벤트 처리
 point_layer[1].on('click', () => {
     if (point_layer[1][0].checked) {
+        var comment = `Iot측정소 : ${data.num_observ_network.iot_network}개` 
+        $('#num_stations').text(comment)
         current_state.pointmap_index = 1
         pointmap.update_point_map(current_state.pointmap_index)
         point_layer.forEach(d => {
@@ -720,6 +739,7 @@ point_layer[1].on('click', () => {
         })
         point_layer[1][0].checked = true
     } else {
+        $('#num_stations').text('')
         current_state.pointmap_index = -1
         pointmap.remove_overlay_image()
     }
@@ -729,6 +749,8 @@ point_layer[1].on('click', () => {
 point_layer[2].on('click', () => {
     pointmap.remove_overlay_image()
     if (point_layer[2][0].checked) {
+        var comment = `국가측정소 : ${data.num_observ_network.national_network}개` 
+        $('#num_stations').text(comment)
         current_state.pointmap_index = 2
         pointmap.update_point_map(current_state.pointmap_index)
         point_layer.forEach(d => {
@@ -736,6 +758,7 @@ point_layer[2].on('click', () => {
         })
         point_layer[2][0].checked = true
     } else {
+        $('#num_stations').text('')
         current_state.pointmap_index = -1
         pointmap.remove_overlay_image()
     }
@@ -745,6 +768,8 @@ point_layer[2].on('click', () => {
 point_layer[3].on('click', () => {
     pointmap.remove_overlay_image()
     if (point_layer[3][0].checked) {
+        var comment = `유인관측망 : ${data.num_observ_network.soko_network}개` 
+        $('#num_stations').text(comment)
         current_state.pointmap_index = 3
         pointmap.update_point_map(current_state.pointmap_index)
         point_layer.forEach(d => {
@@ -752,6 +777,7 @@ point_layer[3].on('click', () => {
         })
         point_layer[3][0].checked = true
     } else {
+        $('#num_stations').text('')
         current_state.pointmap_index = -1
         pointmap.remove_overlay_image()
     }
@@ -761,6 +787,8 @@ point_layer[3].on('click', () => {
 point_layer[4].on('click', () => {
     pointmap.remove_overlay_image()
     if (point_layer[4][0].checked) {
+        var comment = `무인관측소 : ${data.num_observ_network.aws_network}개` 
+        $('#num_stations').text(comment)
         current_state.pointmap_index = 4
         pointmap.update_point_map(current_state.pointmap_index)
         point_layer.forEach(d => {
@@ -768,6 +796,7 @@ point_layer[4].on('click', () => {
         })
         point_layer[4][0].checked = true
     } else {
+        $('#num_stations').text('')
         current_state.pointmap_index = -1
         pointmap.remove_overlay_image()
     }

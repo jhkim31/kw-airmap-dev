@@ -8,7 +8,7 @@ var HeatMap = function (_canvas) {
     var overlay_type = 3
 
 
-    this.set_data = function (config, heat_data, _overlay_type) {
+    this.init = function (config, heat_data, _overlay_type) {
         heat_config = config
         grid = heat_data
         canvas.width = window.innerWidth
