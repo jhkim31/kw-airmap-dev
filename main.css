@@ -272,3 +272,12 @@ border:0px;
   width:10px;
   height:30px;   
   }
+
+#num_stations{
+  position:absolute;
+  bottom:5px;
+  right:10px;
+  height:20px;
+  background:white;
+  color:gray;
+}

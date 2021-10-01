@@ -16,9 +16,24 @@ var WindMap = function (_canvas) {
         zoom : 10,
         speed : 0.5,
         opacity : 0.1,
-        count : 1000
+        count : 700
     }
         
+    this.init = function (config, wind_data) {        
+        wind_status.zoom = map.getZoom();
+        wind_status.speed = 0.5 * (1.2 ** (wind_status.zoom - 10))
+        if (wind_status.speed > 0.5){
+            wind_status.speed = 0.5
+        }
+        cn.width = window.innerWidth
+        cn.height = window.innerHeight
+        cnx = cn.width - 1
+        cny = cn.height - 1
+        wind_config = config
+        grid = wind_data
+        build()
+    }
+
     function buildobj(i) {            
         var latLng = L.latLng(getRandomArbitrary(wind_config.minlat, wind_config.maxlat), getRandomArbitrary(wind_config.minlng, wind_config.maxlng))        
         var point = map.latLngToContainerPoint(latLng)
@@ -169,21 +184,6 @@ var WindMap = function (_canvas) {
             showWind = true;
             this.startAnim()
         }
-    }
-
-    this.set_data = function (config, wind_data) {        
-        wind_status.zoom = map.getZoom();
-        wind_status.speed = 0.5 * (1.2 ** (wind_status.zoom - 10))
-        if (wind_status.speed > 0.5){
-            wind_status.speed = 0.5
-        }
-        cn.width = window.innerWidth
-        cn.height = window.innerHeight
-        cnx = cn.width - 1
-        cny = cn.height - 1
-        wind_config = config
-        grid = wind_data
-        build()
     }
 
     function build() {
