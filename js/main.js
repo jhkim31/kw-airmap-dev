@@ -563,6 +563,8 @@ function fill_detail_table(type = 3, forecast_data) {
         table2_4th_row += '</tr>'
         detail_table2.append(table2_4th_row)        //table2 third row
     }
+
+    $('#detail_scroll_box').width($('#detail_table1').width() + $('#detail_table2').width() + 35)
 }
 
 //지도에 표시된 핀을 업데이트 하기 위한 메소드<<<<<incompletion>>>>>>
@@ -1198,7 +1200,7 @@ map.on('click', (e) => {
                     on_map_info = null
                 }
             })      
-            show_detail_data(e, type = 0)
+            show_detail_data(e, 0)
     } else {
         on_map_info = on_map_info = L.marker([e.latlng.lat, e.latlng.lng], {
             icon: L.divIcon({
@@ -1222,7 +1224,7 @@ map.on('click', (e) => {
                     on_map_info = null
                 }
             })
-            show_detail_data(e, type = 1)
+            show_detail_data(e, 1)
     }
 })
 
