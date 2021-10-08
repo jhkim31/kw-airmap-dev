@@ -44,8 +44,9 @@ var current_state = {
     },
     "Interval": 0
 }
+
 window.data = {
-    "_model_data" : {
+    "model_data" : {
         "wind_data": [],
         "heat_data": [],           //0 : pm10 /    1 : pm25 /   2 : t /    3 : h    
     },    
@@ -56,13 +57,13 @@ window.data = {
     "num_observ_network" : {
         "iot_network" : 0,
         "national_network": 0,
-        "soko_network" : 0,
+        "shko_network" : 0,
         "aws_network" : 0
     },
-    "_observ_network" : {
+    "observ_network" : {
         "iot_network_list" : [],
         "national_network_list": [],
-        "soko_network_list" : [],
+        "shko_network_list" : [],
         "aws_network_list" : []
     },
     "_forecast_data" : {
@@ -71,313 +72,11 @@ window.data = {
     }    
 }
 
-Object.defineProperty(data, "model_data", {
-    get : function() {
-        return this._model_data
-    },
-    set : function(d) {
-        this._model_data.wind_data[current_state.time_index] = []
-        this._model_data.heat_data[current_state.time_index] = []
-        this._model_data.wind_data[current_state.time_index] = d[0]
-        this._model_data.heat_data[current_state.time_index] = d.slice(1,5)
-        map_update()
-    }
-})
-
-Object.defineProperty(data, "observ_network", {
-    get : function() {
-        return this._observ_network
-    },
-    set : function(d) {
-        if (d[2].length == 0 && d[3].length == 0){
-            this._observ_network.national_network_list = d[0]
-            this._observ_network.iot_network_list = d[1]
-        } else if (d[2].length != 0){
-            this._observ_network.soko_network_list = d[2]
-        } else if(d[3].length != 0){
-            this._observ_network.aws_network_list = d[3]
-        }
-        if (this._observ_network.national_network_list.length != 0 &&
-            this._observ_network.iot_network_list.length != 0 &&
-            this._observ_network.soko_network_list.length != 0 &&
-            this._observ_network.aws_network_list.length != 0){
-                pointmap.init(data._observ_network.iot_network_list, data._observ_network.national_network_list, data._observ_network.soko_network_list, data._observ_network.aws_network_list)        
-            }
-        
-    }
-})
-
-
 var on_map_info = null;
 
-//pointmap 데이터를 받아오는 함수
-function get_point_map_data() {
-    /*    
-    point map 에 대한 데이터를 받아온다.
-    받아온 데이터는 data.observ_network 에 저장
-    저장되면 변수가 저장됨을 감지해, pointmap을 세팅함
-    */  
-    var url = 'https://kwapi.kweather.co.kr/v1/air/stations?type=all'   //IOT, 국가관측망
-    fetch(url, {
-        "headers": {
-            "Content-Type": "application/json",
-            "auth": "kweather-test"
-        }
-    })
-        .then(e => e.json())
-        .then(d => {
-            var tmp1 = []
-            var tmp2 = []
-            d.data.forEach(i => {
-                if (i.deviceType == "AK") {
-                    tmp1.push(
-                        {
-                            "_latlng": [i.latlng.lat, i.latlng.lon],
-                            "serial": i.serial,
-                            "deviceType": i.deviceType,
-                            "pm10" : i.pm10,
-                            "pm25" : i.pm25
-                        }
-                    )
-                    data.num_observ_network.national_network++
-                } else {
-                    tmp2.push(
-                        {
-                            "_latlng": [i.latlng.lat, i.latlng.lon],
-                            "serial": i.serial,
-                            "deviceType": i.deviceType,
-                            "pm10" : i.pm10,
-                            "pm25" : i.pm25
-                        }
-                    )
-                    data.num_observ_network.iot_network++
-                }
-            })
-            data.observ_network = [tmp1, tmp2, [], []]      
-        })
 
-    var url = 'https://kwapi.kweather.co.kr/v1/kma/shko/stations'   //유인관측소
-    fetch(url, {
-        "headers": {
-            "Content-Type": "application/json",
-            "auth": "kweather-test"
-        }
-    })
-    .then(e => e.json())
-    .then(d => {
-        var tmp = []
-        d.data.forEach(station => {
-            data.num_observ_network.soko_network++
-            tmp.push({
-                "_latlng" : [station.lat, station.lon],
-                "areaname" : station.areaname,
-                "icon" : station.icon40,
-                "wtext" : station.wtext,
-                "areacode" : station.areacode,
-                "temp" : station.temp
-            })
-        })
-        data.observ_network = [[], [], tmp, []]
-    })
 
-    var url = 'https://kwapi.kweather.co.kr/v1/kma/aws/stations'   //aws 무인관측소
-    fetch(url, {
-        "headers": {
-            "Content-Type": "application/json",
-            "auth": "kweather-test"
-        }
-    })
-    .then(e => e.json())
-    .then(d => {
-        var tmp = []
-        d.data.forEach(station => {
-            data.num_observ_network.aws_network++
-            tmp.push({
-                "_latlng" : [station.lat, station.lon],
-                "areaname" : station.areaname,
-                "icon" : station.icon40,
-                "wtext" : station.wtext,
-                "areacode" : station.areacode,
-                "temp" : station.temp
 
-            })
-        })
-        data.observ_network = [[], [], [], tmp]
-    })
-    
-}
-
-//현재 상태 세팅
-function set_current_state(delta = 0) {
-    /*
-    지도의 boundary, gap 시간등을 세팅해
-    해당 값들로 post_data까지 만들음.
-    */
-    var zoom = map.getZoom()
-    if (zoom >= 8) {
-        current_state.map.latGap = 0.1
-        current_state.map.lngGap = 0.1
-    } else if (zoom >= 7) {
-        current_state.map.latGap = 0.2
-        current_state.map.lngGap = 0.2
-    } else if (zoom >= 5) {
-        current_state.map.latGap = 0.5
-        current_state.map.lngGap = 0.5
-    }
-    current_state.map.maxlat = parseFloat((map.getBounds()._northEast.lat - map.getBounds()._northEast.lat % current_state.map.latGap + current_state.map.latGap).toFixed(3))
-    current_state.map.maxlat = (current_state.map.maxlat > 44) ? 44 : current_state.map.maxlat
-    current_state.map.maxlat = (current_state.map.maxlat < 32) ? 32 : current_state.map.maxlat
-
-    current_state.map.maxlng = parseFloat((map.getBounds()._northEast.lng - map.getBounds()._northEast.lng % current_state.map.lngGap + current_state.map.lngGap).toFixed(3))
-    current_state.map.maxlng = (current_state.map.maxlng > 132) ? 132 : current_state.map.maxlng
-    current_state.map.maxlng = (current_state.map.maxlng < 120) ? 120 : current_state.map.maxlng
-
-    current_state.map.minlat = parseFloat((map.getBounds()._southWest.lat - map.getBounds()._southWest.lat % current_state.map.latGap - current_state.map.latGap).toFixed(3))
-    current_state.map.minlat = (current_state.map.minlat > 44) ? 44 : current_state.map.minlat
-    current_state.map.minlat = (current_state.map.minlat < 32) ? 32 : current_state.map.minlat
-
-    current_state.map.minlng = parseFloat((map.getBounds()._southWest.lng - map.getBounds()._southWest.lng % current_state.map.lngGap - current_state.map.lngGap).toFixed(3))
-    current_state.map.minlng = (current_state.map.minlng > 132) ? 132 : current_state.map.minlng
-    current_state.map.minlng = (current_state.map.minlng < 120) ? 120 : current_state.map.minlng
-
-    current_state.map.gridX = Math.round((current_state.map.maxlng - current_state.map.minlng) / current_state.map.lngGap)
-    current_state.map.gridY = Math.round((current_state.map.maxlat - current_state.map.minlat) / current_state.map.latGap)
-
-    var t = new Date(new Date().getTime() - 86400000 + delta)
-    // var t = new Date(1628262000000 + delta)               //현재는 시간을 임의로 고정시킴.
-    current_state.map.current_time = t
-    var year = t.getYear() + 1900
-    var month = t.getMonth() + 1
-    var date = t.getDate()
-    var hour = t.getHours()
-    var currentTime = `${year}/${month}/${date} ${hour}:00`
-
-    current_state.map.current_time_str = currentTime
-    current_state.timestamp = new Date(currentTime).getTime()
-
-    var tmp = 24 - current_state.time_index
-    data.post_data = {
-        "boundary": {
-            "northEast": {
-                "lat": current_state.map.maxlat,
-                "lng": current_state.map.maxlng
-            },
-            "southWest": {
-                "lat": current_state.map.minlat,
-                "lng": current_state.map.minlng
-            }
-        },
-        "gridSize": {
-            "x": current_state.map.gridX,
-            "y": current_state.map.gridY
-        },
-        "period": `${tmp},${tmp}`
-    }
-}
-
-//서버에서 넘어온 json데이터를 사용할 수 있게 배열로 만들어 리턴하는 함수
-function convert_data_one_time(json_data) {
-    /*
-        parameter -----
-        json_data : timestamp, data로 구성
-            timestamp : 해당 데이터의 시간
-            data : gridX, gridY 크기의 2차원 json matrix
-                   원소는 다음과 같음
-                   {
-                        "latlng": {
-                            "lat": 37.5,
-                            "lng": 126.3
-                        },
-                        "pm10": 12,
-                        "pm25": 5,
-                        "wx": -2.4097,
-                        "wy": 0.7723,
-                        "wd": 107.5,
-                        "ws": 2.6,
-                        "t": 22,
-                        "h": 63
-                    } 
-        ---------------
-        json으로 넘어온 데이터를 사용하기 편하게 각 종류별로 
-        2차원 리스트로 만들어 리턴해줌
-
-        return -------
-            wind_data : (gridy, gridx, 2)
-
-            pm10, pm25, h, t : (gridy, gridx)
-        [wind_data, pm10, pm25, h, t]
-        --------------
-    */
-    var one_timestamp = []
-
-    var return_wind_data = []
-    var return_pm10_data = []
-    var return_pm25_data = []
-    var return_h_data = []
-    var return_t_data = []
-    json_data.data.reverse().forEach(a => {     //리턴되는 데이터가 구현 방법의 역순으로 오기 때문에 resverse해줌
-        var wind_tmp = []
-        var pm10_tmp = []
-        var pm25_tmp = []
-        var t_tmp = []
-        var h_tmp = []
-        a.forEach(b => {
-            wind_tmp.push([b.wx, b.wy])
-            pm10_tmp.push(b.pm10)
-            pm25_tmp.push(b.pm25)
-            h_tmp.push(b.h)
-            t_tmp.push(b.t)
-        })
-        return_wind_data.push(wind_tmp)
-        return_pm10_data.push(pm10_tmp)
-        return_pm25_data.push(pm25_tmp)
-        return_h_data.push(h_tmp)
-        return_t_data.push(t_tmp)
-    })
-
-    one_timestamp.push(return_wind_data)
-    one_timestamp.push(return_pm10_data)
-    one_timestamp.push(return_pm25_data)
-    one_timestamp.push(return_t_data)
-    one_timestamp.push(return_h_data)
-
-    return one_timestamp
-}
-
-//모든 overlay 맵 업데이트
-function map_update(){
-    windmap.init(current_state.map, data.model_data.wind_data[current_state.time_index])
-    heatmap.init(current_state.map, data.model_data.heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
-    pointmap.update_point_map(current_state.pointmap_index)
-    windmap.startAnim()
-}
-
-//히트맵, 플로우맵들을 현재 상태로 업데이트 하는 함수
-function get_model_data() {
-    /*
-    데이터 업데이트시 부자연스러운 시각화때문에, windmap 애니메이션을 끈다.
-    데이터를 받아와 data.model_data 를 업데이트
-    data.model_data가 업데이트 된다면, setter에서 
-    map_update() 함수가 실행되고, 모든 맵이 업데이트 됨, 
-    map_update() 에서 멈췄던 애니메이션도 실행된다.
-    */
-    windmap.stopAnim()
-    set_current_state(current_state.time_index * 3600000)
-    var url = 'https://kwapi.kweather.co.kr/v1/klps/model/data'
-    fetch(url, {
-        "method": "POST",
-        "headers": {
-            "Content-Type": "application/json",
-            "auth": "kweather-test"
-        },
-        "body": JSON.stringify(data.post_data)
-    })
-        .then(e => e.json())
-        .then(d => {
-            var converting_data = convert_data_one_time(d.data[0])
-            data.model_data = converting_data
-        })
-}
 
 //하단에 있는 날씨, 미세먼지의 버튼을 현재 상황에 맞게 업데이트 해주는 함수
 function update_detail_box_button() {
@@ -770,7 +469,7 @@ point_layer[2].on('click', () => {
 point_layer[3].on('click', () => {
     pointmap.remove_overlay_image()
     if (point_layer[3][0].checked) {
-        var comment = `유인관측망 : ${data.num_observ_network.soko_network}개` 
+        var comment = `유인관측망 : ${data.num_observ_network.shko_network}개` 
         $('#num_stations').text(comment)
         current_state.pointmap_index = 3
         pointmap.update_point_map(current_state.pointmap_index)
@@ -1229,8 +928,315 @@ map.on('click', (e) => {
 })
 
 
+
+
+/////////////////////////
+///////////////////////// 리팩토링 완료
+/////////////////////////
+
+
+function set_current_state(delta = 0) {
+    /*
+    지도의 boundary, gap 시간등을 세팅해
+    해당 값들로 post_data까지 만들음.
+    */
+    var zoom = map.getZoom()
+    if (zoom >= 8) {
+        current_state.map.latGap = 0.1
+        current_state.map.lngGap = 0.1
+    } else if (zoom >= 7) {
+        current_state.map.latGap = 0.2
+        current_state.map.lngGap = 0.2
+    } else if (zoom >= 5) {
+        current_state.map.latGap = 0.5
+        current_state.map.lngGap = 0.5
+    }
+    current_state.map.maxlat = parseFloat((map.getBounds()._northEast.lat - map.getBounds()._northEast.lat % current_state.map.latGap + current_state.map.latGap).toFixed(3))
+    current_state.map.maxlat = (current_state.map.maxlat > 44) ? 44 : current_state.map.maxlat
+    current_state.map.maxlat = (current_state.map.maxlat < 32) ? 32 : current_state.map.maxlat
+
+    current_state.map.maxlng = parseFloat((map.getBounds()._northEast.lng - map.getBounds()._northEast.lng % current_state.map.lngGap + current_state.map.lngGap).toFixed(3))
+    current_state.map.maxlng = (current_state.map.maxlng > 132) ? 132 : current_state.map.maxlng
+    current_state.map.maxlng = (current_state.map.maxlng < 120) ? 120 : current_state.map.maxlng
+
+    current_state.map.minlat = parseFloat((map.getBounds()._southWest.lat - map.getBounds()._southWest.lat % current_state.map.latGap - current_state.map.latGap).toFixed(3))
+    current_state.map.minlat = (current_state.map.minlat > 44) ? 44 : current_state.map.minlat
+    current_state.map.minlat = (current_state.map.minlat < 32) ? 32 : current_state.map.minlat
+
+    current_state.map.minlng = parseFloat((map.getBounds()._southWest.lng - map.getBounds()._southWest.lng % current_state.map.lngGap - current_state.map.lngGap).toFixed(3))
+    current_state.map.minlng = (current_state.map.minlng > 132) ? 132 : current_state.map.minlng
+    current_state.map.minlng = (current_state.map.minlng < 120) ? 120 : current_state.map.minlng
+
+    current_state.map.gridX = Math.round((current_state.map.maxlng - current_state.map.minlng) / current_state.map.lngGap)
+    current_state.map.gridY = Math.round((current_state.map.maxlat - current_state.map.minlat) / current_state.map.latGap)
+
+    var t = new Date(new Date().getTime() - 86400000 + delta)
+    // var t = new Date(1628262000000 + delta)               //현재는 시간을 임의로 고정시킴.
+    current_state.map.current_time = t
+    var year = t.getYear() + 1900
+    var month = t.getMonth() + 1
+    var date = t.getDate()
+    var hour = t.getHours()
+    var currentTime = `${year}/${month}/${date} ${hour}:00`
+
+    current_state.map.current_time_str = currentTime
+    current_state.timestamp = new Date(currentTime).getTime()
+
+    var tmp = 24 - current_state.time_index
+    data.post_data = {
+        "boundary": {
+            "northEast": {
+                "lat": current_state.map.maxlat,
+                "lng": current_state.map.maxlng
+            },
+            "southWest": {
+                "lat": current_state.map.minlat,
+                "lng": current_state.map.minlng
+            }
+        },
+        "gridSize": {
+            "x": current_state.map.gridX,
+            "y": current_state.map.gridY
+        },
+        "period": `${tmp},${tmp}`
+    }
+}
+
+//pointmap 데이터를 받아오는 함수
+async function get_point_map_data() {
+    var res_data = {}
+    /*    
+    point map 에 대한 데이터를 받아온다.
+    이 함수에서는 병렬로 4개의 데이터를 빠르게 받아옴.
+    받아온 데이터는 data.observ_network 에 저장
+    모든 데이터(IOT, 국가관측망, shko aws)를 받아오기까지 기다린 후
+    모든 데이터를 받아오면 point map initialize
+    */  
+    var url = 'https://kwapi.kweather.co.kr/v1/air/stations?type=all'   //IOT, 국가관측망
+    var pm1 = fetch(url, {
+        "headers": {
+            "Content-Type": "application/json",
+            "auth": "kweather-test"
+        }
+    })
+        .then(e => e.json())
+        .then(d => {
+            var tmp1 = []
+            var tmp2 = []
+            d.data.forEach(i => {
+                if (i.deviceType == "AK") {
+                    tmp1.push(
+                        {
+                            "_latlng": [i.latlng.lat, i.latlng.lon],
+                            "serial": i.serial,
+                            "deviceType": i.deviceType,
+                            "pm10" : i.pm10,
+                            "pm25" : i.pm25
+                        }
+                    )
+                    data.num_observ_network.national_network++
+                } else {
+                    tmp2.push(
+                        {
+                            "_latlng": [i.latlng.lat, i.latlng.lon],
+                            "serial": i.serial,
+                            "deviceType": i.deviceType,
+                            "pm10" : i.pm10,
+                            "pm25" : i.pm25
+                        }
+                    )
+                    data.num_observ_network.iot_network++
+                }
+            })
+            res_data.nat_data = tmp1
+            res_data.iot_data = tmp2
+            // data.observ_network.national_network_list = tmp1
+            // data.observ_network.iot_network_list = tmp2
+        })
+
+    var url = 'https://kwapi.kweather.co.kr/v1/kma/shko/stations'   //유인관측소
+    var pm2 = fetch(url, {
+        "headers": {
+            "Content-Type": "application/json",
+            "auth": "kweather-test"
+        }
+    })
+    .then(e => e.json())
+    .then(d => {
+        var tmp = []
+        d.data.forEach(station => {
+            data.num_observ_network.shko_network++
+            tmp.push({
+                "_latlng" : [station.lat, station.lon],
+                "areaname" : station.areaname,
+                "icon" : station.icon40,
+                "wtext" : station.wtext,
+                "areacode" : station.areacode,
+                "temp" : station.temp
+            })
+        })
+        res_data.shko_data = tmp
+        // data.observ_network.shko_network_list = tmp
+    })
+
+    var url = 'https://kwapi.kweather.co.kr/v1/kma/aws/stations'   //aws 무인관측소
+    var pm3 = fetch(url, {
+        "headers": {
+            "Content-Type": "application/json",
+            "auth": "kweather-test"
+        }
+    })
+    .then(e => e.json())
+    .then(d => {
+        var tmp = []
+        d.data.forEach(station => {
+            data.num_observ_network.aws_network++
+            tmp.push({
+                "_latlng" : [station.lat, station.lon],
+                "areaname" : station.areaname,
+                "icon" : station.icon40,
+                "wtext" : station.wtext,
+                "areacode" : station.areacode,
+                "temp" : station.temp
+
+            })
+        })
+        res_data.aws_data = tmp
+        // data.observ_network.aws_network_list = tmp
+    })
+    await Promise.all([pm1, pm2, pm3])
+    
+    return res_data
+}
+
+//히트맵, 플로우맵 데이터를 받아오는 함수
+async function get_model_data() {
+    var res_data = []
+    /*
+    데이터 업데이트시 부자연스러운 시각화때문에, windmap 애니메이션을 끈다.
+    데이터를 받아와 data.model_data 를 업데이트
+    data.model_data가 업데이트 된다면, setter에서 
+    map_update() 함수가 실행되고, 모든 맵이 업데이트 됨, 
+    map_update() 에서 멈췄던 애니메이션도 실행된다.
+    */
+    windmap.stopAnim()
+    set_current_state(current_state.time_index * 3600000)
+    var url = 'https://kwapi.kweather.co.kr/v1/klps/model/data'
+    await fetch(url, {
+        "method": "POST",
+        "headers": {
+            "Content-Type": "application/json",
+            "auth": "kweather-test"
+        },
+        "body": JSON.stringify(data.post_data)
+    })
+        .then(e => e.json())
+        .then(d => {
+            var converting_data = convert_data_one_time(d.data[0])
+            res_data = converting_data
+        })
+
+    return res_data
+}
+
+//모든 overlay 맵 업데이트
+function map_update(){
+    windmap.init(current_state.map, data.model_data.wind_data[current_state.time_index])
+    heatmap.init(current_state.map, data.model_data.heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
+    pointmap.update_point_map(current_state.pointmap_index)
+    windmap.startAnim()
+}
+
+
 window.onload = async function () {
-    get_model_data()
-    get_point_map_data()
+    model_data_initialize()
+    pointmap_initialize()
+}
+async function model_data_initialize(){
+    var model_data = await get_model_data()
+    data.model_data.wind_data[current_state.time_index] = model_data[0]
+    data.model_data.heat_data[current_state.time_index] = model_data.slice(1,5)                
+    map_update()
+}
+
+async function pointmap_initialize(){
+    var point_map_data = await get_point_map_data()
+    console.log(point_map_data)
+    data.observ_network.national_network_list = point_map_data.nat_data
+    data.observ_network.iot_network_list = point_map_data.iot_data
+    data.observ_network.shko_network_list = point_map_data.shko_data
+    data.observ_network.aws_network_list= point_map_data.aws_data
+
+    pointmap.init(data.observ_network.iot_network_list, data.observ_network.national_network_list, data.observ_network.shko_network_list, data.observ_network.aws_network_list)
+}
+
+
+//서버에서 넘어온 json데이터를 사용할 수 있게 배열로 만들어 리턴하는 함수
+function convert_data_one_time(json_data) {
+    /*
+        parameter -----
+        json_data : timestamp, data로 구성
+            timestamp : 해당 데이터의 시간
+            data : gridX, gridY 크기의 2차원 json matrix
+                   원소는 다음과 같음
+                   {
+                        "latlng": {
+                            "lat": 37.5,
+                            "lng": 126.3
+                        },
+                        "pm10": 12,
+                        "pm25": 5,
+                        "wx": -2.4097,
+                        "wy": 0.7723,
+                        "wd": 107.5,
+                        "ws": 2.6,
+                        "t": 22,
+                        "h": 63
+                    } 
+        ---------------
+        json으로 넘어온 데이터를 사용하기 편하게 각 종류별로 
+        2차원 리스트로 만들어 리턴해줌
+
+        return -------
+            wind_data : (gridy, gridx, 2)
+
+            pm10, pm25, h, t : (gridy, gridx)
+        [wind_data, pm10, pm25, h, t]
+        --------------
+    */
+    var one_timestamp = []
+
+    var return_wind_data = []
+    var return_pm10_data = []
+    var return_pm25_data = []
+    var return_h_data = []
+    var return_t_data = []
+    json_data.data.reverse().forEach(a => {     //리턴되는 데이터가 구현 방법의 역순으로 오기 때문에 resverse해줌
+        var wind_tmp = []
+        var pm10_tmp = []
+        var pm25_tmp = []
+        var t_tmp = []
+        var h_tmp = []
+        a.forEach(b => {
+            wind_tmp.push([b.wx, b.wy])
+            pm10_tmp.push(b.pm10)
+            pm25_tmp.push(b.pm25)
+            h_tmp.push(b.h)
+            t_tmp.push(b.t)
+        })
+        return_wind_data.push(wind_tmp)
+        return_pm10_data.push(pm10_tmp)
+        return_pm25_data.push(pm25_tmp)
+        return_h_data.push(h_tmp)
+        return_t_data.push(t_tmp)
+    })
+
+    one_timestamp.push(return_wind_data)
+    one_timestamp.push(return_pm10_data)
+    one_timestamp.push(return_pm25_data)
+    one_timestamp.push(return_t_data)
+    one_timestamp.push(return_h_data)
+
+    return one_timestamp
 }
 
