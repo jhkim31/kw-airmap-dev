@@ -2,7 +2,7 @@ var PointMap = function (_canvas) {
     var point_config = {}
     var iot_network_list = []
     var national_network_list = []
-    var soko_network_list = []
+    var shko_network_list = []
     var aws_network_list = []
     window.marker_position_list = []
     var cn = _canvas
@@ -12,10 +12,10 @@ var PointMap = function (_canvas) {
     var c = cn.getContext('2d');
     var marker = []
 
-    this.init = function (iot, national, soko, aws) {
+    this.init = function (iot, national, shko, aws) {
         iot_network_list = iot
         national_network_list = national
-        soko_network_list = soko
+        shko_network_list = shko
         aws_network_list = aws
         cn.width = window.innerWidth
         cn.height = window.innerHeight
@@ -193,17 +193,18 @@ var PointMap = function (_canvas) {
     }
 
 
-    function draw_soko_network() {
-        soko_network_list.forEach(d => {
+    function draw_shko_network() {
+        shko_network_list.forEach(d => {
             c.fillStyle = 'purple'
             var point = map.latLngToContainerPoint(d._latlng)
             if (point.x > 0 && point.x < cn.width && point.y > 0 && point.y < cn.height) {
                 c.fillRect(point.x, point.y, 10, 10)
                 marker_position_list.push(
                     {
-                        "type": "soko",
+                        "type": "shko",
                         "areaname": d.areaname,
-                        "point": [point.x, point.y, point.x + 10, point.y + 10]
+                        "point": [point.x, point.y, point.x + 10, point.y + 10],
+                        "areacode" : d.areacode
                     }
                 )
             }
@@ -223,7 +224,8 @@ var PointMap = function (_canvas) {
                     {
                         "type": "aws",
                         "areaname": d.areaname,
-                        "point": [point.x - 7, point.y - 7, point.x + 7, point.y + 7]
+                        "point": [point.x - 7, point.y - 7, point.x + 7, point.y + 7],
+                        "areacode" : d.areacode
                     }
                 )
             }
@@ -247,7 +249,7 @@ var PointMap = function (_canvas) {
             draw_national_network()
         } else if (pointmap_index == 3) {
             marker_position_list = []
-            draw_soko_network()
+            draw_shko_network()
         } else if (pointmap_index == 4) {
             marker_position_list = []
             draw_aws_network()
@@ -260,9 +262,9 @@ var PointMap = function (_canvas) {
         marker_position_list.forEach(d => {
             if (point.x >= d.point[0] && point.x <= d.point[2] && point.y >= d.point[1] && point.y <= d.point[3]) {
                 if (d.serial) {
-                    marker_serial = d.serial + "<br>" + d.type
+                    marker_serial = [d.serial + "<br>" + d.type, d.type]
                 } else if (d.areaname) {
-                    marker_serial = d.areaname + "<br>" + d.type
+                    marker_serial = [d.areaname + "<br>" + d.type, d.type, d.areacode]
                     if (d.type == 'aws') {
                         c.beginPath();
                         c.fillStyle = 'white'

@@ -34,7 +34,7 @@ var WindMap = function (_canvas) {
         a[index].y = point.y
         a[index].latitude = latLng.lat
         a[index].longitude = latLng.lng
-        a[index].endFrame = animationId + getRandomArbitrary(50, 250)
+        a[index].endFrame = animationId + getRandomArbitrary(50, 150)
         return 0;
     }
 

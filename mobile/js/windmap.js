@@ -2,7 +2,7 @@ var WindMap = function (_canvas) {
 
     var wind_config = {}
 
-    window.cn = _canvas
+    window.cn = _canvas 
     cn.width = window.innerWidth
     cn.height = window.innerHeight
     var c = cn.getContext('2d');
@@ -16,26 +16,12 @@ var WindMap = function (_canvas) {
         zoom : 10,
         speed : 0.5,
         opacity : 0.1,
-        count : 700
+        count : 1000
     }
         
-    this.init = function (config, wind_data) {        
-        wind_status.zoom = map.getZoom();
-        wind_status.speed = 0.5 * (1.2 ** (wind_status.zoom - 10))
-        if (wind_status.speed > 0.5){
-            wind_status.speed = 0.5
-        }
-        cn.width = window.innerWidth
-        cn.height = window.innerHeight
-        cnx = cn.width - 1
-        cny = cn.height - 1
-        wind_config = config
-        grid = wind_data
-        build()
-    }
-
     function buildobj(i) {            
-        var latLng = L.latLng(getRandomArbitrary(wind_config.minlat, wind_config.maxlat), getRandomArbitrary(wind_config.minlng, wind_config.maxlng))        
+        var maxBounds = map.getBounds()
+        var latLng = L.latLng(getRandomArbitrary(maxBounds._southWest.lat, maxBounds._northEast.lat), getRandomArbitrary(maxBounds._southWest.lng, maxBounds._northEast.lng))        
         var point = map.latLngToContainerPoint(latLng)
         a[i] = new wind(point.x, point.y, latLng, i, animationId + getRandomArbitrary(50, 250))      
     }
@@ -184,6 +170,21 @@ var WindMap = function (_canvas) {
             showWind = true;
             this.startAnim()
         }
+    }
+
+    this.init = function (config, wind_data) {        
+        wind_status.zoom = map.getZoom();
+        wind_status.speed = 0.5 * (1.2 ** (wind_status.zoom - 10))
+        if (wind_status.speed > 0.5){
+            wind_status.speed = 0.5
+        }
+        cn.width = window.innerWidth
+        cn.height = window.innerHeight
+        cnx = cn.width - 1
+        cny = cn.height - 1
+        wind_config = config
+        grid = wind_data
+        build()
     }
 
     function build() {
