@@ -1,5 +1,6 @@
 var HeatMap = function (_canvas) {
     var heat_config = {}
+    var total_data = []
     var grid = []
     window.canvas = _canvas
     var ctx = canvas.getContext('2d')
@@ -8,7 +9,7 @@ var HeatMap = function (_canvas) {
     var overlay_type = 3
 
 
-    this.init = function (config, heat_data, _overlay_type) {
+    this.set_data = function (config, heat_data, _overlay_type) {
         heat_config = config
         grid = heat_data
         canvas.width = window.innerWidth
@@ -18,6 +19,15 @@ var HeatMap = function (_canvas) {
         this.drawCanvas()
     }
 
+    this.update_data = function(config, heat_data){
+        heat_config = config
+        grid = heat_data
+        canvas.width = window.innerWidth
+        canvas.height = window.innerHeight
+        overlay_type = _overlay_type
+    }
+
+    
     this.drawCanvas = function () {
         if (showHeat) {
             if (overlayImage != null) {

@@ -1,7 +1,9 @@
-import { HeatMap as HeatMap } from './heatmap.js';
-import { WindMap as WindMap } from './windmap.js'
-import { PointMap as PointMap } from './pointmap.js'
+import { HeatMap as HeatMap } from './layer/heatmap.js';
+import { WindMap as WindMap } from './layer/windmap.js'
+import { PointMap as PointMap } from './layer/pointmap.js'
 import {dust_forecast as dust_forecast} from './table.js'
+import * as aaa from "./lib/config.js"
+console.log(aaa.a)
 window.map = L.map('map', {
     "maxBounds": L.latLngBounds([[
         [32, 120],
@@ -13,14 +15,11 @@ map.setMinZoom(5)
 
 L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png').addTo(map);
 
-var heatmap = new HeatMap(document.getElementById("heatmap"))
-var windmap = new WindMap(document.getElementById('windmap'))
-var pointmap = new PointMap(document.getElementById('pointmap'))
+window.heatmap = new HeatMap(document.getElementById("heatmap"))
+window.windmap = new WindMap(document.getElementById('windmap'))
+window.pointmap = new PointMap(document.getElementById('pointmap'))
 
-var heatmap_layer = [$('#show_pm10')[0], $('#show_pm25')[0], $('#show_t')[0], $('#show_h')[0]]
-var point_layer = [$('#iot_national_network'), $('#iot_network'), $('#national_network'), $('#manned_network'), $('#aws_network')]
-
-var current_state = {
+window.current_state = {
     "heatmap_index": 2,
     "time_index": 24,
     "timestamp": 0,
@@ -44,170 +43,90 @@ var current_state = {
     },
     "Interval": 0
 }
+
 window.data = {
-    "_model_data" : {
+    "model_data" : {
         "wind_data": [],
         "heat_data": [],           //0 : pm10 /    1 : pm25 /   2 : t /    3 : h    
     },    
     "wind_data" : [],
     "heat_data" : [],
     "post_data": {},
-    "lifestyle_data" : {},
     "num_observ_network" : {
         "iot_network" : 0,
         "national_network": 0,
-        "soko_network" : 0,
+        "shko_network" : 0,
         "aws_network" : 0
     },
-    "_observ_network" : {
+    "observ_network" : {
         "iot_network_list" : [],
         "national_network_list": [],
-        "soko_network_list" : [],
+        "shko_network_list" : [],
         "aws_network_list" : []
     },
-    "_forecast_data" : {
+    "forecast_data" : {
         "lifestyle_data" : {},
         "dust_data" : {}
-    }    
+    },
+    "current_point_nm" : ""    
 }
 
-Object.defineProperty(data, "model_data", {
-    get : function() {
-        return this._model_data
-    },
-    set : function(d) {
-        this._model_data.wind_data[current_state.time_index] = []
-        this._model_data.heat_data[current_state.time_index] = []
-        this._model_data.wind_data[current_state.time_index] = d[0]
-        this._model_data.heat_data[current_state.time_index] = d.slice(1,5)
-        map_update()
-    }
-})
+window.heatmap_layer = [$('#show_pm10')[0], $('#show_pm25')[0], $('#show_t')[0], $('#show_h')[0]]
+window.point_layer = [$('#iot_national_network'), $('#iot_network'), $('#national_network'), $('#manned_network'), $('#aws_network')]
 
-Object.defineProperty(data, "observ_network", {
-    get : function() {
-        return this._observ_network
-    },
-    set : function(d) {
-        if (d[2].length == 0 && d[3].length == 0){
-            this._observ_network.national_network_list = d[0]
-            this._observ_network.iot_network_list = d[1]
-        } else if (d[2].length != 0){
-            this._observ_network.soko_network_list = d[2]
-        } else if(d[3].length != 0){
-            this._observ_network.aws_network_list = d[3]
-        }
-        if (this._observ_network.national_network_list.length != 0 &&
-            this._observ_network.iot_network_list.length != 0 &&
-            this._observ_network.soko_network_list.length != 0 &&
-            this._observ_network.aws_network_list.length != 0){
-                pointmap.init(data._observ_network.iot_network_list, data._observ_network.national_network_list, data._observ_network.soko_network_list, data._observ_network.aws_network_list)        
-            }
-        
-    }
-})
+window.on_map_info = null;
 
-
-var on_map_info = null;
-
-//pointmap 데이터를 받아오는 함수
-function get_point_map_data() {
-    /*    
-    point map 에 대한 데이터를 받아온다.
-    받아온 데이터는 data.observ_network 에 저장
-    저장되면 변수가 저장됨을 감지해, pointmap을 세팅함
-    */  
-    var url = 'https://kwapi.kweather.co.kr/v1/air/stations?type=all'   //IOT, 국가관측망
-    fetch(url, {
+//좌상단 검색필드 검색버튼누를 때 이벤트
+$('#search_btn').on('click', () => {
+    update_detail_box_button()
+    fill_detail_table(current_state.heatmap_index)
+    var value = $('#search_field').val();
+    $('#detail_box').css({
+        "visibility": "visible",
+        "height": "auto"
+    })
+    var hand_cd = $('#cities [value="' + value + '"]').data('value')
+    fetch(`https://kwapi.kweather.co.kr/v1/gis/geo/hangaddr?hangCd=${hand_cd}`, {
+        "method": "GET",
         "headers": {
-            "Content-Type": "application/json",
             "auth": "kweather-test"
         }
     })
         .then(e => e.json())
         .then(d => {
-            var tmp1 = []
-            var tmp2 = []
-            d.data.forEach(i => {
-                if (i.deviceType == "AK") {
-                    tmp1.push(
-                        {
-                            "_latlng": [i.latlng.lat, i.latlng.lon],
-                            "serial": i.serial,
-                            "deviceType": i.deviceType,
-                            "pm10" : i.pm10,
-                            "pm25" : i.pm25
-                        }
-                    )
-                    data.num_observ_network.national_network++
-                } else {
-                    tmp2.push(
-                        {
-                            "_latlng": [i.latlng.lat, i.latlng.lon],
-                            "serial": i.serial,
-                            "deviceType": i.deviceType,
-                            "pm10" : i.pm10,
-                            "pm25" : i.pm25
-                        }
-                    )
-                    data.num_observ_network.iot_network++
-                }
-            })
-            data.observ_network = [tmp1, tmp2, [], []]      
+            var hang_nm = d.data.sido_nm + " " + d.data.sg_nm + "</br>" + d.data.emd_nm
+            $('#current_location').html(hang_nm)
+            var lat = d.data.lat
+            var lng = d.data.lon
+            map.flyTo(L.latLng(lat, lng), 13)
         })
+})
 
-    var url = 'https://kwapi.kweather.co.kr/v1/kma/shko/stations'   //유인관측소
+$('#search_field').on('propertychange change keyup paste input', function(e){
+    var value = e.currentTarget.value
+    value = value.split(' ')[value.split(' ').length - 1]
+    var url = 'https://kwapi.kweather.co.kr/v1/gis/geo/findaddr?name=' + value
     fetch(url, {
+        "method": "GET",
         "headers": {
-            "Content-Type": "application/json",
             "auth": "kweather-test"
         }
     })
-    .then(e => e.json())
-    .then(d => {
-        var tmp = []
-        d.data.forEach(station => {
-            data.num_observ_network.soko_network++
-            tmp.push({
-                "_latlng" : [station.lat, station.lon],
-                "areaname" : station.areaname,
-                "icon" : station.icon40,
-                "wtext" : station.wtext,
-                "areacode" : station.areacode,
-                "temp" : station.temp
-            })
+        .then(e => e.json())
+        .then(d => {
+            if (d != null) {
+                $('#cities').html('')
+                d.data.slice(0, 20).forEach(i => {
+                    var el = `<option data-value='${i.hang_cd}' value='${i.sido_nm} ${i.sg_nm} ${i.emd_nm}'></option>`
+                    $('#cities').append(el)
+                })
+
+
+            }
         })
-        data.observ_network = [[], [], tmp, []]
-    })
+})
 
-    var url = 'https://kwapi.kweather.co.kr/v1/kma/aws/stations'   //aws 무인관측소
-    fetch(url, {
-        "headers": {
-            "Content-Type": "application/json",
-            "auth": "kweather-test"
-        }
-    })
-    .then(e => e.json())
-    .then(d => {
-        var tmp = []
-        d.data.forEach(station => {
-            data.num_observ_network.aws_network++
-            tmp.push({
-                "_latlng" : [station.lat, station.lon],
-                "areaname" : station.areaname,
-                "icon" : station.icon40,
-                "wtext" : station.wtext,
-                "areacode" : station.areacode,
-                "temp" : station.temp
-
-            })
-        })
-        data.observ_network = [[], [], [], tmp]
-    })
-    
-}
-
-//현재 상태 세팅
+//현재 상태를 current_state 변수에 저장.
 function set_current_state(delta = 0) {
     /*
     지도의 boundary, gap 시간등을 세팅해
@@ -273,6 +192,314 @@ function set_current_state(delta = 0) {
         },
         "period": `${tmp},${tmp}`
     }
+}
+
+//////////////get data from ajax 
+/////////////
+/////////////
+
+//pointmap 데이터를 받아오는 함수
+async function get_point_map_data() {
+    var res_data = {}
+    /*    
+    point map 에 대한 데이터를 받아온다.
+    이 함수에서는 병렬로 4개의 데이터를 빠르게 받아옴.
+    받아온 데이터는 data.observ_network 에 저장
+    모든 데이터(IOT, 국가관측망, shko aws)를 받아오기까지 기다린 후
+    모든 데이터를 받아오면 point map을 initialize함
+    */  
+    var url = 'https://kwapi.kweather.co.kr/v1/air/stations?type=all'   //IOT, 국가관측망
+    var pm1 = fetch(url, {
+        "headers": {
+            "Content-Type": "application/json",
+            "auth": "kweather-test"
+        }
+    })
+        .then(e => e.json())
+        .then(d => {
+            var tmp1 = []
+            var tmp2 = []
+            d.data.forEach(i => {
+                if (i.deviceType == "AK") {
+                    tmp1.push(
+                        {
+                            "_latlng": [i.latlng.lat, i.latlng.lon],
+                            "serial": i.serial,
+                            "deviceType": i.deviceType,
+                            "pm10" : i.pm10,
+                            "pm25" : i.pm25
+                        }
+                    )
+                    data.num_observ_network.national_network++
+                } else {
+                    tmp2.push(
+                        {
+                            "_latlng": [i.latlng.lat, i.latlng.lon],
+                            "serial": i.serial,
+                            "deviceType": i.deviceType,
+                            "pm10" : i.pm10,
+                            "pm25" : i.pm25
+                        }
+                    )
+                    data.num_observ_network.iot_network++
+                }
+            })
+            res_data.nat_data = tmp1
+            res_data.iot_data = tmp2
+            // data.observ_network.national_network_list = tmp1
+            // data.observ_network.iot_network_list = tmp2
+        })
+
+    var url = 'https://kwapi.kweather.co.kr/v1/kma/shko/stations'   //유인관측소
+    var pm2 = fetch(url, {
+        "headers": {
+            "Content-Type": "application/json",
+            "auth": "kweather-test"
+        }
+    })
+    .then(e => e.json())
+    .then(d => {
+        var tmp = []
+        d.data.forEach(station => {
+            data.num_observ_network.shko_network++
+            tmp.push({
+                "_latlng" : [station.lat, station.lon],
+                "areaname" : station.areaname,
+                "icon" : station.icon40,
+                "wtext" : station.wtext,
+                "areacode" : station.areacode,
+                "temp" : station.temp
+            })
+        })
+        res_data.shko_data = tmp
+        // data.observ_network.shko_network_list = tmp
+    })
+
+    var url = 'https://kwapi.kweather.co.kr/v1/kma/aws/stations'   //aws 무인관측소
+    var pm3 = fetch(url, {
+        "headers": {
+            "Content-Type": "application/json",
+            "auth": "kweather-test"
+        }
+    })
+    .then(e => e.json())
+    .then(d => {
+        var tmp = []
+        d.data.forEach(station => {
+            data.num_observ_network.aws_network++
+            tmp.push({
+                "_latlng" : [station.lat, station.lon],
+                "areaname" : station.areaname,
+                "icon" : station.icon40,
+                "wtext" : station.wtext,
+                "areacode" : station.areacode,
+                "temp" : station.temp
+
+            })
+        })
+        res_data.aws_data = tmp
+        // data.observ_network.aws_network_list = tmp
+    })
+    await Promise.all([pm1, pm2, pm3])
+    
+    return res_data
+}
+
+//히트맵, 플로우맵 데이터를 받아오는 함수
+async function get_model_data() {
+    var res_data = []
+    /*    
+    현재 상태를 재정의 하고 현재 상태를 기반으로 데이터를 받아옴
+    받아온 데이터는 converting을 거쳐 사용하기 편하게 바꿔서 리턴함.
+    */    
+    set_current_state(current_state.time_index * 3600000)
+    var url = 'https://kwapi.kweather.co.kr/v1/klps/model/data'
+    await fetch(url, {
+        "method": "POST",
+        "headers": {
+            "Content-Type": "application/json",
+            "auth": "kweather-test"
+        },
+        "body": JSON.stringify(data.post_data)
+    })
+        .then(e => e.json())
+        .then(d => {
+            var converting_data = convert_data_one_time(d.data[0])
+            res_data = converting_data
+        })
+
+    return res_data
+}
+
+//행정동 정보를 받아오는 함수
+async function get_hang_data(lat,lng){
+    /*
+    lat, lng 좌표값을 통해 해당 좌표의 행정 코드를 리턴한다
+    return [hang_cd, hang_sido, hang_sg, hang_emd]
+    * hang_cd : 행정동 코드
+    * hang_sido : 행정동 (도)이름
+    * hang_sg : 행정동 (시군) 이름
+    * hang_emd : 행정동 (읍면동) 이름
+    */
+    var res_data = []
+    var url = 'https://kwapi.kweather.co.kr/v1/gis/geo/loctoaddr?lat=' + lat + '&lon=' + lng
+    await fetch(url, {
+        "method": "GET",
+        "headers": {
+            "auth": "kweather-test"
+        }
+    })
+    .then(e => e.json())
+    .then(d => {
+        if (d.data != null) {
+            var hang_cd = d.data.hang_cd
+            hang_cd = 11110000 //현재 다른 행정동 코드는 개발중
+            res_data.push(hang_cd)
+            res_data.push(d.data.sido_nm)
+            res_data.push(d.data.sg_nm)
+            res_data.push(d.data.emd_nm)
+        }
+    })
+
+    return res_data
+}
+
+//기상정보를 가져오는 함수.
+async function get_lifestyle_data(hang_cd){
+    /*
+    lifestyle_data란 
+    시간별 강수량, 강수확률, 구름량, 온.습도 등... 다양한 데이터들.
+    행정동 코드를 통해 얻은 lifestyle data들을 사용할 수 있게 컨버팅해서 리턴함    
+    */
+    var res_data = []
+    var dt = new Date()
+    var d_s = dt.getFullYear() + (dt.getMonth() + 1).toString().padStart(2, '0') + dt.getDate().toString().padStart(2, '0')
+    var dt = new Date(dt.getTime() + 604800000)
+    var d_e = dt.getFullYear() + (dt.getMonth() + 1).toString().padStart(2, '0') + dt.getDate().toString().padStart(2, '0')
+
+    await fetch(`https://kwapi.kweather.co.kr/kweather/lifestyle/date?hangCd=${hang_cd}&startDate=${d_s}&endDate=${d_e}`, {
+        headers: {
+            "auth": "kweather-test"
+        }
+    }) 
+    .then(j => j.json())
+    .then(d => {
+        res_data = convert_lifestyle_data(d, hang_cd)
+    })
+
+    return res_data
+}
+
+async function get_aws_station_data(areacode){
+    var url = 'https://kwapi.kweather.co.kr/v1/kma/aws/stationWeather/' + areacode
+    var res_data = []
+    await fetch(url,{
+        "headers": {
+            "Content-Type": "application/json",
+            "auth": "kweather-test"
+        }
+    })
+    .then(e => e.json())
+    .then(d => {
+        d.data.forEach(item => {
+            var date_str = ''
+            date_str += item.dt.slice(0, 4)
+            date_str += '-'
+            date_str += item.dt.slice(4, 6)
+            date_str += '-'
+            date_str += item.dt.slice(6, 8)
+            date_str += 'T'
+            date_str += item.dt.slice(8, 10)
+            date_str += ':00'
+
+            var tmp = {
+                "time" : new Date(date_str),
+                "icon40" : item.icon40,
+                "temp" : item.temp,
+                "humi" : item.humi,
+                "rain" : item.rain,
+                "wdirk" : item.wdirk,
+                "wspeed" : item.wspeed
+            }
+            res_data.push(tmp)            
+        })
+        res_data.reverse()
+    })
+
+    return res_data
+}
+
+async function get_shko_station_data(areacode){
+    var url = 'https://kwapi.kweather.co.kr/v1/kma/shko/stationWeather/' + areacode
+    var res_data = []
+    await fetch(url,{
+        "headers": {
+            "Content-Type": "application/json",
+            "auth": "kweather-test"
+        }
+    })
+    .then(e => e.json())
+    .then(d => {
+        d.data.forEach(item => {
+            var date_str = ''
+            date_str += item.dt.slice(0, 4)
+            date_str += '-'
+            date_str += item.dt.slice(4, 6)
+            date_str += '-'
+            date_str += item.dt.slice(6, 8)
+            date_str += 'T'
+            date_str += item.dt.slice(8, 10)
+            date_str += ':00'
+
+            var tmp = {
+                "time" : new Date(date_str),
+                "icon40" : item.icon40,
+                "temp" : item.temp,
+                "humi" : item.humi,
+                "rain" : item.rain,
+                "wdirk" : item.wdirk,
+                "wspeed" : item.wspeed
+            }
+            res_data.push(tmp)            
+        })
+        res_data.reverse()
+    })
+
+    return res_data
+}
+
+//지도의 좌표에서 현재 layer에 맞는 값을 리턴 ex) 온도면 온도, 습도면 습도 리턴.
+function get_value(x, y){
+    var value = ""
+    if (current_state.heatmap_index < 2) {
+        value = Math.round(heatmap.getValue(x, y)) + "µg/m³"
+    } else if (current_state.heatmap_index == 2) {
+        value = heatmap.getValue(x, y).toFixed(1) + "℃"
+    } else {
+        value = heatmap.getValue(x, y).toFixed(1) + "%"
+    }
+
+    return value
+}
+
+//heat, flow data를 받아오고 받아온 후 각 지도들을 초기화함
+async function model_data_initialize(){
+    var model_data = await get_model_data()
+    data.model_data.wind_data[current_state.time_index] = model_data[0]
+    data.model_data.heat_data[current_state.time_index] = model_data.slice(1,5)                
+    map_update()
+}
+
+//pointmap 데이터를 받아오고 받아온 후 pointmap 초기화
+async function pointmap_initialize(){
+    var point_map_data = await get_point_map_data()
+    console.log(point_map_data)
+    data.observ_network.national_network_list = point_map_data.nat_data
+    data.observ_network.iot_network_list = point_map_data.iot_data
+    data.observ_network.shko_network_list = point_map_data.shko_data
+    data.observ_network.aws_network_list= point_map_data.aws_data
+
+    pointmap.init(data.observ_network.iot_network_list, data.observ_network.national_network_list, data.observ_network.shko_network_list, data.observ_network.aws_network_list)
 }
 
 //서버에서 넘어온 json데이터를 사용할 수 있게 배열로 만들어 리턴하는 함수
@@ -344,55 +571,6 @@ function convert_data_one_time(json_data) {
     return one_timestamp
 }
 
-//모든 overlay 맵 업데이트
-function map_update(){
-    windmap.init(current_state.map, data.model_data.wind_data[current_state.time_index])
-    heatmap.init(current_state.map, data.model_data.heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
-    pointmap.update_point_map(current_state.pointmap_index)
-    windmap.startAnim()
-}
-
-//히트맵, 플로우맵들을 현재 상태로 업데이트 하는 함수
-function get_model_data() {
-    /*
-    데이터 업데이트시 부자연스러운 시각화때문에, windmap 애니메이션을 끈다.
-    데이터를 받아와 data.model_data 를 업데이트
-    data.model_data가 업데이트 된다면, setter에서 
-    map_update() 함수가 실행되고, 모든 맵이 업데이트 됨, 
-    map_update() 에서 멈췄던 애니메이션도 실행된다.
-    */
-    windmap.stopAnim()
-    set_current_state(current_state.time_index * 3600000)
-    var url = 'https://kwapi.kweather.co.kr/v1/klps/model/data'
-    fetch(url, {
-        "method": "POST",
-        "headers": {
-            "Content-Type": "application/json",
-            "auth": "kweather-test"
-        },
-        "body": JSON.stringify(data.post_data)
-    })
-        .then(e => e.json())
-        .then(d => {
-            var converting_data = convert_data_one_time(d.data[0])
-            data.model_data = converting_data
-        })
-}
-
-//하단에 있는 날씨, 미세먼지의 버튼을 현재 상황에 맞게 업데이트 해주는 함수
-function update_detail_box_button() {
-    /*
-    이 함수가 실행되면, 하단의 버튼을 현재 상황에 맞게 바꿔줌    
-    */
-    if (current_state.heatmap_index < 2) {
-        document.getElementById('weather_button').className = document.getElementById('weather_button').className.replace('primary', 'light')
-        document.getElementById('dust_button').className = document.getElementById('dust_button').className.replace('light', 'primary')
-    } else {
-        document.getElementById('weather_button').className = document.getElementById('weather_button').className.replace('light', 'primary')
-        document.getElementById('dust_button').className = document.getElementById('dust_button').className.replace('primary', 'light')
-    }
-}
-
 //lifestyle_data를 사용할 수 있게 컨버팅 한다.
 function convert_lifestyle_data(d, hangCd) {
     var lifestyle_data = d.data[hangCd]
@@ -443,22 +621,195 @@ function convert_lifestyle_data(d, hangCd) {
         index++
 
     }
-
     return return_data.slice(0, 7)
 }
 
-//하단 상세보기를 다루는 함수
-function show_detail_data(e, type = 0) { // type = 0 : 지도, type = 1 : 마커
-    get_lifestyle_data(e.latlng.lat, e.latlng.lng, type)    
+//행정동 데이터를 받아와, 하단 상세표를 표기함.
+async function show_detail_data(lat, lng, is_marker=null, areacode = 0) { 
+    var hang_data = await get_hang_data(lat, lng)
+    var dbox = $('#detail_box')[0]  
+
+    if (is_marker){     //마커인경우
+        if (is_marker == 'iot'){
+            //api 없음
+        }else if (is_marker == 'national'){
+            //api 없음
+        } else if (is_marker == 'shko'){            
+            var item = await get_shko_station_data(areacode)
+            fill_shko_table(item)
+            dbox.style.visibility = 'visible'
+            dbox.style.height = 'auto';  
+        } else if (is_marker == 'aws'){
+            var item = await get_aws_station_data(areacode)
+            fill_aws_table(item)
+            dbox.style.visibility = 'visible'
+            dbox.style.height = 'auto';  
+        }
+        
+    } else {
+        if (hang_data.length > 0){          //내륙
+            data.forecast_data.lifestyle_data = await get_lifestyle_data(hang_data[0])
+            fill_detail_table(current_state.heatmap_index)                  
+            dbox.style.visibility = 'visible'
+            dbox.style.height = 'auto';  
+        } else {          
+            dbox.style.visibility = 'hidden'
+            dbox.style.height = '0px';                  
+        }   
+    }      
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//여기까지 리펙토링 완료.
+function fill_shko_table(shko_data){
+    $('#weather_button').hide()
+    $('#dust_button').hide()
+    var detail_table1 = $('#detail_table1')
+    var detail_table2 = $('#detail_table2')
+    detail_table1[0].style.height = "240px"
+    detail_table2[0].style.height = "240px"
+    detail_table1.html('')
+    detail_table2.html('')
 
-//하단 상세 보기의 표를 채워주는 함수 <<<<<incompletion>>>>>>
-function fill_detail_table(type = 3, forecast_data) {
-    var forecast_data = type >= 2 ? forecast_data.lifestyle_data : forecast_data.dust_data 
+    var today_col = shko_data[0].time.getHours()
+    var yesterday_col = 24 - today_col
+
+    var table1_first_row = `<tr class = "table_header"><td>날짜</td>`
+    table1_first_row += `<td colspan="${yesterday_col}">${shko_data[0].time.getDate()}일</td>`
+    table1_first_row += `<td colspan="${today_col}">${shko_data[23].time.getDate()}일</td>`
+    table1_first_row += `</tr>`
+    detail_table1.append(table1_first_row)
+
+    var table1_row = `<tr class = "table_header"><td>시간</td>`
+    shko_data.forEach(d => {
+        var h = d.time.getHours()
+        table1_row += `<td>${h}</td>`
+    })
+    table1_row += '</tr>'
+    detail_table1.append(table1_row)
+
+    var table1_row = `<tr><td>기온</td>`
+    shko_data.forEach(d => {
+        var item = d.temp
+        table1_row += `<td>${item}</td>`
+    })
+    table1_row += '</tr>'
+    detail_table1.append(table1_row)
+
+    var table1_row = `<tr><td>습도</td>`
+    shko_data.forEach(d => {
+        var item = d.humi
+        table1_row += `<td>${item}</td>`
+    })
+    table1_row += '</tr>'
+    detail_table1.append(table1_row)
+
+    var table1_row = `<tr><td>강수량</td>`
+    shko_data.forEach(d => {
+        var item = d.rain
+        if (item == null){
+            item = '-'
+        }
+        table1_row += `<td>${item}</td>`
+    })
+    table1_row += '</tr>'
+    detail_table1.append(table1_row)
+
+    var table1_row = `<tr><td>풍량</td>`
+    shko_data.forEach(d => {
+        var item = d.wdirk
+        table1_row += `<td>${item}</td>`
+    })
+    table1_row += '</tr>'
+    detail_table1.append(table1_row)
+
+    var table1_row = `<tr><td>풍속</td>`
+    shko_data.forEach(d => {
+        var item = d.wspeed
+        table1_row += `<td>${item}</td>`
+    })
+    table1_row += '</tr>'
+    detail_table1.append(table1_row)
+
+}
+
+function fill_aws_table(aws_data){
+    $('#weather_button').hide()
+    $('#dust_button').hide()
+    var detail_table1 = $('#detail_table1')
+    var detail_table2 = $('#detail_table2')
+    detail_table1[0].style.height = "240px"
+    detail_table2[0].style.height = "240px"
+    detail_table1.html('')
+    detail_table2.html('')
+
+    var today_col = aws_data[0].time.getHours() + 1
+    var yesterday_col = 24 - today_col
+
+    var table1_first_row = `<tr class = "table_header"><td>날짜</td>`
+    table1_first_row += `<td colspan="${today_col}">${aws_data[0].time.getDate()}일</td>`
+    table1_first_row += `<td colspan="${yesterday_col}">${aws_data[23].time.getDate()}일</td>`
+    table1_first_row += `</tr>`
+    detail_table1.append(table1_first_row)
+
+    var table1_row = `<tr class = "table_header"><td>시간</td>`
+    aws_data.forEach(d => {
+        var h = d.time.getHours()
+        table1_row += `<td>${h}</td>`
+    })
+    table1_row += '</tr>'
+    detail_table1.append(table1_row)
+
+    var table1_row = `<tr><td>기온</td>`
+    aws_data.forEach(d => {
+        var item = d.temp
+        table1_row += `<td>${item}</td>`
+    })
+    table1_row += '</tr>'
+    detail_table1.append(table1_row)
+
+    var table1_row = `<tr><td>습도</td>`
+    aws_data.forEach(d => {
+        var item = d.humi
+        table1_row += `<td>${item}</td>`
+    })
+    table1_row += '</tr>'
+    detail_table1.append(table1_row)
+
+    var table1_row = `<tr><td>강수량</td>`
+    aws_data.forEach(d => {
+        var item = d.rain
+        if (item == null){
+            item = '-'
+        }
+        table1_row += `<td>${item}</td>`
+    })
+    table1_row += '</tr>'
+    detail_table1.append(table1_row)
+
+    var table1_row = `<tr><td>풍량</td>`
+    aws_data.forEach(d => {
+        var item = d.wdirk
+        table1_row += `<td>${item}</td>`
+    })
+    table1_row += '</tr>'
+    detail_table1.append(table1_row)
+
+    var table1_row = `<tr><td>풍속</td>`
+    aws_data.forEach(d => {
+        var item = d.wspeed
+        table1_row += `<td>${item}</td>`
+    })
+    table1_row += '</tr>'
+    detail_table1.append(table1_row)
+}
+
+
+
+//하단 상세 보기의 표를 채워주는 함수 
+function fill_detail_table(type) {
+    update_detail_box_button()   
+    $('#weather_button').show()
+    $('#dust_button').show()
+    var forecast_data = type >= 2 ? data.forecast_data.lifestyle_data : data.forecast_data.dust_data 
     var header = ['강수확률 (%)', '강수량 (mm)', '기온(C)', '풍향(8)', '풍속 (m/s)', '습도(%)']
     var detail_table1 = $('#detail_table1')
     var detail_table2 = $('#detail_table2')
@@ -469,7 +820,6 @@ function fill_detail_table(type = 3, forecast_data) {
 
     if (type < 2) {       // 미세먼지일때
         detail_table1.html(dust_forecast)
-
     } else {              // 기상 상황일때
         var today = new Date().getTime()
         var table1_first_row = `<tr class = "table_header"><td>날짜</td>`
@@ -563,22 +913,20 @@ function fill_detail_table(type = 3, forecast_data) {
         table2_4th_row += '</tr>'
         detail_table2.append(table2_4th_row)        //table2 third row
     }
+
+    $('#detail_scroll_box').width($('#detail_table1').width() + $('#detail_table2').width() + 35)
 }
 
-//지도에 표시된 핀을 업데이트 하기 위한 메소드<<<<<incompletion>>>>>>
+
+
+//지도 위의 핀(클릭지점)을 업데이트 시
 function update_on_map_info() {
     if (on_map_info != undefined) {
         var latlng = on_map_info._latlng
         map.removeLayer(on_map_info)
         var point = map.latLngToContainerPoint(latlng)
-        var value = ""
-        if (current_state.heatmap_index < 2) {
-            value = Math.round(heatmap.getValue(point.x, point.y)) + "µg/m³"
-        } else if (current_state.heatmap_index == 2) {
-            value = heatmap.getValue(point.x, point.y).toFixed(1) + "℃"
-        } else {
-            value = heatmap.getValue(point.x, point.y).toFixed(1) + "%"
-        }
+        var value = get_value(point.x, point.y)
+
         on_map_info = L.marker(latlng, {
             icon: L.divIcon({
                 html: `
@@ -594,22 +942,42 @@ function update_on_map_info() {
                 className: 'display-none'
             })
         })
-            .addTo(map)
-            .on('click', (e) => {
-                if (e.originalEvent.path[0].id == "on_map_info_close" || e.originalEvent.path[1].id == "on_map_info_close") {
-                    map.removeLayer(on_map_info)
-                    on_map_info = null
-                }
-            })
+        .addTo(map)
+        .on('click', (e) => {
+            if (e.originalEvent.path[0].id == "on_map_info_close" || e.originalEvent.path[1].id == "on_map_info_close") {
+                map.removeLayer(on_map_info)
+                on_map_info = null
+            }
+        })
     }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//하단에 있는 날씨, 미세먼지의 버튼을 현재 상황에 맞게 업데이트 해주는 함수
+function update_detail_box_button() {
+    /*
+    이 함수가 실행되면, 하단의 버튼을 현재 상황에 맞게 바꿔줌    
+    */
+    if (current_state.heatmap_index < 2) {
+        document.getElementById('weather_button').className = document.getElementById('weather_button').className.replace('primary', 'light')
+        document.getElementById('dust_button').className = document.getElementById('dust_button').className.replace('light', 'primary')
+    } else {
+        document.getElementById('weather_button').className = document.getElementById('weather_button').className.replace('light', 'primary')
+        document.getElementById('dust_button').className = document.getElementById('dust_button').className.replace('primary', 'light')
+    }
+}
+
+//모든 overlay 맵 업데이트
+function map_update(){
+    windmap.stopAnim()
+    windmap.init(current_state.map, data.model_data.wind_data[current_state.time_index])
+    heatmap.set_data(current_state.map, data.model_data.heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
+    pointmap.update_point_map(current_state.pointmap_index)
+    windmap.startAnim()
+}
+
+///Event
+///
+///
 
 // 동별 미세먼지 pm10 버튼 이벤트 처리
 heatmap_layer[0].addEventListener('click', () => {
@@ -627,7 +995,7 @@ heatmap_layer[0].addEventListener('click', () => {
             update_on_map_info()
         }
         if (current_state.show_detail_table) {
-            fill_detail_table(current_state.heatmap_index, data.forecast_data)
+            fill_detail_table(current_state.heatmap_index)
         }
     } else {
         heatmap.toggleHeatMap()
@@ -652,7 +1020,7 @@ heatmap_layer[1].addEventListener('click', () => {
             update_on_map_info()
         }
         if (current_state.show_detail_table) {
-            fill_detail_table(current_state.heatmap_index, data.forecast_data)
+            fill_detail_table(current_state.heatmap_index)
         }
     } else {
         heatmap.toggleHeatMap()
@@ -676,7 +1044,7 @@ heatmap_layer[2].addEventListener('click', () => {
             update_on_map_info()
         }
         if (current_state.show_detail_table) {
-            fill_detail_table(current_state.heatmap_index, data.forecast_data)
+            fill_detail_table(current_state.heatmap_index)
         }
     } else {
         heatmap.toggleHeatMap()
@@ -700,7 +1068,7 @@ heatmap_layer[3].addEventListener('click', () => {
             update_on_map_info()
         }
         if (current_state.show_detail_table) {
-            fill_detail_table(current_state.heatmap_index, data.forecast_data)
+            fill_detail_table(current_state.heatmap_index)
         }
     } else {
         heatmap.toggleHeatMap()
@@ -768,7 +1136,7 @@ point_layer[2].on('click', () => {
 point_layer[3].on('click', () => {
     pointmap.remove_overlay_image()
     if (point_layer[3][0].checked) {
-        var comment = `유인관측망 : ${data.num_observ_network.soko_network}개` 
+        var comment = `유인관측망 : ${data.num_observ_network.shko_network}개` 
         $('#num_stations').text(comment)
         current_state.pointmap_index = 3
         pointmap.update_point_map(current_state.pointmap_index)
@@ -807,119 +1175,10 @@ $('#play_wind').on('click', () => {
     windmap.toggleWindLayer()
 })
 
-//하단 상세 보기 페이지를 닫는 함수
-$('#close_detail_box').on('click', () => {
-    $('#detail_box').css({
-        "visibility": "hidden",
-        "height": "0px"
-    })
-    $('#detail_table1').html('')
-    $('#detail_table2').html('')
-    current_state.show_detail_table = false
-})
-
-//하단 상세보기 미세먼지 버튼 이벤트
-$('#dust_button').on('click', () => {
-    $('#weather_button').addClass('btn-light')
-    $('#weather_button').removeClass('btn-primary')
-    $('#dust_button').addClass('btn-primary')
-    $('#dust_button').removeClass('btn-light')
-    fill_detail_table(1, data.forecast_data)
-})
-
-//하단 상세보기 날씨 버튼 이벤트
-$('#weather_button').on('click', () => {
-    $('#weather_button').removeClass('btn-light')
-    $('#weather_button').addClass('btn-primary')
-    $('#dust_button').removeClass('btn-primary')
-    $('#dust_button').addClass('btn-light')
-    fill_detail_table(2, data.forecast_data)
-})
-
-//좌상단 검색필드 검색버튼누를 때 이벤트
-$('#search_btn').on('click', () => {
-    update_detail_box_button()
-    fill_detail_table(current_state.heatmap_index, data.forecast_data)
-    var value = $('#search_field').val();
-    $('#detail_box').css({
-        "visibility": "visible",
-        "height": "auto"
-    })
-    var hand_cd = $('#cities [value="' + value + '"]').data('value')
-    fetch(`https://kwapi.kweather.co.kr/v1/gis/geo/hangaddr?hangCd=${hand_cd}`, {
-        "method": "GET",
-        "headers": {
-            "auth": "kweather-test"
-        }
-    })
-        .then(e => e.json())
-        .then(d => {
-            var hang_nm = d.data.sido_nm + " " + d.data.sg_nm + "</br>" + d.data.emd_nm
-            $('#current_location').html(hang_nm)
-            var lat = d.data.lat
-            var lng = d.data.lon
-            map.flyTo(L.latLng(lat, lng), 13)
-        })
-})
-
-$('#search_field').on('propertychange change keyup paste input', (e) => {
-    var value = e.currentTarget.value
-    value = value.split(' ')[value.split(' ').length - 1]
-    var url = 'https://kwapi.kweather.co.kr/v1/gis/geo/findaddr?name=' + value
-    fetch(url, {
-        "method": "GET",
-        "headers": {
-            "auth": "kweather-test"
-        }
-    })
-        .then(e => e.json())
-        .then(d => {
-            if (d != null) {
-                $('#cities').html('')
-                d.data.slice(0, 20).forEach(i => {
-                    var el = `<option data-value='${i.hang_cd}' value='${i.sido_nm} ${i.sg_nm} ${i.emd_nm}'></option>`
-                    $('#cities').append(el)
-                })
-
-
-            }
-        })
-})
-
-$('#weather_button').on('click', () => {
-    
-})
-//현재 위치로 이동 이벤트
-$('#move_to_current_location_btn').on('click', () => {
-    if (navigator.geolocation) {
-        //위치 정보를 얻기
-        navigator.geolocation.getCurrentPosition(function (pos) {
-            map.flyTo(L.latLng(pos.coords.latitude, pos.coords.longitude), 14);
-        });
-    } else {
-        alert("이 브라우저에서는 현재위치찾기가 지원되지 않습니다.")
-    }
-})
-
 //날짜 타임라인바 컨트롤 이벤트들
 $('#knob').on('mousedown', (e) => {
     if (!current_state.is_playing) {
         current_state.knob_drag = true
-    }
-})
-
-//날짜 타임라인바 컨트롤 이벤트들
-window.addEventListener('mouseup', (e) => {
-    if (current_state.knob_drag && !current_state.is_playing) {
-        current_state.knob_drag = false
-        $('#knob').css({
-            "transition": "left .1s ease"
-        })
-        current_state.time_index = Math.floor((parseFloat(document.getElementById('knob').style.left) / 480) / 0.0416667)
-        get_model_data(current_state.time_index)
-        if (on_map_info != undefined) {
-            update_on_map_info()
-        }
     }
 })
 
@@ -946,90 +1205,20 @@ window.addEventListener('mousemove', (e) => {
     }
 })
 
-
-
-//맵 이동시마다 실행되는 이벤트
-map.on('moveend', (e) => {
-    data.model_data.wind_data = []
-    data.model_data.heat_data = []
-    get_model_data(current_state.time_index)
-})
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//PC only///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-Object.defineProperty(data, "forecast_data", {
-    get : function() {
-        return this._forecast_data
-    },
-    set : function(d) {
-        this._forecast_data.lifestyle_data = d                       
-        fill_detail_table(current_state.heatmap_index, this._forecast_data) 
-        var dbox = $('#detail_box')[0]            
-        dbox.style.visibility = 'visible'
-        dbox.style.height = 'auto';        
+//날짜 타임라인바 컨트롤 이벤트들
+window.addEventListener('mouseup', (e) => {
+    if (current_state.knob_drag && !current_state.is_playing) {
+        current_state.knob_drag = false
+        $('#knob').css({
+            "transition": "left .1s ease"
+        })
+        current_state.time_index = Math.floor((parseFloat(document.getElementById('knob').style.left) / 480) / 0.0416667)
+        model_data_initialize()
+        if (on_map_info != undefined) {
+            update_on_map_info()
+        }
     }
 })
-
-//해당 좌표의 lifestyle_data를 얻어온다
-function get_lifestyle_data(lat, lng, type) {
-    /*
-    lifestyle_data란 
-    시간별 강수량, 강수확률, 구름량, 온.습도 등... 다양한 데이터들.
-
-    단순 좌표로만은 얻을 수 없기 때문에
-    좌표로 => 행정동 코드를 얻은다음
-    얻은 행정동 코드를 통해
-    행정동 코드 => lifestyle data를 얻어온다.
-
-    이또한 데이터가 업데이트 되면 자동으로 이벤트 일어남
-    */
-    var hangCd = ""
-    var url = 'https://kwapi.kweather.co.kr/v1/gis/geo/loctoaddr?lat=' + lat + '&lon=' + lng
-    fetch(url, {
-        "method": "GET",
-        "headers": {
-            "auth": "kweather-test"
-        }
-    })
-        .then(e => e.json())
-        .then(d => {
-            if (d.data != null) {
-                hangCd = d.data.hang_cd
-                var hang_nm = d.data.sido_nm + " " + d.data.sg_nm + "</br>" + d.data.emd_nm
-                $('#current_location').html(hang_nm)
-                var dt = new Date()
-                var d_s = dt.getFullYear() + (dt.getMonth() + 1).toString().padStart(2, '0') + dt.getDate().toString().padStart(2, '0')
-                var dt = new Date(dt.getTime() + 604800000)
-                var d_e = dt.getFullYear() + (dt.getMonth() + 1).toString().padStart(2, '0') + dt.getDate().toString().padStart(2, '0')
-                hangCd = 11110000       //현재 다른 데이터는 아직 오지 않음.
-                return fetch(`https://kwapi.kweather.co.kr/kweather/lifestyle/date?hangCd=${hangCd}&startDate=${d_s}&endDate=${d_e}`, {
-                    headers: {
-                        "auth": "kweather-test"
-                    }
-                })                    
-            } else {
-                $('#current_location').html("")
-                return null
-            }
-        })
-        .then(j => j.json())
-        .then(d => {
-            data.forecast_data = convert_lifestyle_data(d, hangCd)
-        })
-        .catch(e => {
-            var dbox = $('#detail_box')[0]            
-            dbox.style.visibility = 'hidden'
-            dbox.style.height = '0px'; 
-        })
-
-}
 
 //재생 버튼 이벤트 처리
 $('#play').on('click', () => {
@@ -1048,7 +1237,7 @@ $('#play').on('click', () => {
                     var tmp = 24
                     if (current_state.time_index != tmp) {
                         current_state.time_index = tmp
-                        get_model_data()
+                        model_data_initialize()
                         current_time.text(current_state.map.current_time_str)
                     }
                     clearInterval(current_state.Interval)
@@ -1065,7 +1254,7 @@ $('#play').on('click', () => {
                     knob.css({
                         "left": "0px"
                     })
-                    get_model_data(current_state.time_index)
+                    model_data_initialize()
                     if (on_map_info != undefined) {
                         update_on_map_info()
                     }
@@ -1083,7 +1272,7 @@ $('#play').on('click', () => {
                 var tmp = Math.round((parseFloat(knob.css('left')) / 480) / 0.0416667)
                 if (current_state.time_index != tmp) {
                     current_state.time_index = tmp
-                    get_model_data()
+                    model_data_initialize()
                     current_time.text(current_state.map.current_time_str)
                 }
                 if (on_map_info != undefined) {
@@ -1124,7 +1313,7 @@ $('#skip_start_btn').on('click', () => {
         current_state.time_index = tmp
         set_current_state(tmp * 3600000)
         current_time.text(current_state.map.current_time_str)
-        get_model_data(current_state.time_index)
+        model_data_initialize()
         if (on_map_info != undefined) {
             update_on_map_info()
         }
@@ -1151,30 +1340,72 @@ $('#skip_end_btn').on('click', () => {
         current_state.time_index = tmp
         set_current_state(tmp * 3600000)
         current_time.text(current_state.map.current_time_str)
-        get_model_data(current_state.time_index)
+        model_data_initialize()
         if (on_map_info != undefined) {
             update_on_map_info()
         }
     }
 })
 
+
+//하단 상세 보기 페이지를 닫는 함수
+$('#close_detail_box').on('click', () => {
+    $('#detail_box').css({
+        "visibility": "hidden",
+        "height": "0px"
+    })
+    $('#detail_table1').html('')
+    $('#detail_table2').html('')
+    current_state.show_detail_table = false
+})
+
+//하단 상세보기 미세먼지 버튼 이벤트
+$('#dust_button').on('click', () => {
+    $('#weather_button').addClass('btn-light')
+    $('#weather_button').removeClass('btn-primary')
+    $('#dust_button').addClass('btn-primary')
+    $('#dust_button').removeClass('btn-light')
+    fill_detail_table(1)
+})
+
+//하단 상세보기 날씨 버튼 이벤트
+$('#weather_button').on('click', () => {
+    $('#weather_button').removeClass('btn-light')
+    $('#weather_button').addClass('btn-primary')
+    $('#dust_button').removeClass('btn-primary')
+    $('#dust_button').addClass('btn-light')
+    fill_detail_table(2)
+})
+
+//현재 위치로 이동 이벤트
+$('#move_to_current_location_btn').on('click', () => {
+    if (navigator.geolocation) {
+        //위치 정보를 얻기
+        navigator.geolocation.getCurrentPosition(function (pos) {
+            map.flyTo(L.latLng(pos.coords.latitude, pos.coords.longitude), 14);
+        });
+    } else {
+        alert("이 브라우저에서는 현재위치찾기가 지원되지 않습니다.")
+    }
+})
+
+
+//맵 이동시마다 실행되는 이벤트
+map.on('moveend', (e) => {
+    data.model_data.wind_data = []
+    data.model_data.heat_data = []
+    model_data_initialize()
+})
+
 //지도 클릭 이벤트
-map.on('click', (e) => {
+map.on('click', async (e) => {
     if (on_map_info != undefined) {
         map.removeLayer(on_map_info)
-    }
-
-    current_state.show_detail_table = true
-    update_detail_box_button()    
-    var value = ""
-    if (current_state.heatmap_index < 2) {
-        value = Math.round(heatmap.getValue(e.containerPoint.x, e.containerPoint.y)) + "µg/m³"
-    } else if (current_state.heatmap_index == 2) {
-        value = heatmap.getValue(e.containerPoint.x, e.containerPoint.y).toFixed(1) + "℃"
-    } else {
-        value = heatmap.getValue(e.containerPoint.x, e.containerPoint.y).toFixed(1) + "%"
-    }
+    } 
+    
+    var value = get_value(e.containerPoint.x, e.containerPoint.y)
     var is_marker = pointmap.is_marker(e.containerPoint)
+
     if (is_marker == null) {
         on_map_info = on_map_info = L.marker([e.latlng.lat, e.latlng.lng], {
             icon: L.divIcon({
@@ -1197,8 +1428,9 @@ map.on('click', (e) => {
                     map.removeLayer(on_map_info)
                     on_map_info = null
                 }
-            })      
-            show_detail_data(e, type = 0)
+            }) 
+
+            show_detail_data(e.latlng.lat, e.latlng.lng)
     } else {
         on_map_info = on_map_info = L.marker([e.latlng.lat, e.latlng.lng], {
             icon: L.divIcon({
@@ -1210,7 +1442,7 @@ map.on('click', (e) => {
                 <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
                 <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
                 </svg>      
-                ${is_marker} : 마커입니다                                       
+                ${is_marker[0]} : 마커입니다                                       
                 </div>`,
                 className: 'display-none'
             })
@@ -1222,13 +1454,11 @@ map.on('click', (e) => {
                     on_map_info = null
                 }
             })
-            show_detail_data(e, type = 1)
+            show_detail_data(e.latlng.lat, e.latlng.lng, is_marker[1], is_marker[2])
     }
 })
 
-
 window.onload = async function () {
-    get_model_data()
-    get_point_map_data()
+    model_data_initialize()
+    pointmap_initialize()
 }
-
