@@ -26,7 +26,6 @@ var HeatMap = function (_canvas) {
         canvas.height = window.innerHeight
         overlay_type = _overlay_type
     }
-
     
     this.drawCanvas = function () {
         if (showHeat) {

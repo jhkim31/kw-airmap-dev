@@ -2,6 +2,12 @@ import { HeatMap as HeatMap } from './layer/heatmap.js';
 import { WindMap as WindMap } from './layer/windmap.js'
 import { PointMap as PointMap } from './layer/pointmap.js'
 
+import {build as build} from './lib/build.js'
+import {button_event as button_event} from './event/button_event.js'
+import {global_event as global_event} from './event/global_event.js'
+
+build()
+
 window.map = L.map('map', {
     "maxBounds": L.latLngBounds([[
         [32, 120],
@@ -18,6 +24,7 @@ window.windmap = new WindMap(document.getElementById('windmap'))
 window.pointmap = new PointMap(document.getElementById('pointmap'))
 
 window.current_state = {
+    "is_mobile": false,
     "heatmap_index": 2,
     "time_index": 24,
     "timestamp": 0,
@@ -42,31 +49,37 @@ window.current_state = {
     "Interval": 0
 }
 window.data = {
-    "model_data" : {
+    "model_data": {
         "wind_data": [],
         "heat_data": [],           //0 : pm10 /    1 : pm25 /   2 : t /    3 : h    
-    },    
-    "wind_data" : [],
-    "heat_data" : [],
+    },
+    "wind_data": [],
+    "heat_data": [],
     "post_data": {},
-    "num_observ_network" : {
-        "iot_network" : 0,
+    "num_observ_network": {
+        "iot_network": 0,
         "national_network": 0,
-        "shko_network" : 0,
-        "aws_network" : 0
+        "shko_network": 0,
+        "aws_network": 0
     },
-    "observ_network" : {
-        "iot_network_list" : [],
+    "observ_network": {
+        "iot_network_list": [],
         "national_network_list": [],
-        "shko_network_list" : [],
-        "aws_network_list" : []
+        "shko_network_list": [],
+        "aws_network_list": []
     },
-    "forecast_data" : {
-        "lifestyle_data" : {},
-        "dust_data" : {}
+    "forecast_data": {
+        "lifestyle_data": {},
+        "dust_data": {}
     },
-    "current_point_nm" : ""    
+    "current_point_nm": ""
 }
+
 window.on_map_info = null;
 
+if (window.location.href.includes('mobile')) {
+    current_state.is_mobile = true;
+}
 
+button_event()
+global_event()

@@ -208,8 +208,10 @@ cursor:pointer;
 }
 
 #current_location{
-  font-size:0.75em;
-
+  font-size:1.5em;
+  border-radius:.25rem; 
+  height:38px;
+  white-space:nowrap;
 }
 
 #detail_data{
