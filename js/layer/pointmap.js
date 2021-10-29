@@ -1,17 +1,21 @@
 var PointMap = function (_canvas) {
-    var point_config = {}
-    var iot_network_list = []
-    var national_network_list = []
-    var shko_network_list = []
-    var aws_network_list = []
-    window.marker_position_list = []
-    var cn = _canvas
-    cn.width = window.innerWidth
-    cn.height = window.innerHeight
+    var iot_network_list = []           // iot관측망 
+    var national_network_list = []      // 국가 관측망 
+    var shko_network_list = []          // 유인 관측망 
+    var aws_network_list = []           // 무인 관측망 
+    var marker_position_list = []       // 현재 화면에 표출된 관측망들의 좌표값을 가진 리스트
+    var cn = _canvas    
     var overlayImage = null
     var c = cn.getContext('2d');
-    var marker = []
+    var marker = []                     //사용할 마커 이미지 배열 (샘플 입니다.)
 
+
+    /*
+    포인트 맵을 초기화 합니다.
+    각 데이터들을 받습니다.
+    포인트 맵의 경우 데이터를 모두 가지고 있으면서, 
+    현재 화면에 보이는 범위만 표현을 하게 됩니다.
+    */
     this.init = function (iot, national, shko, aws) {
         iot_network_list = iot
         national_network_list = national
@@ -38,16 +42,25 @@ var PointMap = function (_canvas) {
 
     }
 
+    /*
+    캔버스를 모두 지웁니다.
+    */
     function clear_canvas() {
         c.clearRect(0, 0, cn.width, cn.height)
     }
 
+    /*
+    표출된 overlay가 있다면 지웁니다.
+    */
     this.remove_overlay_image = function () {
         if (overlayImage != null) {
             overlayImage.remove()
         }
     }
 
+    /*
+    값에 따라 마커의 색을 지정합니다.
+    */
     function select_fill_color(value) {
         if (value == undefined) {
             return 'gray'
@@ -62,7 +75,10 @@ var PointMap = function (_canvas) {
         }
     }
 
-    function select_marker(value) {
+    /*
+    값에 따라 마커의 텍스트를 지정합니다 (IOT, 국가 관측망에서 사용.)
+    */
+    function select_marker_text(value) {
         if (value == undefined) {
             return 'Null'
         } else if (value < 15) {
@@ -76,6 +92,11 @@ var PointMap = function (_canvas) {
         }
     }
 
+    /*
+    Zoom Level에 따라 마커를 표출합니다.
+    iot의 경우 Zoom Level에 따라 다른 마커를 그립니다.
+    현재 화면 경계 내에 있는 마커들만 표출합니다.
+    */
     function draw_iot_network() {
         var zoom = map.getZoom()
         if (zoom < 13) {
@@ -112,7 +133,7 @@ var PointMap = function (_canvas) {
         } else {
             iot_network_list.forEach(d => {
                 var point = map.latLngToContainerPoint(d._latlng)
-                var text = select_marker(d.pm10)
+                var text = select_marker_text(d.pm10)
                 if (point.x > 0 && point.x < cn.width && point.y > 0 && point.y < cn.height) {
                     c.fillStyle = "white";
                     c.fillRect(point.x, point.y, 80, 40)                    
@@ -134,6 +155,11 @@ var PointMap = function (_canvas) {
         }
     }
 
+    /*
+    Zoom Level에 따라 마커를 표출합니다.
+    국가 관측망의 경우 Zoom Level에 따라 다른 마커를 그립니다.
+    현재 화면 경계 내에 있는 마커들만 표출합니다.
+    */
     function draw_national_network() {
         var zoom = map.getZoom()
         if (zoom < 13) {
@@ -170,7 +196,7 @@ var PointMap = function (_canvas) {
         } else {
             national_network_list.forEach(d => {
                 var point = map.latLngToContainerPoint(d._latlng)
-                var text = select_marker(d.pm10)
+                var text = select_marker_text(d.pm10)
                 if (point.x > 0 && point.x < cn.width && point.y > 0 && point.y < cn.height) {
                     c.fillStyle = "white";
                     c.fillRect(point.x, point.y, 80, 40)                    
@@ -193,6 +219,10 @@ var PointMap = function (_canvas) {
     }
 
 
+    /*
+    유인 관측소 마커를 표출합니다.
+    현재 화면 경계 내에 있는 마커들만 표출합니다.
+    */
     function draw_shko_network() {
         shko_network_list.forEach(d => {
             c.fillStyle = 'purple'
@@ -211,6 +241,10 @@ var PointMap = function (_canvas) {
         })
     }
 
+    /*
+    무인 관측소 마커를 표출합니다.
+    현재 화면 경계 내에 있는 마커들만 표출합니다.
+    */
     function draw_aws_network() {
         aws_network_list.forEach(d => {
             c.fillStyle = 'black'
@@ -232,12 +266,21 @@ var PointMap = function (_canvas) {
         })
     }
 
+    /*
+    point map을 업데이트 합니다.
+    표출할 인덱스(타입)에 따라 모든 마커를 지우고 해당 마커를 표출합니다.
+    0 : iot + national
+    1 : iot
+    2 : national
+    3 : shko
+    4 : aws
+    */
     this.update_point_map = function (pointmap_index) {
         clear_canvas()
         if (overlayImage != null) {
             overlayImage.remove()
         }
-        if (pointmap_index == 0) {       //
+        if (pointmap_index == 0) {      
             marker_position_list = []
             draw_iot_network()
             draw_national_network()
@@ -254,9 +297,15 @@ var PointMap = function (_canvas) {
             marker_position_list = []
             draw_aws_network()
         }
+        //현재 캔버스를 이미지로 만들고 표출합니다.
         overlayImage = L.imageOverlay(cn.toDataURL('', 1.0), map.getBounds(), { opacity: 0.9 }).addTo(map)
     }
 
+    /*
+    point : 화면상의 x,y 좌표
+    해당 point가 마커인지 확인합니다.
+    해당 point가 마커라면 설명과 마커의 타입을 리턴합니다.
+    */
     this.is_marker = function (point) {
         var marker_serial = null
         marker_position_list.forEach(d => {
