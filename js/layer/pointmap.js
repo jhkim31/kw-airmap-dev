@@ -25,19 +25,19 @@ var PointMap = function (_canvas) {
         cn.height = window.innerHeight
 
         var icon1 = new Image()
-        icon1.src = '../image/m1_iot.png'
+        icon1.src = 'image/m1_iot.png'
         marker.push(icon1)
 
         var icon2 = new Image()
-        icon2.src = '../image/m1_nat.png'
+        icon2.src = 'image/m1_nat.png'
         marker.push(icon2)
 
         var icon3 = new Image()
-        icon3.src = '../image/m2_iot.png'
+        icon3.src = 'image/m2_iot.png'
         marker.push(icon3)
 
         var icon4 = new Image()
-        icon4.src = '../image/m2_nat.png'
+        icon4.src = 'image/m2_nat.png'
         marker.push(icon4)
 
     }

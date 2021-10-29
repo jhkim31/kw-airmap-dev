@@ -83,7 +83,7 @@ body,html {
 
 #network_box{
   background:white;
-  margin-top:30px;
+  margin-top:15px;
   border-radius:3px;
   box-shadow: 2px 2px 2px 2px gray;
   pointer-events: auto;
@@ -92,7 +92,7 @@ body,html {
 #wind_box{
   pointer-events: auto;
   background:white;
-  margin-top:30px;
+  margin-top:15px;
   border-radius:3px;
   box-shadow: 2px 2px 2px 2px gray;
 }
@@ -100,7 +100,7 @@ body,html {
 #dust_std_box{
   pointer-events: auto;
   background:white;
-  margin-top:30px;
+  margin-top:15px;
   border-radius:3px;
   box-shadow: 2px 2px 2px 2px gray;
 }
