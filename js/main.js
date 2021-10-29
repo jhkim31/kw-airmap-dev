@@ -2,11 +2,8 @@ import { HeatMap as HeatMap } from './layer/heatmap.js';
 import { WindMap as WindMap } from './layer/windmap.js'
 import { PointMap as PointMap } from './layer/pointmap.js'
 
-import {build as build} from './lib/build.js'
 import {button_event as button_event} from './event/button_event.js'
 import {global_event as global_event} from './event/global_event.js'
-
-build()
 
 window.map = L.map('map', {
     "maxBounds": L.latLngBounds([[
@@ -48,6 +45,7 @@ window.current_state = {
     },
     "Interval": 0
 }
+
 window.data = {
     "model_data": {
         "wind_data": [],

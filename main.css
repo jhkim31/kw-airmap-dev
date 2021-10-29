@@ -199,6 +199,7 @@ cursor:pointer;
   width:100%;
   height:0px;
   visibility: hidden;
+  overflow: hidden;
 }
 
 #info_box{

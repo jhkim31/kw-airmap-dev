@@ -1,7 +1,10 @@
 import * as lib from '../lib/lib.js'
 import * as fill_table from '../lib/fill_table.js'
-//날짜 타임라인바 컨트롤 이벤트들
+
 function global_event(){
+    /*
+    슬라이드바를 드래그할때 실행될 이벤트.
+    */
     window.addEventListener('mousemove', (e) => {
         var current_time = $('#current_time')
         if (current_state.knob_drag) {
@@ -17,14 +20,17 @@ function global_event(){
                 var tmp = Math.floor((parseFloat($('#knob').css('left')) / 480) / 0.0416667)
                 if (current_state.time_index != tmp) {
                     current_state.time_index = tmp
-                    set_current_state(tmp * 3600000)
+                    lib.set_current_state(tmp * 3600000)
                 }
                 current_time.text(current_state.map.current_time_str)
             }
         }
     })
 
-    //날짜 타임라인바 컨트롤 이벤트들
+    /*
+    마우스를땔때 실행되는 이벤트,
+    만약 knob을 드래고 하고 있던 중이였을때만 활성화됨.
+    */
     window.addEventListener('mouseup', (e) => {
         if (current_state.knob_drag && !current_state.is_playing) {
             current_state.knob_drag = false
@@ -39,14 +45,18 @@ function global_event(){
         }
     })
 
-    //맵 이동시마다 실행되는 이벤트
+    /*
+    맵 이동시마다 실행되는 이벤트
+    */
     map.on('moveend', (e) => {
         data.model_data.wind_data = []
         data.model_data.heat_data = []
         lib.model_init()
     })
 
-    //지도 클릭 이벤트
+    /*
+    지도 클릭 이벤트
+    */
     map.on('click', async (e) => {
         if (current_state.is_mobile){
             $('#control_box').hide()

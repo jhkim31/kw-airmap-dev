@@ -1,4 +1,6 @@
-//서버에서 넘어온 json데이터를 사용할 수 있게 배열로 만들어 리턴하는 함수
+/*
+서버에서 넘어온 모델 데이터를 사용할 수 있게 배열로 만들어 리턴하는 함수
+*/
 function data_one_time(json_data) {
     /*
         parameter -----
@@ -67,7 +69,9 @@ function data_one_time(json_data) {
     return one_timestamp
 }
 
-//lifestyle_data를 사용할 수 있게 컨버팅 한다.
+/*
+lifestyle_data를 사용할 수 있게 컨버팅 한다.
+*/
 function lifestyle_data(d, hangCd) {
     var lifestyle_data = d.data[hangCd]
     lifestyle_data = lifestyle_data[[Object.keys(lifestyle_data)[0]]]

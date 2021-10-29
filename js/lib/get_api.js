@@ -1,5 +1,9 @@
 import * as convert from './convert.js'
 import * as lib from './lib.js'
+
+/*
+point map에 대한 데이터를 받아오는 함수다
+*/
 async function point_map_data() {
     var res_data = {}
     /*    
@@ -7,7 +11,7 @@ async function point_map_data() {
     이 함수에서는 병렬로 4개의 데이터를 빠르게 받아옴.
     받아온 데이터는 data.observ_network 에 저장
     모든 데이터(IOT, 국가관측망, shko aws)를 받아오기까지 기다린 후
-    모든 데이터를 받아오면 point map을 initialize함
+    모든 데이터를 받아오면 받은 데이터들을 리턴한다.
     */  
     var url = 'https://kwapi.kweather.co.kr/v1/air/stations?type=all'   //IOT, 국가관측망
     var pm1 = fetch(url, {
@@ -106,7 +110,9 @@ async function point_map_data() {
     return res_data
 }
 
-//히트맵, 플로우맵 데이터를 받아오는 함수
+/*
+히트맵, 플로우맵 데이터를 받아오는 함수
+*/
 async function model_data() {
     var res_data = []
     /*    
@@ -132,7 +138,9 @@ async function model_data() {
     return res_data
 }
 
-//행정동 정보를 받아오는 함수
+/*
+행정동 정보를 받아오는 함수
+*/
 async function hang_data(lat,lng){
     /*
     lat, lng 좌표값을 통해 해당 좌표의 행정 코드를 리턴한다
@@ -165,7 +173,9 @@ async function hang_data(lat,lng){
     return res_data
 }
 
-//기상정보를 가져오는 함수.
+/*
+행정동의 기상정보를 가져오는 함수.
+*/
 async function lifestyle_data(hang_cd){
     /*
     lifestyle_data란 
@@ -191,6 +201,9 @@ async function lifestyle_data(hang_cd){
     return res_data
 }
 
+/*
+무인 관측소의 데이터를 받아온다.
+*/
 async function aws_station_data(areacode){
     var url = 'https://kwapi.kweather.co.kr/v1/kma/aws/stationWeather/' + areacode
     var res_data = []
@@ -230,6 +243,9 @@ async function aws_station_data(areacode){
     return res_data
 }
 
+/*
+유인 관측소의 데이터를 받아온다.
+*/
 async function shko_station_data(areacode){
     var url = 'https://kwapi.kweather.co.kr/v1/kma/shko/stationWeather/' + areacode
     var res_data = []

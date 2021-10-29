@@ -14,7 +14,234 @@
 </head>
 
 <body>
-    <div id ="kw-airmap"></div>
+    <div>
+        <div id="map"></div>
+        <canvas id="heatmap"></canvas>
+        <canvas id="windmap"></canvas>
+        <canvas id="pointmap"></canvas>
+        <div id="overlay">
+            <div id="search_box">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <button class="btn btn-secondary" id="search_btn" type="button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <input placeholder="위치 검색" list="cities" name="myBrowser" id="search_field" />
+                    <datalist id="cities"></datalist>
+                    <div class="input-group-append">
+                        <button class="btn btn-secondary" type="button" id="move_to_current_location_btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-compass" viewBox="0 0 16 16">
+                                <path d="M8 16.016a7.5 7.5 0 0 0 1.962-14.74A1 1 0 0 0 9 0H7a1 1 0 0 0-.962 1.276A7.5 7.5 0 0 0 8 16.016zm6.5-7.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z" />
+                                <path d="m6.94 7.44 4.95-2.83-2.83 4.95-4.949 2.83 2.828-4.95z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div id="control_box">
+                <div id="weather_box">
+                    <div class="h5">동별 미세먼지</div>
+                    <div class="row">
+                        <div class="col-9">
+                            <div class="h7">PM10</div>
+                        </div>
+                        <div class="col-3">
+                            <label class="switch">
+                                <input type="checkbox" id="show_pm10">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-9">
+                            <div class="h7">PM2.5</div>
+                        </div>
+                        <div class="col-3">
+                            <label class="switch">
+                                <input type="checkbox" id="show_pm25">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="h5 col-9">온도</div>
+                        <div class="col-3">
+                            <label class="switch">
+                                <input type="checkbox" id="show_t" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="h5 col-9">습도</div>
+                        <div class="col-3">
+                            <label class="switch">
+                                <input type="checkbox" id="show_h">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <img id="heat_bar" src='image/heat_bar_t.png' width="250px">
+                </div>
+                <div id="network_box">
+                    <div class="h5">실외 공기 관측망</div>
+                    <div class="row">
+                        <div class="col-9">
+                            <div class="h7">IoT관측망 + 국가관측망</div>
+                        </div>
+                        <div class="col-3">
+                            <label class="switch">
+                                <input type="checkbox" id="iot_national_network">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+                        <div class="col-9">
+                            <div class="h7">IoT관측망</div>
+                        </div>
+                        <div class="col-3">
+                            <label class="switch">
+                                <input type="checkbox" id="iot_network">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-9">
+                            <div class="h7">국가관측망</div>
+                        </div>
+                        <div class="col-3">
+                            <label class="switch">
+                                <input type="checkbox" id="national_network">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="h5">실외 공기 관측망</div>
+                    <div class="row">
+                        <div class="col-9">
+                            <div class="h7">유인관측소</div>
+                        </div>
+                        <div class="col-3">
+                            <label class="switch">
+                                <input type="checkbox" id="manned_network">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-9">
+                            <div class="h7">AWS</div>
+                        </div>
+                        <div class="col-3">
+                            <label class="switch">
+                                <input type="checkbox" id="aws_network">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div id="wind_box">
+                    <div class="row">
+                        <div class="h5 col-9">바람</div>
+                        <div class="col-3">
+                            <label class="switch">
+                                <input type="checkbox" id="play_wind" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div id="dust_std_box">
+                    <div class="row">
+                        <div class="h6 col-6">미세먼지 요소</div>
+                        <div class="btn-group col-6" role="group" aria-label="Basic radio toggle button group">
+                            <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked>
+                            <label class="btn btn-outline-primary radio_label " for="btnradio1">PM2.5</label>
+
+                            <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
+                            <label class="btn btn-outline-primary radio_label" for="btnradio2">PM10</label>
+                        </div>
+                    </div>
+                    <br>
+                    <div class="row">
+                        <div class="h6 col-6">미세먼지 기준</div>
+                        <div class="btn-group col-6" role="group" aria-label="Basic radio toggle button group">
+                            <input type="radio" class="btn-check" name="btnradio2" id="btnradio3" autocomplete="off" checked>
+                            <label class="btn btn-outline-primary radio_label" for="btnradio3">WHO</label>
+
+                            <input type="radio" class="btn-check" name="btnradio2" id="btnradio4" autocomplete="off">
+                            <label class="btn btn-outline-primary radio_label" for="btnradio4">환경부</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="bottom_box">
+                <div id="timeline_control_box">
+                    <div id="timeline_button_box">
+                        <div class="my_btn" id="skip_start_btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white" class="bi bi-skip-start-fill" viewBox="0 0 16 16">
+                                <path d="M4 4a.5.5 0 0 1 1 0v3.248l6.267-3.636c.54-.313 1.232.066 1.232.696v7.384c0 .63-.692 1.01-1.232.697L5 8.753V12a.5.5 0 0 1-1 0V4z" />
+                            </svg>
+                        </div>
+                        <div class="my_btn" id="play">
+                            <svg xmlns="http://www.w3.org/2000/svg" id="play_btn" width="30" height="30" fill="white" class="bi bi-play-fill" viewBox="0 0 16 16">
+                                <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z" />
+                            </svg>
+                        </div>
+                        <div class="my_btn" id="skip_end_btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white" class="bi bi-skip-end-fill" viewBox="0 0 16 16">
+                                <path d="M12.5 4a.5.5 0 0 0-1 0v3.248L5.233 3.612C4.693 3.3 4 3.678 4 4.308v7.384c0 .63.692 1.01 1.233.697L11.5 8.753V12a.5.5 0 0 0 1 0V4z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div id="date_progress">
+                    </div>
+                    <div id="knob">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="orange" class="bi bi-circle-fill" viewBox="0 0 16 16">
+                            <circle cx="8" cy="8" r="8" />
+                        </svg>
+                    </div>
+                    <div id="current_time"></div>
+                </div>
+                <br>
+                <div id="detail_box">
+                    <div id="info_box" class="row">
+                        <div class="col-1" style="padding:0;">
+                            <div id="current_location"></div>
+                        </div>
+                        <div class="col-10" style="text-align:center">
+                            <div class="btn btn-primary" id="weather_button" style="width:100px; pointer-events: auto;">날씨</div>
+                            <div class="btn btn-light" id="dust_button" style="width:100px; pointer-events: auto;">미세먼지</div>
+                        </div>
+                        <div class='col-1' style="padding:0;">
+                            <div class='btn btn-light float-end' id="close_detail_box" style="pointer-events: auto;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
+                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="detail_data">
+                        <div id="detail_scroll_box" style="width:1680px;">
+                            <table class="align-middle" id="detail_table1" style="float:left; margin-right:30px"></table>
+                            <table class="align-middle" id="detail_table2"></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="num_stations"></div>
+        </div>
+    </div>
     <script type="module" src="./js/main.js"></script>
 </body>
+
 </html>

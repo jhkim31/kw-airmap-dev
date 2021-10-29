@@ -1,5 +1,7 @@
 import * as get_api from './get_api.js'
-//하단에 있는 날씨, 미세먼지의 버튼을 현재 상황에 맞게 업데이트 해주는 함수
+/*
+하단에 있는 날씨, 미세먼지의 버튼을 현재 상황에 맞게 업데이트 해주는 함수
+*/
 function update_detail_box_button(type = -1) {
     /*
     이 함수가 실행되면, 하단의 버튼을 현재 상황에 맞게 바꿔줌    
@@ -19,17 +21,35 @@ function update_detail_box_button(type = -1) {
     }
 }
 
+/*
+해당 좌표에서 heatmap 값을 받아와 단위를 붙여 리턴해줌
+*/
 function get_value(x, y) {
     var value = ""
     if (current_state.heatmap_index < 2) {
-        value = Math.round(heatmap.getValue(x, y)) + "µg/m³"
+        value = Math.round(heatmap.get_value(x, y)) + "µg/m³"
     } else if (current_state.heatmap_index == 2) {
-        value = heatmap.getValue(x, y).toFixed(1) + "℃"
+        value = heatmap.get_value(x, y).toFixed(1) + "℃"
     } else {
-        value = heatmap.getValue(x, y).toFixed(1) + "%"
+        value = heatmap.get_value(x, y).toFixed(1) + "%"
     }
     return value
 }
+
+/*
+모든 overlay 맵 업데이트
+*/
+function map_update() {
+    windmap.stop_anim()
+    windmap.init(current_state.map, data.model_data.wind_data[current_state.time_index])
+    heatmap.set_data(current_state.map, data.model_data.heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
+    pointmap.update_point_map(current_state.pointmap_index)
+    windmap.start_anim()
+}
+
+/*
+모델 데이터를 받아와 변수들을 초기화 시켜준다
+*/
 async function model_init() {
     var model_data = await get_api.model_data()
     data.model_data.wind_data[current_state.time_index] = model_data[0]
@@ -37,7 +57,9 @@ async function model_init() {
     map_update()
 }
 
-//pointmap 데이터를 받아오고 받아온 후 pointmap 초기화
+/*
+pointmap 데이터를 받아오고 받아온 후 pointmap 초기화
+*/
 async function pointmap_init() {
     var point_map_data = await get_api.point_map_data()
     console.log(point_map_data)
@@ -49,15 +71,9 @@ async function pointmap_init() {
     pointmap.init(data.observ_network.iot_network_list, data.observ_network.national_network_list, data.observ_network.shko_network_list, data.observ_network.aws_network_list)
 }
 
-//모든 overlay 맵 업데이트
-function map_update() {
-    windmap.stopAnim()
-    windmap.init(current_state.map, data.model_data.wind_data[current_state.time_index])
-    heatmap.set_data(current_state.map, data.model_data.heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
-    pointmap.update_point_map(current_state.pointmap_index)
-    windmap.startAnim()
-}
-
+/*
+해당 함수는 지도 클릭 이벤트시 호출되며, 지도에 알맞은 마커를 표출한다.
+*/
 function update_on_map_info() {
     if (on_map_info != undefined) {
         var latlng = on_map_info._latlng
@@ -90,11 +106,16 @@ function update_on_map_info() {
     }
 }
 
+/*
+현재 상황을 정의한다.
+*/
 function set_current_state(delta = 0) {
     /*
     지도의 boundary, gap 시간등을 세팅해
     해당 값들로 post_data까지 만들음.
     */
+
+    //지도의 zoom에 따른 grid cell size 정의
     var zoom = map.getZoom()
     if (zoom >= 8) {
         current_state.map.latGap = 0.1
@@ -106,6 +127,8 @@ function set_current_state(delta = 0) {
         current_state.map.latGap = 0.5
         current_state.map.lngGap = 0.5
     }
+
+    // 화면 경계 정의
     current_state.map.maxlat = parseFloat((map.getBounds()._northEast.lat - map.getBounds()._northEast.lat % current_state.map.latGap + current_state.map.latGap).toFixed(3))
     current_state.map.maxlat = (current_state.map.maxlat > 44) ? 44 : current_state.map.maxlat
     current_state.map.maxlat = (current_state.map.maxlat < 32) ? 32 : current_state.map.maxlat
@@ -125,8 +148,9 @@ function set_current_state(delta = 0) {
     current_state.map.gridX = Math.round((current_state.map.maxlng - current_state.map.minlng) / current_state.map.lngGap)
     current_state.map.gridY = Math.round((current_state.map.maxlat - current_state.map.minlat) / current_state.map.latGap)
 
+
+    // 쿼리를 날릴 시간 정의
     var t = new Date(new Date().getTime() - 86400000 + delta)
-    // var t = new Date(1628262000000 + delta)               //현재는 시간을 임의로 고정시킴.
     current_state.map.current_time = t
     var year = t.getYear() + 1900
     var month = t.getMonth() + 1

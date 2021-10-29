@@ -2,6 +2,9 @@ import * as lib from './lib.js'
 import * as get_api from './get_api.js'
 import {dust_forecast as dust_forecast} from '../table.js'
 
+/*
+shko 선택시 상세보기를 채운다.
+*/
 function shko(shko_data){
     $('#weather_button').hide()
     $('#dust_button').hide()
@@ -78,6 +81,9 @@ function shko(shko_data){
     }    
 }
 
+/*
+aws 선택시 상세보기를 채운다
+*/
 function aws(aws_data){
     $('#weather_button').hide()
     $('#dust_button').hide()
@@ -156,7 +162,9 @@ function aws(aws_data){
 
 }
 
-//하단 상세 보기의 표를 채워주는 함수 
+/*
+지도 선택시 하단 상세보기를 타입에 맞춰 채워준다.
+*/
 function model(type) {
     lib.update_detail_box_button(type)   
     $('#weather_button').show()
@@ -170,7 +178,7 @@ function model(type) {
     detail_table1.html('')
     detail_table2.html('')
 
-    if (type < 2) {       // 미세먼지일때
+    if (type < 2) {       // 미세먼지일때, 현재 미세먼지 api가 어떻게 정의되어 있는지 몰라 구현하지 못함.
         detail_table2.html(dust_forecast)
     } else {              // 기상 상황일때
         var today = new Date().getTime()
@@ -274,6 +282,10 @@ function model(type) {
     }    
 }
 
+/*
+해당 함수에서 어떤 표를 채워야 하는지 결정하,
+나머지 레이아웃을 설정한다.
+*/
 async function show_detail_data(lat, lng, is_marker=null, areacode = 0) { 
     var hang_data = await get_api.hang_data(lat, lng)    
     var dbox = $('#detail_box')[0]  
