@@ -2,8 +2,7 @@ import { HeatMap as HeatMap } from './layer/heatmap.js';
 import { WindMap as WindMap } from './layer/windmap.js'
 import { PointMap as PointMap } from './layer/pointmap.js'
 
-import {button_event as button_event} from './event/button_event.js'
-import {global_event as global_event} from './event/global_event.js'
+import * as event from './lib/event.js'
 
 window.map = L.map('map', {
     "maxBounds": L.latLngBounds([[
@@ -79,5 +78,5 @@ if (window.location.href.includes('mobile')) {
     current_state.is_mobile = true;
 }
 
-button_event()
-global_event()
+event.button_event()
+event.global_event()
