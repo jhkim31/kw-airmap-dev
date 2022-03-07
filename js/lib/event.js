@@ -121,23 +121,7 @@ function global_event() {
             core.show_detail_data(e.latlng.lat, e.latlng.lng, is_marker[1], is_marker[2])
         }
     })
-
-    window.onload = async function () {
-        core.model_init()
-        core.pointmap_init()
-
-        if (current_state.is_mobile) {
-            $('#timeline_control_box').css({
-                'width': window.innerWidth + 'px'
-            })
-            $('#date_progress').css({
-                'width': (window.innerWidth - 120) + 'px'
-            })
-        }
-    }
 }
-
-export { global_event }
 
 
 function button_event(){
@@ -679,5 +663,5 @@ function button_event(){
     }
 }
 
-export {button_event}
+export { button_event, global_event }
 

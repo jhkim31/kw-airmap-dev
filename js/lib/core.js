@@ -86,7 +86,8 @@ function convert_lifestyle_data_to_table_data(json_data, hangCd) {
     return converting_data.slice(0, 7)
 }
 
-async function get_point_map_data() {
+//get api
+async function get_point_map_data_async() {
     var point_map_data = {}
     /*    
     point map 에 대한 데이터를 받아온다.
@@ -182,7 +183,7 @@ async function get_point_map_data() {
     return point_map_data
 }
 
-async function get_model_data() {
+async function get_model_data_async() {
     var point_map_data = []
     /*    
     현재 상태를 재정의 하고 현재 상태를 기반으로 데이터를 받아옴
@@ -209,10 +210,7 @@ async function get_model_data() {
     return point_map_data
 }
 
-/*
-행정동 정보를 받아오는 함수
-*/
-async function hang_data(lat, lng) {
+async function get_hang_data_async(lat, lng) {
     /*
     lat, lng 좌표값을 통해 해당 좌표의 행정 코드를 리턴한다
     return [hang_cd, hang_sido, hang_sg, hang_emd]
@@ -244,10 +242,7 @@ async function hang_data(lat, lng) {
     return point_map_data
 }
 
-/*
-행정동의 기상정보를 가져오는 함수.
-*/
-async function lifestyle_data(hang_cd) {
+async function get_lifestyle_data_async(hang_cd) {
     /*
     lifestyle_data란 
     시간별 강수량, 강수확률, 구름량, 온.습도 등... 다양한 데이터들.
@@ -273,12 +268,9 @@ async function lifestyle_data(hang_cd) {
     return point_map_data
 }
 
-/*
-무인 관측소의 데이터를 받아온다.
-*/
-async function aws_station_data(areacode) {
+async function get_aws_station_data_async(areacode) {
     var url = 'https://kwapi.kweather.co.kr/v1/kma/aws/stationWeather/' + areacode
-    var point_map_data = []
+    var aws_station_list = []
     await fetch(url, {
         "headers": {
             "Content-Type": "application/json",
@@ -307,19 +299,16 @@ async function aws_station_data(areacode) {
                     "wdirk": item.wdirk,
                     "wspeed": item.wspeed
                 }
-                point_map_data.push(shko_list)
+                aws_station_list.push(shko_list)
             })
-            point_map_data.reverse()
+            aws_station_list.reverse()
         })
-    return point_map_data
+    return aws_station_list
 }
 
-/*
-유인 관측소의 데이터를 받아온다.
-*/
-async function shko_station_data(areacode) {
+async function get_shko_station_data_async(areacode) {
     var url = 'https://kwapi.kweather.co.kr/v1/kma/shko/stationWeather/' + areacode
-    var point_map_data = []
+    var shko_station_list = []
     await fetch(url, {
         "headers": {
             "Content-Type": "application/json",
@@ -348,20 +337,15 @@ async function shko_station_data(areacode) {
                     "wdirk": item.wdirk,
                     "wspeed": item.wspeed
                 }
-                point_map_data.push(shko_list)
+                 shko_station_list .push(shko_list)
             })
-            point_map_data.reverse()
+             shko_station_list .reverse()
         })
 
-    return point_map_data
+    return  shko_station_list
 }
 
-export { aws_station_data, get_model_data, get_point_map_data, hang_data, lifestyle_data, shko_station_data }
-
-
-/*
-하단에 있는 날씨, 미세먼지의 버튼을 현재 상황에 맞게 업데이트 해주는 함수
-*/
+//ui
 function update_detail_box_button(type = -1) {
     /*
     이 함수가 실행되면, 하단의 버튼을 현재 상황에 맞게 바꿔줌    
@@ -381,10 +365,10 @@ function update_detail_box_button(type = -1) {
     }
 }
 
-/*
-해당 좌표에서 heatmap 값을 받아와 단위를 붙여 리턴해줌
-*/
 function get_value(x, y) {
+    /*
+    해당 좌표에서 heatmap 값을 받아와 단위를 붙여 리턴해줌
+    */
     var value = ""
     if (current_state.heatmap_index < 2) {
         value = Math.round(heatmap.get_value(x, y)) + "µg/m³"
@@ -396,32 +380,25 @@ function get_value(x, y) {
     return value
 }
 
-/*
-모든 overlay 맵 업데이트
-*/
-function map_update() {
-    windmap.stop_anim()
+function set_overlay_map() {
+    /*
+    모든 overlay 맵 업데이트
+    */    
     windmap.init(current_state.map, data.model_data.wind_data[current_state.time_index])
     heatmap.set_data(current_state.map, data.model_data.heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
     pointmap.update_point_map(current_state.pointmap_index)
-    windmap.start_anim()
+    
 }
 
-/*
-모델 데이터를 받아와 변수들을 초기화 시켜준다
-*/
 async function model_init() {
-    var model_data2 = await get_model_data()
+    var model_data2 = await get_model_data_async()
     data.model_data.wind_data[current_state.time_index] = model_data2[0]
     data.model_data.heat_data[current_state.time_index] = model_data2.slice(1, 5)
-    map_update()
+    set_overlay_map()
 }
 
-/*
-pointmap 데이터를 받아오고 받아온 후 pointmap 초기화
-*/
 async function pointmap_init() {
-    var point_map_data2 = await get_point_map_data()
+    var point_map_data2 = await get_point_map_data_async()
     console.log(point_map_data2)
     data.observ_network.national_network_list = point_map_data2.nat_data
     data.observ_network.iot_network_list = point_map_data2.iot_data
@@ -431,9 +408,6 @@ async function pointmap_init() {
     pointmap.init(data.observ_network.iot_network_list, data.observ_network.national_network_list, data.observ_network.shko_network_list, data.observ_network.aws_network_list)
 }
 
-/*
-해당 함수는 지도 클릭 이벤트시 호출되며, 지도에 알맞은 마커를 표출한다.
-*/
 function update_on_map_info() {
     if (on_map_info != undefined) {
         var latlng = on_map_info._latlng
@@ -466,9 +440,6 @@ function update_on_map_info() {
     }
 }
 
-/*
-현재 상황을 정의한다.
-*/
 function set_current_state(delta = 0) {
     /*
     지도의 boundary, gap 시간등을 세팅해
@@ -541,14 +512,6 @@ function set_current_state(delta = 0) {
     }
 }
 
-export { update_detail_box_button, get_value, model_init, pointmap_init, update_on_map_info, set_current_state }
-
-
-
-
-/*
-shko 선택시 상세보기를 채운다.
-*/
 function shko(shko_data){
     $('#weather_button').hide()
     $('#dust_button').hide()
@@ -625,9 +588,6 @@ function shko(shko_data){
     }    
 }
 
-/*
-aws 선택시 상세보기를 채운다
-*/
 function aws(aws_data){
     $('#weather_button').hide()
     $('#dust_button').hide()
@@ -706,9 +666,6 @@ function aws(aws_data){
 
 }
 
-/*
-지도 선택시 하단 상세보기를 타입에 맞춰 채워준다.
-*/
 function model(type) {
     update_detail_box_button(type)   
     $('#weather_button').show()
@@ -826,12 +783,8 @@ function model(type) {
     }    
 }
 
-/*
-해당 함수에서 어떤 표를 채워야 하는지 결정하,
-나머지 레이아웃을 설정한다.
-*/
 async function show_detail_data(lat, lng, is_marker=null, areacode = 0) { 
-    var hang_data = await hang_data(lat, lng)    
+    var hang_data = await get_hang_data_async(lat, lng)    
     var dbox = $('#detail_box')[0]  
     $('#current_location').text(`${hang_data[1]} ${hang_data[2]} ${hang_data[3]}`)
     if (is_marker){     //마커인경우
@@ -840,12 +793,12 @@ async function show_detail_data(lat, lng, is_marker=null, areacode = 0) {
         }else if (is_marker == 'national'){
             //api 없음
         } else if (is_marker == 'shko'){            
-            var item = await shko_station_data(areacode)
+            var item = await get_shko_station_data_async(areacode)
             shko(item)
             dbox.style.visibility = 'visible'
             dbox.style.height = 'auto';  
         } else if (is_marker == 'aws'){
-            var item = await aws_station_data(areacode)
+            var item = await get_aws_station_data_async(areacode)
             aws(item)
             dbox.style.visibility = 'visible'
             dbox.style.height = 'auto';  
@@ -853,7 +806,7 @@ async function show_detail_data(lat, lng, is_marker=null, areacode = 0) {
         
     } else {
         if (hang_data.length > 0){          //내륙
-            data.forecast_data.lifestyle_data = await lifestyle_data(hang_data[0])
+            data.forecast_data.lifestyle_data = await get_lifestyle_data_async(hang_data[0])
             model(current_state.heatmap_index)                  
             dbox.style.visibility = 'visible'
             dbox.style.height = 'auto';  
@@ -864,4 +817,6 @@ async function show_detail_data(lat, lng, is_marker=null, areacode = 0) {
     }      
 }
 export { convert_model_data_to_matrix, convert_lifestyle_data_to_table_data }
-export {shko, aws, model, show_detail_data}
+export { shko, aws, model, show_detail_data }
+export { get_aws_station_data_async, get_model_data_async, get_point_map_data_async, get_hang_data_async, get_lifestyle_data_async, get_shko_station_data_async }
+export { update_detail_box_button, get_value, model_init, pointmap_init, update_on_map_info, set_current_state }

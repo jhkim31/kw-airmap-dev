@@ -2,6 +2,7 @@ import { HeatMap as HeatMap } from './layer/heatmap.js';
 import { WindMap as WindMap } from './layer/windmap.js'
 import { PointMap as PointMap } from './layer/pointmap.js'
 
+import * as core from './lib/core.js'
 import * as event from './lib/event.js'
 
 window.map = L.map('map', {
@@ -11,7 +12,8 @@ window.map = L.map('map', {
     ]])
 })
     .setView([37, 127], 10)
-map.setMinZoom(5)
+
+window.map.setMinZoom(5)
 
 L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png').addTo(map);
 
@@ -21,7 +23,7 @@ window.pointmap = new PointMap(document.getElementById('pointmap'))
 
 window.current_state = {
     "is_mobile": false,
-    "heatmap_index": 2,
+    "heatmap_index": 2,                 // 0 : pm10, 1 : pm25, 2 : t, 3 : h
     "time_index": 24,
     "timestamp": 0,
     "show_detail_table": false,
@@ -76,6 +78,20 @@ window.on_map_info = null;
 
 if (window.location.href.includes('mobile')) {
     current_state.is_mobile = true;
+}
+
+window.onload = async function () {
+    core.model_init()
+    core.pointmap_init()
+
+    if (current_state.is_mobile) {
+        $('#timeline_control_box').css({
+            'width': window.innerWidth + 'px'
+        })
+        $('#date_progress').css({
+            'width': (window.innerWidth - 120) + 'px'
+        })
+    }
 }
 
 event.button_event()

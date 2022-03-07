@@ -1,7 +1,5 @@
 var WindMap = function (_canvas) {
-
     var wind_config = {}            // 환경 변수
-
     window.cn = _canvas 
     var c = cn.getContext('2d');
     var winds = []                      // 바람 객체들의 리스트
@@ -14,8 +12,7 @@ var WindMap = function (_canvas) {
         opacity : 0.1,                  // 투명도 (꼬리와 관련)
         count : 1000                    // 개수
     }
-    
-        
+   
     /*
     해당 인덱스의 바람 객체를 만드는 함수
     현재 화면내의 무작위 좌표에서 바람 객체를 만든다.
@@ -199,8 +196,8 @@ var WindMap = function (_canvas) {
     안전성을 위해 애니메이션을 멈춘 후 
     바람 객체들을 생성 => 애니메이션을 실행함
     */
-    this.start_anim = function () {
-        this.stop_anim()
+    var start_anim = function () {
+        stop_anim()
         build()
         anim()
     }
@@ -208,7 +205,7 @@ var WindMap = function (_canvas) {
     /*
     애니메이션을 멈춘다.
     */
-    this.stop_anim = function () {
+    var stop_anim = function () {
         if (showWind) {
             cancelAnimationFrame(animationId)
             c.clearRect(0, 0, cn.width, cn.height);
@@ -222,12 +219,12 @@ var WindMap = function (_canvas) {
         if (showWind) {
             // 만약 애니메이션이 표출되고 있었다면, 바람 객체들을 모두 없애고, 애니메이션을 멈춤
             winds = []
-            this.stop_anim()
+            stop_anim()
             showWind = false
         } else {
             // 만약 표출되고 있는 상태가 아니라면, 애니메이션 실행.
             showWind = true;
-            this.start_anim()
+            start_anim()
         }
     }
 
@@ -235,6 +232,12 @@ var WindMap = function (_canvas) {
     환경 값 초기화 함수 및 업데이트 함수다.    
     */
     this.init = function (config, wind_data) {        
+        set(config, wind_data)
+        build()
+    }
+
+    var set = function(config, wind_data){
+        stop_anim()
         wind_status.zoom = map.getZoom();
         /*
         zoom level마다 바람 객체의 속도가 다르게 보이는 문제를 해결하기 위해 넣은 식임.
@@ -244,17 +247,13 @@ var WindMap = function (_canvas) {
         if (wind_status.speed > 0.5){
             wind_status.speed = 0.5
         }
-
         cn.width = window.innerWidth
         cn.height = window.innerHeight
         wind_config = config
         grid = wind_data
-        build()
+        start_anim()
     }
 
-    /*
-    
-    */
     function build() {
         for (var i = 0; i < wind_status.count; i++) {
             make_wind(i)
