@@ -7,6 +7,11 @@ var HeatMap = function (_canvas) {
     var overlayImage = null     //overlay된 이미지(이미지로 구현)
     var overlay_type = 3        //overlay될 타입 (0 : pm10, 1 : pm25, 2 : 온도, 3 : 습도)
 
+   
+   
+    this.init = function(config, heat_data, _overlay_type){
+        this.set_data(config, heat_data, _overlay_type)
+    }
     /*
     환경 설정 값과(좌표 경계, grid size등), 
     데이터(pm10, pm25, 온도, 습도 4개의 레이어),
@@ -22,18 +27,7 @@ var HeatMap = function (_canvas) {
         overlay_type = _overlay_type
         this.draw_canvas()
     }
-    
-    /*
-    환경 설정과 화면크기를 재지정 합니다. 
-    */
-    this.update_data = function(config, heat_data){        
-        
-        heat_config = config
-        grid = heat_data
-        canvas.width = window.innerWidth
-        canvas.height = window.innerHeight
-        overlay_type = _overlay_type
-    }
+
     /*
     표출 플래그가 true일때 실행
     overlay type에 맞춰 데이터를 표출함.

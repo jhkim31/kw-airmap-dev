@@ -245,8 +245,6 @@ function button_event(){
             current_state.heatmap_index = 2
         }
     })
-    
-
     /*
     point_layer event
     */
@@ -263,7 +261,7 @@ function button_event(){
 
 
             current_state.pointmap_index = 0
-            pointmap.update_point_map(current_state.pointmap_index)
+            pointmap.set_data(current_state.pointmap_index)
             point_layer.forEach(d => {
                 d[0].checked = false
             })
@@ -285,7 +283,7 @@ function button_event(){
             var comment = `Iot측정소 : ${data.num_observ_network.iot_network}개` 
             $('#num_stations').text(comment)
             current_state.pointmap_index = 1
-            pointmap.update_point_map(current_state.pointmap_index)
+            pointmap.set_data(current_state.pointmap_index)
             point_layer.forEach(d => {
                 d[0].checked = false
             })
@@ -306,7 +304,7 @@ function button_event(){
             var comment = `국가측정소 : ${data.num_observ_network.national_network}개` 
             $('#num_stations').text(comment)
             current_state.pointmap_index = 2
-            pointmap.update_point_map(current_state.pointmap_index)
+            pointmap.set_data(current_state.pointmap_index)
             point_layer.forEach(d => {
                 d[0].checked = false
             })
@@ -327,7 +325,7 @@ function button_event(){
             var comment = `유인관측망 : ${data.num_observ_network.shko_network}개` 
             $('#num_stations').text(comment)
             current_state.pointmap_index = 3
-            pointmap.update_point_map(current_state.pointmap_index)
+            pointmap.set_data(current_state.pointmap_index)
             point_layer.forEach(d => {
                 d[0].checked = false
             })
@@ -348,7 +346,7 @@ function button_event(){
             var comment = `무인관측소 : ${data.num_observ_network.aws_network}개` 
             $('#num_stations').text(comment)
             current_state.pointmap_index = 4
-            pointmap.update_point_map(current_state.pointmap_index)
+            pointmap.set_data(current_state.pointmap_index)
             point_layer.forEach(d => {
                 d[0].checked = false
             })

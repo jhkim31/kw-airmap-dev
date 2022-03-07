@@ -24,13 +24,13 @@ window.pointmap = new PointMap(document.getElementById('pointmap'))
 window.current_state = {
     "is_mobile": false,
     "heatmap_index": 2,                 // 0 : pm10, 1 : pm25, 2 : t, 3 : h
+    "pointmap_index": -1,
     "time_index": 24,
     "timestamp": 0,
     "show_detail_table": false,
     "knob_drag": false,
     "show_date_timeline": false,
     "is_playing": false,
-    "pointmap_index": -1,
     "last_aws_marker": null,
     "map": {
         "current_time": 0,
@@ -81,8 +81,7 @@ if (window.location.href.includes('mobile')) {
 }
 
 window.onload = async function () {
-    core.model_init()
-    core.pointmap_init()
+    core.init_overlay_map()
 
     if (current_state.is_mobile) {
         $('#timeline_control_box').css({
@@ -96,3 +95,4 @@ window.onload = async function () {
 
 event.button_event()
 event.global_event()
+

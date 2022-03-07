@@ -13,37 +13,43 @@ var WindMap = function (_canvas) {
         count : 1000                    // 개수
     }
    
-    /*
-    해당 인덱스의 바람 객체를 만드는 함수
-    현재 화면내의 무작위 좌표에서 바람 객체를 만든다.
-    */
-    function make_wind(i) {            
+    this.init = function (config, wind_data) {        
+        this.set_data(config, wind_data)
+        make_winds()
+    }
+
+    this.set_data = function(config, wind_data){
+        stop_anim()
+        wind_status.zoom = map.getZoom();
+        /*
+        zoom level마다 바람 객체의 속도가 다르게 보이는 문제를 해결하기 위해 넣은 식임.
+        모든 zoom level에서 비슷한 속도로 보이게 한다.
+        */
+        wind_status.speed = 0.5 * (1.2 ** (wind_status.zoom - 10))
+        if (wind_status.speed > 0.5){
+            wind_status.speed = 0.5
+        }
+        
+        cn.width = window.innerWidth
+        cn.height = window.innerHeight
+        wind_config = config
+        grid = wind_data
+        start_anim()
+    }
+
+    function make_winds() {
+        for (var i = 0; i < wind_status.count; i++) {
+            make_wind_object(i)
+        }
+    }
+
+    function make_wind_object(index) {            
         var maxBounds = map.getBounds()
-        var latLng = L.latLng(getRandomArbitrary(maxBounds._southWest.lat, maxBounds._northEast.lat), getRandomArbitrary(maxBounds._southWest.lng, maxBounds._northEast.lng))        
+        var latLng = L.latLng(get_random_value(maxBounds._southWest.lat, maxBounds._northEast.lat), get_random_value(maxBounds._southWest.lng, maxBounds._northEast.lng))        
         var point = map.latLngToContainerPoint(latLng)
-        winds[i] = new wind(point.x, point.y, latLng, i, animationId + getRandomArbitrary(50, 250))      
+        winds[index] = new wind(point.x, point.y, latLng, index, animationId + get_random_value(50, 250))      
     }
 
-    /*
-    현재 바람 객체를 없앤 후 새로운 좌표에서 바람 객체를 만든다.
-    바람 객체가 live time을 지났거나, 
-    화면을 넘어갔을때 실행됨.
-    */
-    function remove_wind(index) {
-        var latLng = L.latLng(getRandomArbitrary(wind_config.minlat, wind_config.maxlat), getRandomArbitrary(wind_config.minlng, wind_config.maxlng))        
-        var point = map.latLngToContainerPoint(latLng)
-
-        winds[index].x = point.x
-        winds[index].y = point.y
-        winds[index].latitude = latLng.lat
-        winds[index].longitude = latLng.lng
-        winds[index].endFrame = animationId + getRandomArbitrary(50, 150)
-        return 0;
-    }
-
-    /*
-    바람 객체를 정의한다
-    */
     function wind(x, y, latlng, index, endFrame) {
         /*
         화면상 x,y좌표,
@@ -67,10 +73,10 @@ var WindMap = function (_canvas) {
             이동할 좌표는 (10 + 4 * speed계수, 10 + 9 * speed계수)가 된다
             */
             if (this.x > window.innerWidth || this.x < 0 || this.y > window.innerHeight || this.y < 0) {        //화면을 넘어갔으면 바람 객체 삭제 후 재생성
-                return remove_wind(this.index)
+                return make_wind_object(this.index)
             } else {
                 if (animationId > this.endFrame) {                  //live time을 넘어갔을 경우 삭제 후 재생성
-                    remove_wind(this.index)
+                    make_wind_object(this.index)
                 }
                 var last_position = {                               // 현재 좌표 저장
                     x: this.x,
@@ -99,6 +105,18 @@ var WindMap = function (_canvas) {
                 c.closePath();                
             }
         }
+    }
+
+    function remove_wind(index) {
+        var latLng = L.latLng(get_random_value(wind_config.minlat, wind_config.maxlat), get_random_value(wind_config.minlng, wind_config.maxlng))        
+        var point = map.latLngToContainerPoint(latLng)
+
+        winds[index].x = point.x
+        winds[index].y = point.y
+        winds[index].latitude = latLng.lat
+        winds[index].longitude = latLng.lng
+        winds[index].endFrame = animationId + get_random_value(50, 250)
+        return 0;
     }
 
     /*
@@ -168,7 +186,7 @@ var WindMap = function (_canvas) {
     /*
     min, max사이 랜덤 값을 추출하기 위한 함수
     */
-    function getRandomArbitrary(min, max) {
+    function get_random_value(min, max) {
         return Math.random() * (max - min) + min;
     }
 
@@ -197,8 +215,7 @@ var WindMap = function (_canvas) {
     바람 객체들을 생성 => 애니메이션을 실행함
     */
     var start_anim = function () {
-        stop_anim()
-        build()
+        make_winds()
         anim()
     }
 
@@ -223,41 +240,9 @@ var WindMap = function (_canvas) {
             showWind = false
         } else {
             // 만약 표출되고 있는 상태가 아니라면, 애니메이션 실행.
+            stop_anim()
             showWind = true;
             start_anim()
-        }
-    }
-
-    /*
-    환경 값 초기화 함수 및 업데이트 함수다.    
-    */
-    this.init = function (config, wind_data) {        
-        set(config, wind_data)
-        build()
-    }
-
-    var set = function(config, wind_data){
-        stop_anim()
-        wind_status.zoom = map.getZoom();
-        /*
-        zoom level마다 바람 객체의 속도가 다르게 보이는 문제를 해결하기 위해 넣은 식임.
-        모든 zoom level에서 비슷한 속도로 보이게 한다.
-        */
-        wind_status.speed = 0.5 * (1.2 ** (wind_status.zoom - 10))
-        if (wind_status.speed > 0.5){
-            wind_status.speed = 0.5
-        }
-        
-        cn.width = window.innerWidth
-        cn.height = window.innerHeight
-        wind_config = config
-        grid = wind_data
-        start_anim()
-    }
-
-    function build() {
-        for (var i = 0; i < wind_status.count; i++) {
-            make_wind(i)
         }
     }
 }

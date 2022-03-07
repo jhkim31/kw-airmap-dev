@@ -8,6 +8,7 @@ var PointMap = function (_canvas) {
     var overlayImage = null
     var c = cn.getContext('2d');
     var marker = []                     //사용할 마커 이미지 배열 (샘플 입니다.)
+    var pointmap_index
 
 
     /*
@@ -16,7 +17,8 @@ var PointMap = function (_canvas) {
     포인트 맵의 경우 데이터를 모두 가지고 있으면서, 
     현재 화면에 보이는 범위만 표현을 하게 됩니다.
     */
-    this.init = function (iot, national, shko, aws) {
+    this.init = function (iot, national, shko, aws, _pointmap_index) {
+        pointmap_index = _pointmap_index
         iot_network_list = iot
         national_network_list = national
         shko_network_list = shko
@@ -218,7 +220,6 @@ var PointMap = function (_canvas) {
         }
     }
 
-
     /*
     유인 관측소 마커를 표출합니다.
     현재 화면 경계 내에 있는 마커들만 표출합니다.
@@ -275,7 +276,8 @@ var PointMap = function (_canvas) {
     3 : shko
     4 : aws
     */
-    this.update_point_map = function (pointmap_index) {
+    this.set_data = function (_pointmap_index) {
+        pointmap_index = _pointmap_index
         clear_canvas()
         if (overlayImage != null) {
             overlayImage.remove()
