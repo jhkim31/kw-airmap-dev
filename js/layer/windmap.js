@@ -247,6 +247,7 @@ var WindMap = function (_canvas) {
         if (wind_status.speed > 0.5){
             wind_status.speed = 0.5
         }
+        
         cn.width = window.innerWidth
         cn.height = window.innerHeight
         wind_config = config
