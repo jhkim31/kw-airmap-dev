@@ -22,6 +22,7 @@ var HeatMap = function (_canvas) {
     this.set_data = function (config, heat_data, _overlay_type) {
         heat_config = config
         grid = heat_data
+        console.log(grid)
         canvas.width = window.innerWidth
         canvas.height = window.innerHeight
         overlay_type = _overlay_type

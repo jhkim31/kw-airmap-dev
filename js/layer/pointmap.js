@@ -96,6 +96,7 @@ var PointMap = function (_canvas) {
     this.remove_overlay_image = function () {
         if (overlayImage != null) {
             overlayImage.remove()
+            overlayImage = null
         }
     }
 
@@ -313,22 +314,24 @@ var PointMap = function (_canvas) {
     */
     this.is_marker = function (point) {
         var marker_serial = null
-        marker_position_list.forEach(d => {
-            if (point.x >= d.point[0] && point.x <= d.point[2] && point.y >= d.point[1] && point.y <= d.point[3]) {
-                if (d.serial) {
-                    marker_serial = [d.serial + "<br>" + d.type, d.type]
-                } else if (d.areaname) {
-                    marker_serial = [d.areaname + "<br>" + d.type, d.type, d.areacode]
-                    if (d.type == 'aws') {
-                        c.beginPath();
-                        c.fillStyle = 'white'
-                        c.arc(d.point[0] + 7, d.point[1] + 7, 7, 0, Math.PI * 2, true)
-                        c.fill()
-                        c.closePath();
+        if (overlayImage != null){
+            marker_position_list.forEach(d => {
+                if (point.x >= d.point[0] && point.x <= d.point[2] && point.y >= d.point[1] && point.y <= d.point[3]) {
+                    if (d.serial) {
+                        marker_serial = [d.serial + "<br>" + d.type, d.type]
+                    } else if (d.areaname) {
+                        marker_serial = [d.areaname + "<br>" + d.type, d.type, d.areacode]
+                        if (d.type == 'aws') {
+                            c.beginPath();
+                            c.fillStyle = 'white'
+                            c.arc(d.point[0] + 7, d.point[1] + 7, 7, 0, Math.PI * 2, true)
+                            c.fill()
+                            c.closePath();
+                        }
                     }
                 }
-            }
-        })
+            })
+        } 
         return marker_serial
     }
 }
