@@ -10,7 +10,6 @@ var PointMap = function (_canvas) {
     var marker = []                     //사용할 마커 이미지 배열 (샘플 입니다.)
     var pointmap_index
 
-
     /*
     포인트 맵을 초기화 합니다.
     각 데이터들을 받습니다.
@@ -77,6 +76,10 @@ var PointMap = function (_canvas) {
             draw_aws_network()
         }
         //현재 캔버스를 이미지로 만들고 표출합니다.
+        draw_canvas()
+    }
+
+    function draw_canvas(){
         overlayImage = L.imageOverlay(cn.toDataURL('', 1.0), map.getBounds(), { opacity: 0.9 }).addTo(map)
     }
 

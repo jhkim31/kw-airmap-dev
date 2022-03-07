@@ -134,8 +134,8 @@ var WindMap = function (_canvas) {
             var g10 = grid[gridn[0]][gridn[1] + 1]
             var g01 = grid[gridn[0] + 1][gridn[1]]
             var g11 = grid[gridn[0] + 1][gridn[1] + 1]
-        } catch {
-            // debugger;
+        } catch (error){
+            // console.log(error)
         }
 
         return interpolate(latitude, longitude, g00, g10, g01, g11, gridn)
@@ -169,8 +169,7 @@ var WindMap = function (_canvas) {
             x2_vector_x = d1 * g11[0] + d2 * g01[0]
             x2_vector_y = d1 * g11[1] + d2 * g01[1]
         } catch (error) {
-            
-            console.log(error)
+            // console.log(error)
         }
         var y = (wind_config.maxlat - gridn[0] * wind_config.latGap - latitude) * (1 / wind_config.latGap)
         var d3 = y
@@ -204,7 +203,11 @@ var WindMap = function (_canvas) {
             c.fillRect(0, 0, cn.width, cn.height);
             c.restore()
             winds.forEach(function (e, i) {
-                e.wind_move();
+                try{
+                    e.wind_move();
+                } catch(error) {
+                    // console.log(error)
+                }
             });
         }
     }
@@ -226,24 +229,20 @@ var WindMap = function (_canvas) {
         if (showWind) {
             cancelAnimationFrame(animationId)
             c.clearRect(0, 0, cn.width, cn.height);
+            winds = []
         }
     }
 
-    /*
-    애니메이션을 토글시킨다.
-    */
-    this.toggle_wind_layer = () => {        
-        if (showWind) {
-            // 만약 애니메이션이 표출되고 있었다면, 바람 객체들을 모두 없애고, 애니메이션을 멈춤
-            winds = []
-            stop_anim()
-            showWind = false
-        } else {
-            // 만약 표출되고 있는 상태가 아니라면, 애니메이션 실행.
-            stop_anim()
-            showWind = true;
-            start_anim()
-        }
+    this.show_windmap = () => {
+        stop_anim()
+        showWind = true;
+        start_anim()
+    }
+
+    this.hide_windmap = () => {
+        winds = []
+        stop_anim()
+        showWind = false
     }
 }
 

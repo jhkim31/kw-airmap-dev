@@ -1,12 +1,10 @@
 import * as core from './core.js'
 
 function global_event() {
-    /*
-    슬라이드바를 드래그할때 실행될 이벤트.
-    */
+
     window.addEventListener('mousemove', (e) => {
-        var current_time = $('#current_time')
         if (current_state.knob_drag) {
+            var current_time = $('#current_time')
             if (e.x < 612 && e.x > 130) {
                 $('#knob').css({
                     "transition": "none"
@@ -28,7 +26,7 @@ function global_event() {
 
     /*
     마우스를땔때 실행되는 이벤트,
-    만약 knob을 드래고 하고 있던 중이였을때만 활성화됨.
+    knob을 드래고 하고 있던 중이였을때만 활성화됨.
     */
     window.addEventListener('mouseup', (e) => {
         if (current_state.knob_drag && !current_state.is_playing) {
@@ -38,6 +36,7 @@ function global_event() {
             })
             current_state.time_index = Math.floor((parseFloat(document.getElementById('knob').style.left) / 480) / 0.0416667)
             core.set_overlay_map()
+            
             if (on_map_info != undefined) {
                 core.update_on_map_info()
             }
@@ -47,10 +46,11 @@ function global_event() {
     /*
     맵 이동시마다 실행되는 이벤트
     */
-    map.on('moveend', (e) => {
+    map.on('moveend', async function(){
         data.model_data.wind_data = []
         data.model_data.heat_data = []
         core.set_overlay_map()
+        
     })
 
     /*
@@ -125,169 +125,138 @@ function global_event() {
 
 
 function button_event(){
-    var heatmap_layer = [$('#show_pm10')[0], $('#show_pm25')[0], $('#show_t')[0], $('#show_h')[0]]
-    var point_layer = [$('#iot_national_network'), $('#iot_network'), $('#national_network'), $('#manned_network'), $('#aws_network')]
-    
-    
-    /*
-    heatmap_layer event
-    */
+    var pm10_btn = $('#show_pm10')[0]
+    var pm25_btn = $('#show_pm25')[0]
+    var temperature_btn = $('#show_t')[0]
+    var humidity_btn = $('#show_h')[0]
+    var iot_national_btn = $('#iot_national_network')[0]
+    var iot_btn = $('#iot_network')[0]
+    var national_btn = $('#national_network')[0]
+    var shko_btn = $('#shko_network')[0]
+    var aws_btn = $('#aws_network')[0]
 
+    function turnoff_all_heatmap_button(){
+        pm10_btn.checked = false
+        pm25_btn.checked = false
+        humidity_btn.checked = false
+        temperature_btn.checked = false
+    }
 
-    /*
-    동별 미세먼지 pm10 버튼 이벤트 처리
-    */
-    heatmap_layer[0].addEventListener('click', () => {            
-        if (heatmap_layer[0].checked == true) {
-            //버튼 설정
-            heatmap_layer.forEach(d => {
-                d.checked = false
-            })
-            heatmap_layer[0].checked = true
+    function turnoff_all_pointmap_button(){
+        iot_national_btn.checked = false
+        iot_btn.checked = false
+        national_btn.checked = false
+        shko_btn.checked = false
+        aws_btn.checked = false
+    }
 
-            /*
-            heatmap_index를 0(pm10)으로 설정 후 데이터들을 세팅(적용)한다.
-            만약 on_map_info 마커가 표출된 상태라면 해당 값을 알맞게 세팅해줌.
-            만약 하단 상세보기가 표출된 상태라면 값을 알맞게 세팅해준다
-            */
+    pm10_btn.addEventListener('click', () => {            
+        if (pm10_btn.checked == true) {
+            turnoff_all_heatmap_button()
+            pm10_btn.checked = true
             current_state.heatmap_index = 0
             core.update_detail_box_button()
-            heatmap.set_showheat(true)
             heatmap.set_data(current_state.map, data.model_data.heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
+            heatmap.show_heatmap()
             document.getElementById("heat_bar").src = "image/heat_bar_pm10.png";
             if (on_map_info != undefined) {
                 core.update_on_map_info()
             }
             if (current_state.show_detail_table) {
-                core.model(current_state.heatmap_index)
+                core.make_detail_table_model(current_state.heatmap_index)
             }
         } else {
-            //만약 pm10이 선택된 상태였다면, heatmap을 끈다. 이후 heatmap_index를 2(초기값)으로 세팅함.
-            heatmap.toggle_heatmap()
+            heatmap.hide_heatmap()
             current_state.heatmap_index = 2
         }
     })
     
-    /*
-    동별 미세먼지 pm25 버튼 이벤트 처리
-    */
-    heatmap_layer[1].addEventListener('click', () => {
-        if (heatmap_layer[1].checked == true) {
-            heatmap_layer.forEach(d => {
-                d.checked = false
-            })
-            heatmap_layer[1].checked = true
+    pm25_btn.addEventListener('click', () => {
+        if (pm25_btn.checked == true) {
+            turnoff_all_heatmap_button()
+            pm25_btn.checked = true
             current_state.heatmap_index = 1
             core.update_detail_box_button()
-            heatmap.set_showheat(true)
             heatmap.set_data(current_state.map, data.model_data.heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
+            heatmap.show_heatmap()
             document.getElementById("heat_bar").src = "image/heat_bar_pm10.png";
             if (on_map_info != undefined) {
                 core.update_on_map_info()
             }
             if (current_state.show_detail_table) {
-                core.model(current_state.heatmap_index)
+                core.make_detail_table_model(current_state.heatmap_index)
             }
         } else {
-            heatmap.toggle_heatmap()
+            heatmap.hide_heatmap()
             current_state.heatmap_index = 2
         }
     })
     
-    /*
-    온도 버튼 이벤트 처리
-    */
-    heatmap_layer[2].addEventListener('click', () => {
-        if (heatmap_layer[2].checked == true) {
-            heatmap_layer.forEach(d => {
-                d.checked = false
-            })
-            heatmap_layer[2].checked = true
+    temperature_btn.addEventListener('click', () => {
+        if (temperature_btn.checked == true) {
+            turnoff_all_heatmap_button()
+            temperature_btn.checked = true
             current_state.heatmap_index = 2
             core.update_detail_box_button()
-            heatmap.set_showheat(true)
             heatmap.set_data(current_state.map, data.model_data.heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
+            heatmap.show_heatmap()
             document.getElementById("heat_bar").src = "image/heat_bar_t.png";
             if (on_map_info != undefined) {
                 core.update_on_map_info()
             }
             if (current_state.show_detail_table) {
-                core.model(current_state.heatmap_index)
+                core.make_detail_table_model(current_state.heatmap_index)
             }
         } else {
-            heatmap.toggle_heatmap()
+            heatmap.hide_heatmap()
             current_state.heatmap_index = 2
         }
     })
-    
-    /*
-    습도 버튼 이벤트 처리
-    */
-    heatmap_layer[3].addEventListener('click', () => {
-        if (heatmap_layer[3].checked == true) {
-            heatmap_layer.forEach(d => {
-                d.checked = false
-            })
-            heatmap_layer[3].checked = true
+
+    humidity_btn.addEventListener('click', () => {
+        if (humidity_btn.checked == true) {
+            turnoff_all_heatmap_button()
+            humidity_btn.checked = true
             current_state.heatmap_index = 3
             core.update_detail_box_button()
-            heatmap.set_showheat(true)
             heatmap.set_data(current_state.map, data.model_data.heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
+            heatmap.show_heatmap()
             document.getElementById("heat_bar").src = "image/heat_bar_h.png";
             if (on_map_info != undefined) {
                 core.update_on_map_info()
             }
             if (current_state.show_detail_table) {
-                core.model(current_state.heatmap_index)
+                core.make_detail_table_model(current_state.heatmap_index)
             }
         } else {
-            heatmap.toggle_heatmap()
+            heatmap.hide_heatmap()
             current_state.heatmap_index = 2
         }
     })
-    /*
-    point_layer event
-    */
 
-
-    /*
-    iot, 국가관측망 선택 버튼 이벤트 처리
-    */
-    point_layer[0].on('click', () => {
-        if (point_layer[0][0].checked) {            
-            //우하단 관측망 개수 설정.            
-            var comment = `Iot측정소 : ${data.num_observ_network.iot_network}개   국가측정소 : ${data.num_observ_network.national_network}개` 
+    iot_national_btn.addEventListener('click', () => {
+        if (iot_national_btn.checked) {                     
+            var comment = `Iot측정소 : ${data.num_observ_network.iot_network}개    국가측정소 : ${data.num_observ_network.national_network}개` 
             $('#num_stations').text(comment)
-
-
             current_state.pointmap_index = 0
             pointmap.set_data(current_state.pointmap_index)
-            point_layer.forEach(d => {
-                d[0].checked = false
-            })
-            point_layer[0][0].checked = true
+            turnoff_all_pointmap_button()
+            iot_national_btn.checked = true
         } else {
-            //만약 iot+ national이 선택된 상태였다면, 인덱스를 -1로 세팅하고, 오버레이된 이미지를 지운다.
             $('#num_stations').text('')
             current_state.pointmap_index = -1
             pointmap.remove_overlay_image()
         }
-    
     })
     
-    /*
-    iot 관측망 선택 버튼 이벤트 처리
-    */
-    point_layer[1].on('click', () => {
-        if (point_layer[1][0].checked) {
+    iot_btn.addEventListener('click', () => {
+        if (iot_btn.checked) {
             var comment = `Iot측정소 : ${data.num_observ_network.iot_network}개` 
             $('#num_stations').text(comment)
             current_state.pointmap_index = 1
             pointmap.set_data(current_state.pointmap_index)
-            point_layer.forEach(d => {
-                d[0].checked = false
-            })
-            point_layer[1][0].checked = true
+            turnoff_all_pointmap_button()
+            iot_btn.checked = true
         } else {
             $('#num_stations').text('')
             current_state.pointmap_index = -1
@@ -295,20 +264,15 @@ function button_event(){
         }
     })
     
-    /*
-    국가관측망 선택 버튼 이벤트 처리
-    */
-    point_layer[2].on('click', () => {
+    national_btn.addEventListener('click', () => {
         pointmap.remove_overlay_image()
-        if (point_layer[2][0].checked) {
+        if (national_btn.checked) {
             var comment = `국가측정소 : ${data.num_observ_network.national_network}개` 
             $('#num_stations').text(comment)
             current_state.pointmap_index = 2
             pointmap.set_data(current_state.pointmap_index)
-            point_layer.forEach(d => {
-                d[0].checked = false
-            })
-            point_layer[2][0].checked = true
+            turnoff_all_pointmap_button()
+            national_btn.checked = true
         } else {
             $('#num_stations').text('')
             current_state.pointmap_index = -1
@@ -316,41 +280,31 @@ function button_event(){
         }
     })
     
-    /*
-    유인관측망 선택 버튼 이벤트 처리
-    */
-    point_layer[3].on('click', () => {
+    shko_btn.addEventListener('click', () => {
         pointmap.remove_overlay_image()
-        if (point_layer[3][0].checked) {
+        if (shko_btn.checked) {
             var comment = `유인관측망 : ${data.num_observ_network.shko_network}개` 
             $('#num_stations').text(comment)
             current_state.pointmap_index = 3
             pointmap.set_data(current_state.pointmap_index)
-            point_layer.forEach(d => {
-                d[0].checked = false
-            })
-            point_layer[3][0].checked = true
+            turnoff_all_pointmap_button()
+            shko_btn.checked = true
         } else {
             $('#num_stations').text('')
             current_state.pointmap_index = -1
             pointmap.remove_overlay_image()
         }
     })
-    
-    /*
-    aws망 선택 버튼 이벤트 처리
-    */
-    point_layer[4].on('click', () => {
+
+    aws_btn.addEventListener('click', () => {
         pointmap.remove_overlay_image()
-        if (point_layer[4][0].checked) {
+        if (aws_btn.checked) {
             var comment = `무인관측소 : ${data.num_observ_network.aws_network}개` 
             $('#num_stations').text(comment)
             current_state.pointmap_index = 4
             pointmap.set_data(current_state.pointmap_index)
-            point_layer.forEach(d => {
-                d[0].checked = false
-            })
-            point_layer[4][0].checked = true
+            turnoff_all_pointmap_button()
+            aws_btn.checked = true
         } else {
             $('#num_stations').text('')
             current_state.pointmap_index = -1
@@ -359,26 +313,21 @@ function button_event(){
     })
     
     
-    
-    /*
-    바람 선택 이벤트 처리
-    */
     $('#play_wind').on('click', () => {
-        windmap.toggle_wind_layer()
+        if ($('#play_wind')[0].checked == true) {
+            windmap.show_windmap()
+        } else {
+            windmap.hide_windmap()
+        }
+        
     })
-    
-    /*
-    타임라인 슬라이드바 드래그를 위한 플래그 설정 이벤트
-    */
+
     $('#knob').on('mousedown', (e) => {
         if (!current_state.is_playing) {
             current_state.knob_drag = true
         }
     })
     
-    /*
-    재생 버튼 이벤트 처리
-    */
     $('#play').on('click', () => {
         var play_btn = $('#play')[0]
         var knob = $('#knob')
@@ -405,6 +354,7 @@ function button_event(){
                         if (current_state.time_index != tmp) {
                             current_state.time_index = tmp
                             core.set_overlay_map()
+                            
                             current_time.text(current_state.map.current_time_str)
                         }
                         clearInterval(current_state.Interval)
@@ -426,6 +376,7 @@ function button_event(){
                             "left": "0px"
                         })
                         core.set_overlay_map()
+                        
                         if (on_map_info != undefined) {
                             core.update_on_map_info()
                         }
@@ -452,6 +403,7 @@ function button_event(){
                     if (current_state.time_index != tmp) {
                         current_state.time_index = tmp
                         core.set_overlay_map()
+                        
                         current_time.text(current_state.map.current_time_str)
                     }
                     if (on_map_info != undefined) {
@@ -496,6 +448,7 @@ function button_event(){
             core.set_current_state(tmp * 3600000)
             current_time.text(current_state.map.current_time_str)
             core.set_overlay_map()
+            
             if (on_map_info != undefined) {
                 core.update_on_map_info()
             }
@@ -525,6 +478,7 @@ function button_event(){
             core.set_current_state(tmp * 3600000)
             current_time.text(current_state.map.current_time_str)
             core.set_overlay_map()
+            
             if (on_map_info != undefined) {
                 core.update_on_map_info()
             }
@@ -553,14 +507,14 @@ function button_event(){
     하단 상세보기 미세먼지 버튼 이벤트
     */
     $('#dust_button').on('click', () => {    
-        core.model(1)
+        core.make_detail_table_model(1)
     })
     
     /*
     하단 상세보기 날씨 버튼 이벤트
     */
     $('#weather_button').on('click', () => {
-        core.model(2)
+        core.make_detail_table_model(2)
     })
     
     /*
@@ -611,7 +565,7 @@ function button_event(){
     */
     $('#search_btn').on('click', () => {
         core.update_detail_box_button()
-        core.model(current_state.heatmap_index)
+        core.make_detail_table_model(current_state.heatmap_index)
         var value = $('#search_field').val();
         $('#detail_box').css({
             "visibility": "visible",

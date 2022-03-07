@@ -17,7 +17,7 @@ var HeatMap = function (_canvas) {
     데이터(pm10, pm25, 온도, 습도 4개의 레이어),
     데이터 인덱스(4개의 데이터중 어떤 데이터를 표출할지),
     그외 표출할 크기를 지정합니다.
-    모든 설정이 끝나면 draw_canvas() 메소드를 호출해 데이터를 시각화 합니다.
+    모든 설정이 끝나면 this.draw_canvas() 메소드를 호출해 데이터를 시각화 합니다.
     */
     this.set_data = function (config, heat_data, _overlay_type) {
         heat_config = config
@@ -32,7 +32,7 @@ var HeatMap = function (_canvas) {
     표출 플래그가 true일때 실행
     overlay type에 맞춰 데이터를 표출함.
     */    
-    this.draw_canvas = function () {
+    this.draw_canvas = () => {
         if (show_heat) {
             if (overlayImage != null) {
                 overlayImage.remove()
@@ -241,27 +241,17 @@ var HeatMap = function (_canvas) {
     /*
     heatmap을 끄고 켭니다.
     */
-    this.toggle_heatmap = () => {        
-        if (show_heat) {
-            /*
-            만약 표출 되어있는 상태라면 
-            표출 플래그를 바꾸고,
-            canvas를 지웁니다.
-            이후 overlay된 이미지가 있다면 제거합니다.
-            */
-            show_heat = !show_heat
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if (overlayImage != null) {
-                overlayImage.remove()
-            }
-        } else {
-            /*
-            만약 표출된 상태가 아니라면
-            표출 플래그를 바꾸고,
-            draw_canvas()를 통해 overlay를 표출합니다.
-            */
-            show_heat = !show_heat
-            this.draw_canvas();
+
+    this.show_heatmap = () => {
+        show_heat = true
+        this.draw_canvas();
+    }
+
+    this.hide_heatmap = () => {
+        show_heat = !show_heat
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (overlayImage != null) {
+            overlayImage.remove()
         }
     }
 }

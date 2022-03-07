@@ -353,7 +353,7 @@ async function init_overlay_map(){
 
     windmap.init(current_state.map, data.model_data.wind_data[current_state.time_index])
     heatmap.init(current_state.map, data.model_data.heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
-
+    heatmap.draw_canvas()
     var pointmap_data = await get_point_map_data_async()
     console.log(pointmap_data)
     data.observ_network.national_network_list = pointmap_data.nat_data
@@ -368,11 +368,9 @@ async function set_overlay_map() {
     var model_data = await get_model_data_async()
     data.model_data.wind_data[current_state.time_index] = model_data[0]
     data.model_data.heat_data[current_state.time_index] = model_data.slice(1, 5)
-
-    windmap.init(current_state.map, data.model_data.wind_data[current_state.time_index])
-    heatmap.init(current_state.map, data.model_data.heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
+    windmap.set_data(current_state.map, data.model_data.wind_data[current_state.time_index])
+    heatmap.set_data(current_state.map, data.model_data.heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
     pointmap.set_data(current_state.pointmap_index)
-    
 }
 
 function set_current_state(delta = 0) {
@@ -815,8 +813,6 @@ async function show_detail_data(lat, lng, is_marker=null, areacode = 0) {
         }   
     }      
 }
-export { convert_model_data_to_matrix, convert_lifestyle_data_to_table_data }
-export { show_detail_data }
-export { get_aws_station_data_async, get_model_data_async, get_point_map_data_async, get_hang_data_async, get_lifestyle_data_async, get_shko_station_data_async }
-export { update_detail_box_button, get_value, update_on_map_info, set_current_state }
-export {init_overlay_map, set_overlay_map}
+
+export { update_detail_box_button,  show_detail_data, update_on_map_info }
+export {init_overlay_map, set_overlay_map, get_value, set_current_state}
