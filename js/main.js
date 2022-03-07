@@ -1,6 +1,6 @@
-import { HeatMap as HeatMap } from './layer/heatmap.js';
-import { WindMap as WindMap } from './layer/windmap.js'
-import { PointMap as PointMap } from './layer/pointmap.js'
+import { HeatMap as HeatMap } from './layer/Heatmap.js';
+import { WindMap as WindMap } from './layer/Flowmap.js'
+import { PointMap as PointMap } from './layer/Pointmap.js'
 
 import * as core from './lib/core.js'
 import * as event from './lib/event.js'
