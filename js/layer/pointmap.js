@@ -45,6 +45,42 @@ var PointMap = function (_canvas) {
     }
 
     /*
+    point map을 업데이트 합니다.
+    표출할 인덱스(타입)에 따라 모든 마커를 지우고 해당 마커를 표출합니다.
+    0 : iot + national
+    1 : iot
+    2 : national
+    3 : shko
+    4 : aws
+    */
+    this.set_data = function (_pointmap_index) {
+        pointmap_index = _pointmap_index
+        clear_canvas()
+        if (overlayImage != null) {
+            overlayImage.remove()
+        }
+        if (pointmap_index == 0) {      
+            marker_position_list = []
+            draw_iot_network()
+            draw_national_network()
+        } else if (pointmap_index == 1) {
+            marker_position_list = []
+            draw_iot_network()
+        } else if (pointmap_index == 2) {
+            marker_position_list = []
+            draw_national_network()
+        } else if (pointmap_index == 3) {
+            marker_position_list = []
+            draw_shko_network()
+        } else if (pointmap_index == 4) {
+            marker_position_list = []
+            draw_aws_network()
+        }
+        //현재 캔버스를 이미지로 만들고 표출합니다.
+        overlayImage = L.imageOverlay(cn.toDataURL('', 1.0), map.getBounds(), { opacity: 0.9 }).addTo(map)
+    }
+
+    /*
     캔버스를 모두 지웁니다.
     */
     function clear_canvas() {
@@ -268,42 +304,6 @@ var PointMap = function (_canvas) {
     }
 
     /*
-    point map을 업데이트 합니다.
-    표출할 인덱스(타입)에 따라 모든 마커를 지우고 해당 마커를 표출합니다.
-    0 : iot + national
-    1 : iot
-    2 : national
-    3 : shko
-    4 : aws
-    */
-    this.set_data = function (_pointmap_index) {
-        pointmap_index = _pointmap_index
-        clear_canvas()
-        if (overlayImage != null) {
-            overlayImage.remove()
-        }
-        if (pointmap_index == 0) {      
-            marker_position_list = []
-            draw_iot_network()
-            draw_national_network()
-        } else if (pointmap_index == 1) {
-            marker_position_list = []
-            draw_iot_network()
-        } else if (pointmap_index == 2) {
-            marker_position_list = []
-            draw_national_network()
-        } else if (pointmap_index == 3) {
-            marker_position_list = []
-            draw_shko_network()
-        } else if (pointmap_index == 4) {
-            marker_position_list = []
-            draw_aws_network()
-        }
-        //현재 캔버스를 이미지로 만들고 표출합니다.
-        overlayImage = L.imageOverlay(cn.toDataURL('', 1.0), map.getBounds(), { opacity: 0.9 }).addTo(map)
-    }
-
-    /*
     point : 화면상의 x,y 좌표
     해당 point가 마커인지 확인합니다.
     해당 point가 마커라면 설명과 마커의 타입을 리턴합니다.
@@ -328,6 +328,5 @@ var PointMap = function (_canvas) {
         })
         return marker_serial
     }
-
 }
 export { PointMap }

@@ -37,7 +37,7 @@ function global_event() {
                 "transition": "left .1s ease"
             })
             current_state.time_index = Math.floor((parseFloat(document.getElementById('knob').style.left) / 480) / 0.0416667)
-            core.model_init()
+            core.set_overlay_map()
             if (on_map_info != undefined) {
                 core.update_on_map_info()
             }
@@ -50,7 +50,7 @@ function global_event() {
     map.on('moveend', (e) => {
         data.model_data.wind_data = []
         data.model_data.heat_data = []
-        core.model_init()
+        core.set_overlay_map()
     })
 
     /*
@@ -404,7 +404,7 @@ function button_event(){
                         var tmp = 24
                         if (current_state.time_index != tmp) {
                             current_state.time_index = tmp
-                            core.model_init()
+                            core.set_overlay_map()
                             current_time.text(current_state.map.current_time_str)
                         }
                         clearInterval(current_state.Interval)
@@ -425,7 +425,7 @@ function button_event(){
                         knob.css({
                             "left": "0px"
                         })
-                        core.model_init()
+                        core.set_overlay_map()
                         if (on_map_info != undefined) {
                             core.update_on_map_info()
                         }
@@ -451,7 +451,7 @@ function button_event(){
                     //슬라이드바를 24개로 나누어 일정 범위를 넘어서면 다음 시점으로 모델 데이터를 업데이트 해준다.
                     if (current_state.time_index != tmp) {
                         current_state.time_index = tmp
-                        core.model_init()
+                        core.set_overlay_map()
                         current_time.text(current_state.map.current_time_str)
                     }
                     if (on_map_info != undefined) {
@@ -495,7 +495,7 @@ function button_event(){
             current_state.time_index = tmp
             core.set_current_state(tmp * 3600000)
             current_time.text(current_state.map.current_time_str)
-            core.model_init()
+            core.set_overlay_map()
             if (on_map_info != undefined) {
                 core.update_on_map_info()
             }
@@ -524,7 +524,7 @@ function button_event(){
             current_state.time_index = tmp
             core.set_current_state(tmp * 3600000)
             current_time.text(current_state.map.current_time_str)
-            core.model_init()
+            core.set_overlay_map()
             if (on_map_info != undefined) {
                 core.update_on_map_info()
             }

@@ -345,159 +345,274 @@ async function get_shko_station_data_async(areacode) {
     return  shko_station_list
 }
 
-//ui
-function make_detail_table_shko(shko_data){
-    $('#weather_button').hide()
-    $('#dust_button').hide()
-    var detail_table1 = $('#detail_table1')
-    var detail_table2 = $('#detail_table2')
-    detail_table1[0].style.height = "240px"
-    detail_table2[0].style.height = "240px"
-    detail_table1.html('')
-    detail_table2.html('')
+//core module
+async function init_overlay_map(){
+    var model_data = await get_model_data_async()
+    data.model_data.wind_data[current_state.time_index] = model_data[0]
+    data.model_data.heat_data[current_state.time_index] = model_data.slice(1, 5)
 
-    var today_col = shko_data[0].time.getHours()
-    var yesterday_col = 24 - today_col
+    windmap.init(current_state.map, data.model_data.wind_data[current_state.time_index])
+    heatmap.init(current_state.map, data.model_data.heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
 
-    var table2_first_row = `<tr class = "table_header"><td>날짜</td>`
-    table2_first_row += `<td colspan="${yesterday_col}">${shko_data[0].time.getDate()}일</td>`
-    table2_first_row += `<td colspan="${today_col}">${shko_data[23].time.getDate()}일</td>`
-    table2_first_row += `</tr>`
-    detail_table2.append(table2_first_row)
+    var pointmap_data = await get_point_map_data_async()
+    console.log(pointmap_data)
+    data.observ_network.national_network_list = pointmap_data.nat_data
+    data.observ_network.iot_network_list = pointmap_data.iot_data
+    data.observ_network.shko_network_list = pointmap_data.shko_data
+    data.observ_network.aws_network_list = pointmap_data.aws_data
 
-    var table2_row = `<tr class = "table_header"><td>시간</td>`
-    shko_data.forEach(d => {
-        var h = d.time.getHours()
-        table2_row += `<td>${h}</td>`
-    })
-    table2_row += '</tr>'
-    detail_table2.append(table2_row)
-
-    var table2_row = `<tr><td>기온</td>`
-    shko_data.forEach(d => {
-        var item = d.temp
-        table2_row += `<td>${item}</td>`
-    })
-    table2_row += '</tr>'
-    detail_table2.append(table2_row)
-
-    var table2_row = `<tr><td>습도</td>`
-    shko_data.forEach(d => {
-        var item = d.humi
-        table2_row += `<td>${item}</td>`
-    })
-    table2_row += '</tr>'
-    detail_table2.append(table2_row)
-
-    var table2_row = `<tr><td>강수량</td>`
-    shko_data.forEach(d => {
-        var item = d.rain
-        if (item == null){
-            item = '-'
-        }
-        table2_row += `<td>${item}</td>`
-    })
-    table2_row += '</tr>'
-    detail_table2.append(table2_row)
-
-    var table2_row = `<tr><td>풍량</td>`
-    shko_data.forEach(d => {
-        var item = d.wdirk
-        table2_row += `<td>${item}</td>`
-    })
-    table2_row += '</tr>'
-    detail_table2.append(table2_row)
-
-    var table2_row = `<tr><td>풍속</td>`
-    shko_data.forEach(d => {
-        var item = d.wspeed
-        table2_row += `<td>${item}</td>`
-    })
-    table2_row += '</tr>'
-    detail_table2.append(table2_row)
-
-    $('#detail_scroll_box').width($('#detail_table1').width() + $('#detail_table2').width() + 32)
-    if (!current_state.is_mobile){
-        $('#info_box').width($('#detail_table1').width() + $('#detail_table2').width() + 32)
-    }    
+    pointmap.init(data.observ_network.iot_network_list, data.observ_network.national_network_list, data.observ_network.shko_network_list, data.observ_network.aws_network_list, 0)
 }
 
-function make_detail_table_aws(aws_data){
-    $('#weather_button').hide()
-    $('#dust_button').hide()
-    var detail_table1 = $('#detail_table1')
-    var detail_table2 = $('#detail_table2')
-    detail_table1[0].style.height = "240px"
-    detail_table2[0].style.height = "240px"
-    detail_table1.html('')
-    detail_table2.html('')
+async function set_overlay_map() {
+    var model_data = await get_model_data_async()
+    data.model_data.wind_data[current_state.time_index] = model_data[0]
+    data.model_data.heat_data[current_state.time_index] = model_data.slice(1, 5)
 
-    var today_col = aws_data[0].time.getHours() + 1
-    var yesterday_col = 24 - today_col
-
-    var table2_first_row = `<tr class = "table_header"><td>날짜</td>`
-    table2_first_row += `<td colspan="${today_col}">${aws_data[0].time.getDate()}일</td>`
-    table2_first_row += `<td colspan="${yesterday_col}">${aws_data[23].time.getDate()}일</td>`
-    table2_first_row += `</tr>`
-    detail_table2.append(table2_first_row)
-
-    var table2_row = `<tr class = "table_header"><td>시간</td>`
-    aws_data.forEach(d => {
-        var h = d.time.getHours()
-        table2_row += `<td>${h}</td>`
-    })
-    table2_row += '</tr>'
-    detail_table2.append(table2_row)
-
-    var table2_row = `<tr><td>기온</td>`
-    aws_data.forEach(d => {
-        var item = d.temp
-        table2_row += `<td>${item}</td>`
-    })
-    table2_row += '</tr>'
-    detail_table2.append(table2_row)
-
-    var table2_row = `<tr><td>습도</td>`
-    aws_data.forEach(d => {
-        var item = d.humi
-        table2_row += `<td>${item}</td>`
-    })
-    table2_row += '</tr>'
-    detail_table2.append(table2_row)
-
-    var table2_row = `<tr><td>강수량</td>`
-    aws_data.forEach(d => {
-        var item = d.rain
-        if (item == null){
-            item = '-'
-        }
-        table2_row += `<td>${item}</td>`
-    })
-    table2_row += '</tr>'
-    detail_table2.append(table2_row)
-
-    var table2_row = `<tr><td>풍량</td>`
-    aws_data.forEach(d => {
-        var item = d.wdirk
-        table2_row += `<td>${item}</td>`
-    })
-    table2_row += '</tr>'
-    detail_table2.append(table2_row)
-
-    var table2_row = `<tr><td>풍속</td>`
-    aws_data.forEach(d => {
-        var item = d.wspeed
-        table2_row += `<td>${item}</td>`
-    })
-    table2_row += '</tr>'
-    detail_table2.append(table2_row)
-
-    $('#detail_scroll_box').width($('#detail_table1').width() + $('#detail_table2').width() + 32)
-    if (!current_state.is_mobile){
-        $('#info_box').width($('#detail_table1').width() + $('#detail_table2').width() + 32)
-    }
+    windmap.init(current_state.map, data.model_data.wind_data[current_state.time_index])
+    heatmap.init(current_state.map, data.model_data.heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
+    pointmap.set_data(current_state.pointmap_index)
     
+}
 
+function set_current_state(delta = 0) {
+    /*
+    지도의 boundary, gap 시간등을 세팅해
+    해당 값들로 post_data까지 만들음.
+    */
+
+    //지도의 zoom에 따른 grid cell size 정의
+    var zoom = map.getZoom()
+    if (zoom >= 8) {
+        current_state.map.latGap = 0.1
+        current_state.map.lngGap = 0.1
+    } else if (zoom >= 7) {
+        current_state.map.latGap = 0.2
+        current_state.map.lngGap = 0.2
+    } else if (zoom >= 5) {
+        current_state.map.latGap = 0.5
+        current_state.map.lngGap = 0.5
+    }
+
+    // 화면 경계 정의
+    current_state.map.maxlat = parseFloat((map.getBounds()._northEast.lat - map.getBounds()._northEast.lat % current_state.map.latGap + current_state.map.latGap).toFixed(3))
+    current_state.map.maxlat = (current_state.map.maxlat > 44) ? 44 : current_state.map.maxlat
+    current_state.map.maxlat = (current_state.map.maxlat < 32) ? 32 : current_state.map.maxlat
+
+    current_state.map.maxlng = parseFloat((map.getBounds()._northEast.lng - map.getBounds()._northEast.lng % current_state.map.lngGap + current_state.map.lngGap).toFixed(3))
+    current_state.map.maxlng = (current_state.map.maxlng > 132) ? 132 : current_state.map.maxlng
+    current_state.map.maxlng = (current_state.map.maxlng < 120) ? 120 : current_state.map.maxlng
+
+    current_state.map.minlat = parseFloat((map.getBounds()._southWest.lat - map.getBounds()._southWest.lat % current_state.map.latGap - current_state.map.latGap).toFixed(3))
+    current_state.map.minlat = (current_state.map.minlat > 44) ? 44 : current_state.map.minlat
+    current_state.map.minlat = (current_state.map.minlat < 32) ? 32 : current_state.map.minlat
+
+    current_state.map.minlng = parseFloat((map.getBounds()._southWest.lng - map.getBounds()._southWest.lng % current_state.map.lngGap - current_state.map.lngGap).toFixed(3))
+    current_state.map.minlng = (current_state.map.minlng > 132) ? 132 : current_state.map.minlng
+    current_state.map.minlng = (current_state.map.minlng < 120) ? 120 : current_state.map.minlng
+
+    current_state.map.gridX = Math.round((current_state.map.maxlng - current_state.map.minlng) / current_state.map.lngGap)
+    current_state.map.gridY = Math.round((current_state.map.maxlat - current_state.map.minlat) / current_state.map.latGap)
+
+
+    // 현재 시간 정의
+    var t = new Date(new Date().getTime() - 86400000 + delta)
+    current_state.map.current_time = t
+    var year = t.getYear() + 1900
+    var month = t.getMonth() + 1
+    var date = t.getDate()
+    var hour = t.getHours()
+    var currentTime = `${year}/${month}/${date} ${hour}:00`
+
+    current_state.map.current_time_str = currentTime
+    current_state.timestamp = new Date(currentTime).getTime()
+
+    var shko_list = 24 - current_state.time_index
+    data.post_data = {
+        "boundary": {
+            "northEast": {
+                "lat": current_state.map.maxlat,
+                "lng": current_state.map.maxlng
+            },
+            "southWest": {
+                "lat": current_state.map.minlat,
+                "lng": current_state.map.minlng
+            }
+        },
+        "gridSize": {
+            "x": current_state.map.gridX,
+            "y": current_state.map.gridY
+        },
+        "period": `${shko_list},${shko_list}`
+    }
+}
+
+function get_value(x, y) {
+    /*
+    해당 좌표에서 heatmap 값을 받아와 단위를 붙여 리턴해줌
+    */
+    var value = ""
+    if (current_state.heatmap_index < 2) {
+        value = Math.round(heatmap.get_value(x, y)) + "µg/m³"
+    } else if (current_state.heatmap_index == 2) {
+        value = heatmap.get_value(x, y).toFixed(1) + "℃"
+    } else if (current_state.heatmap_index == 3) {
+        value = heatmap.get_value(x, y).toFixed(1) + "%"
+    }
+    return value
+}
+
+//ui
+function make_detail_table_from_marker_data(marker_data, marker_type){
+    if (marker_type == "shko"){
+        $('#weather_button').hide()
+        $('#dust_button').hide()
+        var detail_table1 = $('#detail_table1')
+        var detail_table2 = $('#detail_table2')
+        detail_table1[0].style.height = "240px"
+        detail_table2[0].style.height = "240px"
+        detail_table1.html('')
+        detail_table2.html('')
+    
+        var today_col = marker_data[0].time.getHours()
+        var yesterday_col = 24 - today_col
+    
+        var table2_first_row = `<tr class = "table_header"><td>날짜</td>`
+        table2_first_row += `<td colspan="${yesterday_col}">${marker_data[0].time.getDate()}일</td>`
+        table2_first_row += `<td colspan="${today_col}">${marker_data[23].time.getDate()}일</td>`
+        table2_first_row += `</tr>`
+        detail_table2.append(table2_first_row)
+    
+        var table2_row = `<tr class = "table_header"><td>시간</td>`
+        marker_data.forEach(d => {
+            var h = d.time.getHours()
+            table2_row += `<td>${h}</td>`
+        })
+        table2_row += '</tr>'
+        detail_table2.append(table2_row)
+    
+        var table2_row = `<tr><td>기온</td>`
+        marker_data.forEach(d => {
+            var item = d.temp
+            table2_row += `<td>${item}</td>`
+        })
+        table2_row += '</tr>'
+        detail_table2.append(table2_row)
+    
+        var table2_row = `<tr><td>습도</td>`
+        marker_data.forEach(d => {
+            var item = d.humi
+            table2_row += `<td>${item}</td>`
+        })
+        table2_row += '</tr>'
+        detail_table2.append(table2_row)
+    
+        var table2_row = `<tr><td>강수량</td>`
+        marker_data.forEach(d => {
+            var item = d.rain
+            if (item == null){
+                item = '-'
+            }
+            table2_row += `<td>${item}</td>`
+        })
+        table2_row += '</tr>'
+        detail_table2.append(table2_row)
+    
+        var table2_row = `<tr><td>풍량</td>`
+        marker_data.forEach(d => {
+            var item = d.wdirk
+            table2_row += `<td>${item}</td>`
+        })
+        table2_row += '</tr>'
+        detail_table2.append(table2_row)
+    
+        var table2_row = `<tr><td>풍속</td>`
+        marker_data.forEach(d => {
+            var item = d.wspeed
+            table2_row += `<td>${item}</td>`
+        })
+        table2_row += '</tr>'
+        detail_table2.append(table2_row)
+    
+        $('#detail_scroll_box').width($('#detail_table1').width() + $('#detail_table2').width() + 32)
+        if (!current_state.is_mobile){
+            $('#info_box').width($('#detail_table1').width() + $('#detail_table2').width() + 32)
+        }    
+    } else if (marker_type == "aws"){
+        $('#weather_button').hide()
+        $('#dust_button').hide()
+        var detail_table1 = $('#detail_table1')
+        var detail_table2 = $('#detail_table2')
+        detail_table1[0].style.height = "240px"
+        detail_table2[0].style.height = "240px"
+        detail_table1.html('')
+        detail_table2.html('')
+    
+        var today_col = marker_data[0].time.getHours() + 1
+        var yesterday_col = 24 - today_col
+    
+        var table2_first_row = `<tr class = "table_header"><td>날짜</td>`
+        table2_first_row += `<td colspan="${today_col}">${marker_data[0].time.getDate()}일</td>`
+        table2_first_row += `<td colspan="${yesterday_col}">${marker_data[23].time.getDate()}일</td>`
+        table2_first_row += `</tr>`
+        detail_table2.append(table2_first_row)
+    
+        var table2_row = `<tr class = "table_header"><td>시간</td>`
+        marker_data.forEach(d => {
+            var h = d.time.getHours()
+            table2_row += `<td>${h}</td>`
+        })
+        table2_row += '</tr>'
+        detail_table2.append(table2_row)
+    
+        var table2_row = `<tr><td>기온</td>`
+        marker_data.forEach(d => {
+            var item = d.temp
+            table2_row += `<td>${item}</td>`
+        })
+        table2_row += '</tr>'
+        detail_table2.append(table2_row)
+    
+        var table2_row = `<tr><td>습도</td>`
+        marker_data.forEach(d => {
+            var item = d.humi
+            table2_row += `<td>${item}</td>`
+        })
+        table2_row += '</tr>'
+        detail_table2.append(table2_row)
+    
+        var table2_row = `<tr><td>강수량</td>`
+        marker_data.forEach(d => {
+            var item = d.rain
+            if (item == null){
+                item = '-'
+            }
+            table2_row += `<td>${item}</td>`
+        })
+        table2_row += '</tr>'
+        detail_table2.append(table2_row)
+    
+        var table2_row = `<tr><td>풍량</td>`
+        marker_data.forEach(d => {
+            var item = d.wdirk
+            table2_row += `<td>${item}</td>`
+        })
+        table2_row += '</tr>'
+        detail_table2.append(table2_row)
+    
+        var table2_row = `<tr><td>풍속</td>`
+        marker_data.forEach(d => {
+            var item = d.wspeed
+            table2_row += `<td>${item}</td>`
+        })
+        table2_row += '</tr>'
+        detail_table2.append(table2_row)
+    
+        $('#detail_scroll_box').width($('#detail_table1').width() + $('#detail_table2').width() + 32)
+        if (!current_state.is_mobile){
+            $('#info_box').width($('#detail_table1').width() + $('#detail_table2').width() + 32)
+        }
+    }
 }
 
 function make_detail_table_model(type) {
@@ -636,54 +751,6 @@ function update_detail_box_button(type = -1) {
     }
 }
 
-function get_value(x, y) {
-    /*
-    해당 좌표에서 heatmap 값을 받아와 단위를 붙여 리턴해줌
-    */
-    var value = ""
-    if (current_state.heatmap_index < 2) {
-        value = Math.round(heatmap.get_value(x, y)) + "µg/m³"
-    } else if (current_state.heatmap_index == 2) {
-        value = heatmap.get_value(x, y).toFixed(1) + "℃"
-    } else {
-        value = heatmap.get_value(x, y).toFixed(1) + "%"
-    }
-    return value
-}
-
-function set_overlay_map() {
-    windmap.init(current_state.map, data.model_data.wind_data[current_state.time_index])
-    heatmap.init(current_state.map, data.model_data.heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
-    pointmap.set_data(current_state.pointmap_index)
-    
-}
-
-async function init_overlay_map(){
-    var model_data2 = await get_model_data_async()
-    data.model_data.wind_data[current_state.time_index] = model_data2[0]
-    data.model_data.heat_data[current_state.time_index] = model_data2.slice(1, 5)
-
-    windmap.init(current_state.map, data.model_data.wind_data[current_state.time_index])
-    heatmap.init(current_state.map, data.model_data.heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
-
-    var point_map_data2 = await get_point_map_data_async()
-    console.log(point_map_data2)
-    data.observ_network.national_network_list = point_map_data2.nat_data
-    data.observ_network.iot_network_list = point_map_data2.iot_data
-    data.observ_network.shko_network_list = point_map_data2.shko_data
-    data.observ_network.aws_network_list = point_map_data2.aws_data
-
-    pointmap.init(data.observ_network.iot_network_list, data.observ_network.national_network_list, data.observ_network.shko_network_list, data.observ_network.aws_network_list, 0)
-}
-
-async function model_init() {
-    var model_data2 = await get_model_data_async()
-    data.model_data.wind_data[current_state.time_index] = model_data2[0]
-    data.model_data.heat_data[current_state.time_index] = model_data2.slice(1, 5)
-    set_overlay_map()
-}
-
-
 function update_on_map_info() {
     if (on_map_info != undefined) {
         var latlng = on_map_info._latlng
@@ -716,95 +783,22 @@ function update_on_map_info() {
     }
 }
 
-function set_current_state(delta = 0) {
-    /*
-    지도의 boundary, gap 시간등을 세팅해
-    해당 값들로 post_data까지 만들음.
-    */
-
-    //지도의 zoom에 따른 grid cell size 정의
-    var zoom = map.getZoom()
-    if (zoom >= 8) {
-        current_state.map.latGap = 0.1
-        current_state.map.lngGap = 0.1
-    } else if (zoom >= 7) {
-        current_state.map.latGap = 0.2
-        current_state.map.lngGap = 0.2
-    } else if (zoom >= 5) {
-        current_state.map.latGap = 0.5
-        current_state.map.lngGap = 0.5
-    }
-
-    // 화면 경계 정의
-    current_state.map.maxlat = parseFloat((map.getBounds()._northEast.lat - map.getBounds()._northEast.lat % current_state.map.latGap + current_state.map.latGap).toFixed(3))
-    current_state.map.maxlat = (current_state.map.maxlat > 44) ? 44 : current_state.map.maxlat
-    current_state.map.maxlat = (current_state.map.maxlat < 32) ? 32 : current_state.map.maxlat
-
-    current_state.map.maxlng = parseFloat((map.getBounds()._northEast.lng - map.getBounds()._northEast.lng % current_state.map.lngGap + current_state.map.lngGap).toFixed(3))
-    current_state.map.maxlng = (current_state.map.maxlng > 132) ? 132 : current_state.map.maxlng
-    current_state.map.maxlng = (current_state.map.maxlng < 120) ? 120 : current_state.map.maxlng
-
-    current_state.map.minlat = parseFloat((map.getBounds()._southWest.lat - map.getBounds()._southWest.lat % current_state.map.latGap - current_state.map.latGap).toFixed(3))
-    current_state.map.minlat = (current_state.map.minlat > 44) ? 44 : current_state.map.minlat
-    current_state.map.minlat = (current_state.map.minlat < 32) ? 32 : current_state.map.minlat
-
-    current_state.map.minlng = parseFloat((map.getBounds()._southWest.lng - map.getBounds()._southWest.lng % current_state.map.lngGap - current_state.map.lngGap).toFixed(3))
-    current_state.map.minlng = (current_state.map.minlng > 132) ? 132 : current_state.map.minlng
-    current_state.map.minlng = (current_state.map.minlng < 120) ? 120 : current_state.map.minlng
-
-    current_state.map.gridX = Math.round((current_state.map.maxlng - current_state.map.minlng) / current_state.map.lngGap)
-    current_state.map.gridY = Math.round((current_state.map.maxlat - current_state.map.minlat) / current_state.map.latGap)
-
-
-    // 현재 시간 정의
-    var t = new Date(new Date().getTime() - 86400000 + delta)
-    current_state.map.current_time = t
-    var year = t.getYear() + 1900
-    var month = t.getMonth() + 1
-    var date = t.getDate()
-    var hour = t.getHours()
-    var currentTime = `${year}/${month}/${date} ${hour}:00`
-
-    current_state.map.current_time_str = currentTime
-    current_state.timestamp = new Date(currentTime).getTime()
-
-    var shko_list = 24 - current_state.time_index
-    data.post_data = {
-        "boundary": {
-            "northEast": {
-                "lat": current_state.map.maxlat,
-                "lng": current_state.map.maxlng
-            },
-            "southWest": {
-                "lat": current_state.map.minlat,
-                "lng": current_state.map.minlng
-            }
-        },
-        "gridSize": {
-            "x": current_state.map.gridX,
-            "y": current_state.map.gridY
-        },
-        "period": `${shko_list},${shko_list}`
-    }
-}
-
 async function show_detail_data(lat, lng, is_marker=null, areacode = 0) { 
     var hang_data = await get_hang_data_async(lat, lng)    
     var dbox = $('#detail_box')[0]  
     $('#current_location').text(`${hang_data[1]} ${hang_data[2]} ${hang_data[3]}`)
     if (is_marker){     //마커인경우
+        make_detail_table_from_marker_data(item, is_marker)
         if (is_marker == 'iot'){
             //api 없음
         }else if (is_marker == 'national'){
             //api 없음
         } else if (is_marker == 'shko'){            
             var item = await get_shko_station_data_async(areacode)
-            make_detail_table_shko(item)
             dbox.style.visibility = 'visible'
             dbox.style.height = 'auto';  
         } else if (is_marker == 'aws'){
             var item = await get_aws_station_data_async(areacode)
-            make_detail_table_aws(item)
             dbox.style.visibility = 'visible'
             dbox.style.height = 'auto';  
         }
@@ -822,7 +816,7 @@ async function show_detail_data(lat, lng, is_marker=null, areacode = 0) {
     }      
 }
 export { convert_model_data_to_matrix, convert_lifestyle_data_to_table_data }
-export { make_detail_table_shko, make_detail_table_aws, make_detail_table_model, show_detail_data }
+export { show_detail_data }
 export { get_aws_station_data_async, get_model_data_async, get_point_map_data_async, get_hang_data_async, get_lifestyle_data_async, get_shko_station_data_async }
-export { update_detail_box_button, get_value, model_init, update_on_map_info, set_current_state }
-export {init_overlay_map}
+export { update_detail_box_button, get_value, update_on_map_info, set_current_state }
+export {init_overlay_map, set_overlay_map}
