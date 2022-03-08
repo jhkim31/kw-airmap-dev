@@ -1,48 +1,6 @@
 import * as core from './core.js'
 
 function global_event() {
-
-    window.addEventListener('mousemove', (e) => {
-        if (current_state.knob_drag) {
-            var current_time = $('#current_time')
-            if (e.x < 612 && e.x > 130) {
-                $('#knob').css({
-                    "transition": "none"
-                })
-                $('#knob')[0].style.left = (e.x - 130) + "px"
-                current_time.css({
-                    "left": (parseFloat($('#knob').css('left')) - 60) + "px",
-                    "visibility": "visible"
-                })
-                var tmp = Math.floor((parseFloat($('#knob').css('left')) / 480) / 0.0416667)
-                if (current_state.time_index != tmp) {
-                    current_state.time_index = tmp
-                    core.set_current_state(tmp * 3600000)
-                }
-                current_time.text(current_state.map.current_time_str)
-            }
-        }
-    })
-
-    /*
-    마우스를땔때 실행되는 이벤트,
-    knob을 드래고 하고 있던 중이였을때만 활성화됨.
-    */
-    window.addEventListener('mouseup', (e) => {
-        if (current_state.knob_drag && !current_state.is_playing) {
-            current_state.knob_drag = false
-            $('#knob').css({
-                "transition": "left .1s ease"
-            })
-            current_state.time_index = Math.floor((parseFloat(document.getElementById('knob').style.left) / 480) / 0.0416667)
-            core.set_overlay_map()
-            
-            if (on_map_info != undefined) {
-                core.update_on_map_info()
-            }
-        }
-    })
-
     /*
     맵 이동시마다 실행되는 이벤트
     */
@@ -163,7 +121,7 @@ function button_event(){
                 core.update_on_map_info()
             }
             if (current_state.show_detail_table) {
-                core.make_detail_table_model(current_state.heatmap_index)
+                core.make_detail_table_from_model_data(current_state.heatmap_index)
             }
         } else {
             heatmap.hide_heatmap()
@@ -184,7 +142,7 @@ function button_event(){
                 core.update_on_map_info()
             }
             if (current_state.show_detail_table) {
-                core.make_detail_table_model(current_state.heatmap_index)
+                core.make_detail_table_from_model_data(current_state.heatmap_index)
             }
         } else {
             heatmap.hide_heatmap()
@@ -205,7 +163,7 @@ function button_event(){
                 core.update_on_map_info()
             }
             if (current_state.show_detail_table) {
-                core.make_detail_table_model(current_state.heatmap_index)
+                core.make_detail_table_from_model_data(current_state.heatmap_index)
             }
         } else {
             heatmap.hide_heatmap()
@@ -226,7 +184,7 @@ function button_event(){
                 core.update_on_map_info()
             }
             if (current_state.show_detail_table) {
-                core.make_detail_table_model(current_state.heatmap_index)
+                core.make_detail_table_from_model_data(current_state.heatmap_index)
             }
         } else {
             heatmap.hide_heatmap()
@@ -312,6 +270,45 @@ function button_event(){
         }
     })
     
+    window.addEventListener('mousemove', (e) => {
+        if (current_state.knob_drag) {
+            var current_time = $('#current_time')
+            if (e.x < 612 && e.x > 130) {
+                $('#knob').css({
+                    "transition": "none"
+                })
+                $('#knob')[0].style.left = (e.x - 130) + "px"
+                current_time.css({
+                    "left": (parseFloat($('#knob').css('left')) - 60) + "px",
+                    "visibility": "visible"
+                })
+                var tmp = Math.floor((parseFloat($('#knob').css('left')) / 480) / 0.0416667)
+                if (current_state.time_index != tmp) {
+                    current_state.time_index = tmp
+                    core.set_current_state(tmp * 3600000)
+                }
+                current_time.text(current_state.map.current_time_str)
+            }
+        }
+    })
+    /*
+    마우스를땔때 실행되는 이벤트,
+    knob을 드래고 하고 있던 중이였을때만 활성화됨.
+    */
+    window.addEventListener('mouseup', (e) => {
+        if (current_state.knob_drag && !current_state.is_playing) {
+            current_state.knob_drag = false
+            $('#knob').css({
+                "transition": "left .1s ease"
+            })
+            current_state.time_index = Math.floor((parseFloat(document.getElementById('knob').style.left) / 480) / 0.0416667)
+            core.set_overlay_map()
+            
+            if (on_map_info != undefined) {
+                core.update_on_map_info()
+            }
+        }
+    })
     
     $('#play_wind').on('click', () => {
         if ($('#play_wind')[0].checked == true) {
@@ -507,14 +504,14 @@ function button_event(){
     하단 상세보기 미세먼지 버튼 이벤트
     */
     $('#dust_button').on('click', () => {    
-        core.make_detail_table_model(1)
+        core.make_detail_table_from_model_data(1)
     })
     
     /*
     하단 상세보기 날씨 버튼 이벤트
     */
     $('#weather_button').on('click', () => {
-        core.make_detail_table_model(2)
+        core.make_detail_table_from_model_data(2)
     })
     
     /*
@@ -565,7 +562,7 @@ function button_event(){
     */
     $('#search_btn').on('click', () => {
         core.update_detail_box_button()
-        core.make_detail_table_model(current_state.heatmap_index)
+        core.make_detail_table_from_model_data(current_state.heatmap_index)
         var value = $('#search_field').val();
         $('#detail_box').css({
             "visibility": "visible",
@@ -613,6 +610,8 @@ function button_event(){
             $('#control_box').hide()
         })
     }
+
+
 }
 
 export { button_event, global_event }

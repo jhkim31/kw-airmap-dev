@@ -29,9 +29,8 @@ window.current_state = {
     "timestamp": 0,
     "show_detail_table": false,
     "knob_drag": false,
-    "show_date_timeline": false,
     "is_playing": false,
-    "last_aws_marker": null,
+    // "last_aws_marker": null,
     "map": {
         "current_time": 0,
         "current_time_str": "",
@@ -52,8 +51,6 @@ window.data = {
         "wind_data": [],
         "heat_data": [],           //0 : pm10 /    1 : pm25 /   2 : t /    3 : h    
     },
-    "wind_data": [],
-    "heat_data": [],
     "post_data": {},
     "num_observ_network": {
         "iot_network": 0,
@@ -70,8 +67,7 @@ window.data = {
     "forecast_data": {
         "lifestyle_data": {},
         "dust_data": {}
-    },
-    "current_point_nm": ""
+    }
 }
 
 window.on_map_info = null;

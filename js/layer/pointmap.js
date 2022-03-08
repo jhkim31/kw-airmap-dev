@@ -313,14 +313,14 @@ var PointMap = function (_canvas) {
     해당 point가 마커라면 설명과 마커의 타입을 리턴합니다.
     */
     this.is_marker = function (point) {
-        var marker_serial = null
+        var marker_description = null
         if (overlayImage != null){
             marker_position_list.forEach(d => {
                 if (point.x >= d.point[0] && point.x <= d.point[2] && point.y >= d.point[1] && point.y <= d.point[3]) {
                     if (d.serial) {
-                        marker_serial = [d.serial + "<br>" + d.type, d.type]
+                        marker_description = [d.serial + "<br>" + d.type, d.type]
                     } else if (d.areaname) {
-                        marker_serial = [d.areaname + "<br>" + d.type, d.type, d.areacode]
+                        marker_description = [d.areaname + "<br>" + d.type, d.type, d.areacode]
                         if (d.type == 'aws') {
                             c.beginPath();
                             c.fillStyle = 'white'
@@ -332,7 +332,7 @@ var PointMap = function (_canvas) {
                 }
             })
         } 
-        return marker_serial
+        return marker_description
     }
 }
 export { PointMap }
