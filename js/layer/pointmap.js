@@ -80,7 +80,7 @@ var PointMap = function (_canvas) {
     }
 
     function draw_canvas(){
-        overlayImage = L.imageOverlay(cn.toDataURL('', 1.0), map.getBounds(), { opacity: 0.9 }).addTo(map)
+        overlayImage = L.imageOverlay(cn.toDataURL(), map.getBounds(), { opacity: 0.9 }).addTo(map)
     }
 
     /*

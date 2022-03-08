@@ -9,7 +9,9 @@ window.map = L.map('map', {
     "maxBounds": L.latLngBounds([[
         [32, 120],
         [44, 132]
-    ]])
+    ]]),
+    "maxBoundsViscosity": 1.0
+    
 })
     .setView([37, 127], 10)
 
@@ -91,4 +93,3 @@ window.onload = async function () {
 
 event.button_event()
 event.global_event()
-
