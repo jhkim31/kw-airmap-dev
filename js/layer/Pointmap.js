@@ -26,7 +26,7 @@ var PointMap = function (_canvas) {
         cn.height = window.innerHeight
 
         var icon1 = new Image()
-        icon1.src = 'image/m1_iot.png'
+        icon1.src = './image/m1_iot.png'
         marker.push(icon1)
 
         var icon2 = new Image()
