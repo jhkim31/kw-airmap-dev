@@ -117,6 +117,7 @@ function button_event(){
             heatmap.set_data(current_state.map, data.model_data.heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
             heatmap.show_heatmap()
             document.getElementById("heat_bar").src = "image/heat_bar_pm10.png";
+            core.make_detail_table_from_model_data(current_state.heatmap_index)
             if (on_map_info != undefined) {
                 core.update_on_map_info()
             }
@@ -138,6 +139,7 @@ function button_event(){
             heatmap.set_data(current_state.map, data.model_data.heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
             heatmap.show_heatmap()
             document.getElementById("heat_bar").src = "image/heat_bar_pm10.png";
+            core.make_detail_table_from_model_data(current_state.heatmap_index)
             if (on_map_info != undefined) {
                 core.update_on_map_info()
             }
@@ -159,6 +161,7 @@ function button_event(){
             heatmap.set_data(current_state.map, data.model_data.heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
             heatmap.show_heatmap()
             document.getElementById("heat_bar").src = "image/heat_bar_t.png";
+            core.make_detail_table_from_model_data(current_state.heatmap_index)
             if (on_map_info != undefined) {
                 core.update_on_map_info()
             }
@@ -180,6 +183,7 @@ function button_event(){
             heatmap.set_data(current_state.map, data.model_data.heat_data[current_state.time_index][current_state.heatmap_index], current_state.heatmap_index)
             heatmap.show_heatmap()
             document.getElementById("heat_bar").src = "image/heat_bar_h.png";
+            core.make_detail_table_from_model_data(current_state.heatmap_index)
             if (on_map_info != undefined) {
                 core.update_on_map_info()
             }

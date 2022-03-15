@@ -153,9 +153,14 @@ async function get_lifestyle_data_async(hang_cd) {
     행정동 코드를 통해 얻은 lifestyle data들을 사용할 수 있게 컨버팅해서 리턴함    
     */
     var point_map_data = []
-    var dt = new Date()
+    // var dt = new Date()
+    // var d_s = dt.getFullYear() + (dt.getMonth() + 1).toString().padStart(2, '0') + dt.getDate().toString().padStart(2, '0')
+    // var dt = new Date(dt.getTime() + 604800000)
+    // var d_e = dt.getFullYear() + (dt.getMonth() + 1).toString().padStart(2, '0') + dt.getDate().toString().padStart(2, '0')
+
+    var dt = new Date('2021-09-06')
     var d_s = dt.getFullYear() + (dt.getMonth() + 1).toString().padStart(2, '0') + dt.getDate().toString().padStart(2, '0')
-    var dt = new Date(dt.getTime() + 604800000)
+    dt = new Date('2021-09-13')
     var d_e = dt.getFullYear() + (dt.getMonth() + 1).toString().padStart(2, '0') + dt.getDate().toString().padStart(2, '0')
 
     await fetch(`https://kwapi.kweather.co.kr/kweather/lifestyle/date?hangCd=${hang_cd}&startDate=${d_s}&endDate=${d_e}`, {
@@ -536,8 +541,8 @@ function make_detail_table_from_model_data(type) {
 
         var table1_second_row2 = `<tr>`
         for (var i = 0; i < 3; i++) {
-            var forecast_data = forecast_data[i]
-            forecast_data[0].forEach(d => {
+            var tmp = forecast_data[i]
+            tmp[0].forEach(d => {
                 table1_second_row2 += `<td colspan="6">${d}</td>`
             })
         }
@@ -555,7 +560,7 @@ function make_detail_table_from_model_data(type) {
 
         var table1_4th_row = `<tr><td class = "table_header">날씨</td>`
         for (var i = 0; i < 3; i++) {
-            var forecast_data = forecast_data[i]
+            var tmp = forecast_data[i]
             for (var j = 0; j < 24; j++) {
                 table1_4th_row += '<td> </td>'
             }
@@ -619,22 +624,16 @@ function make_detail_table_from_model_data(type) {
     }    
 }
 
-function update_detail_box_button(type = -1) {
+function update_detail_box_button(type) {
     /*
     이 함수가 실행되면, 하단의 버튼을 현재 상황에 맞게 바꿔줌    
     */
-    if (type > 1) {
+    if (type >= 2) {
         document.getElementById('weather_button').className = document.getElementById('weather_button').className.replace('light', 'primary')
         document.getElementById('dust_button').className = document.getElementById('dust_button').className.replace('primary', 'light')
-    } else if (type > -1) {
+    } else{
         document.getElementById('weather_button').className = document.getElementById('weather_button').className.replace('primary', 'light')
         document.getElementById('dust_button').className = document.getElementById('dust_button').className.replace('light', 'primary')
-    } else if (current_state.heatmap_index < 2) {
-        document.getElementById('weather_button').className = document.getElementById('weather_button').className.replace('primary', 'light')
-        document.getElementById('dust_button').className = document.getElementById('dust_button').className.replace('light', 'primary')
-    } else {
-        document.getElementById('weather_button').className = document.getElementById('weather_button').className.replace('light', 'primary')
-        document.getElementById('dust_button').className = document.getElementById('dust_button').className.replace('primary', 'light')
     }
 }
 
@@ -819,3 +818,4 @@ function get_value(x, y) {
 
 export { update_detail_box_button,  show_detail_data, update_on_map_info }
 export {init_overlay_map, set_overlay_map, get_value, set_current_state}
+export { make_detail_table_from_model_data}

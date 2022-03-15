@@ -217,7 +217,7 @@ cursor:pointer;
 
 #detail_data{
   pointer-events: auto;
-  overflow:scroll;  
+  overflow-x:scroll;  
 }
 
 

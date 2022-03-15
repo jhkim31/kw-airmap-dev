@@ -1,9 +1,9 @@
-import { HeatMap as HeatMap } from './layer/Heatmap.js';
-import { WindMap as WindMap } from './layer/Flowmap.js'
-import { PointMap as PointMap } from './layer/Pointmap.js'
+import { HeatMap as HeatMap } from '/js/layer/Heatmap.js';
+import { WindMap as WindMap } from '/js/layer/Flowmap.js'
+import { PointMap as PointMap } from '/js/layer/Pointmap.js'
 
-import * as core from './lib/core.js'
-import * as event from './lib/event.js'
+import * as core from '/js/lib/core.js'
+import * as event from '/js/lib/event.js'
 
 window.map = L.map('map', {
     "maxBounds": L.latLngBounds([[
