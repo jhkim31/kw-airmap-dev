@@ -52,7 +52,9 @@ var PointMap = function (_canvas) {
     3 : shko
     4 : aws
     */
-    this.set_data = function (_pointmap_index) {
+    this.set_data = function (_pointmap_index) {         
+        cn.width = window.innerWidth
+        cn.height = window.innerHeight           
         pointmap_index = _pointmap_index
         clear_canvas()
         if (overlayImage != null) {
@@ -79,7 +81,7 @@ var PointMap = function (_canvas) {
         draw_canvas()
     }
 
-    function draw_canvas(){
+    function draw_canvas(){        
         overlayImage = L.imageOverlay(cn.toDataURL(), map.getBounds(), { opacity: 0.9 }).addTo(map)
     }
 

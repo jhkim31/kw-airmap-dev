@@ -4,13 +4,12 @@ function global_event() {
     /*
     맵 이동시마다 실행되는 이벤트
     */
-    map.on('moveend', async function(){
+    map.on('moveend', async function(){        
+        console.log('moveend')
         data.model_data.wind_data = []
         data.model_data.heat_data = []
-        core.set_overlay_map()
-        
-    })
-
+        core.set_overlay_map()        
+    })    
     /*
     지도 클릭 이벤트
     */
